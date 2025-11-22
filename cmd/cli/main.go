@@ -37,7 +37,6 @@ func main() {
 
 	cycleDelay := time.Second / time.Duration(*hz)
 
-	// CPU loop
 	for {
 		start := time.Now()
 		chip.Step()

@@ -6,6 +6,8 @@ type Cpu struct {
 	pc    uint16
 	sp    byte
 	stack [16]uint16
+	dt    byte
+	st    byte
 }
 
 func NewCpu() *Cpu {
@@ -14,9 +16,28 @@ func NewCpu() *Cpu {
 	}
 }
 
+func (cpu *Cpu) TickTimers() {
+	if cpu.dt > 0 {
+		cpu.dt--
+	}
+	if cpu.st > 0 {
+		cpu.st--
+	}
+}
+
 func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
 	opcode := cpu.fetch(memory)
 	cpu.execute(opcode)
+}
+
+func (cpu *Cpu) push(val uint16) {
+	cpu.stack[cpu.sp] = val
+	cpu.sp += 1
+}
+
+func (cpu *Cpu) pop() uint16 {
+	cpu.sp -= 1
+	return cpu.stack[cpu.sp]
 }
 
 func (cpu *Cpu) fetch(memory *Memory) uint16 {
