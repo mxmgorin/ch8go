@@ -31,7 +31,7 @@ func (cpu *Cpu) TickTimers() {
 
 func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
 	opcode := cpu.fetch(memory)
-	cpu.execute(opcode, memory, display)
+	cpu.execute(opcode, memory, display, keypad)
 }
 
 func (cpu *Cpu) fetch(memory *Memory) uint16 {
@@ -43,7 +43,7 @@ func (cpu *Cpu) fetch(memory *Memory) uint16 {
 	return opcode
 }
 
-func (cpu *Cpu) execute(op uint16, memory *Memory, display *Display) {
+func (cpu *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
@@ -118,6 +118,20 @@ func (cpu *Cpu) execute(op uint16, memory *Memory, display *Display) {
 			cpu.v[0xF] = 0
 		}
 
+	case 0xE000:
+		switch op & 0x00FF {
+		case 0x9E: // SKP Vx
+			cpu.skipNextIf(keypad.IsPressed(cpu.v[read_x(op)]))
+
+		case 0xA1: // SKNP Vx
+			cpu.skipNextIf(!keypad.IsPressed(cpu.v[read_x(op)]))
+
+		default: // ignored
+		}
+
+	case 0xF000:
+		cpu.execute_fnnn(op, memory, keypad)
+
 	default:
 		// todo: handle others
 	}
@@ -173,6 +187,51 @@ func (cpu *Cpu) execute_8xyn(op uint16) {
 
 	default:
 		// Unknown 8XY* instruction
+	}
+}
+
+func (cpu *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
+	x := (op >> 8) & 0x0F
+
+	switch op & 0x00FF {
+	case 0x07: // LD Vx, DT
+		cpu.v[x] = cpu.dt
+
+	case 0x0A: // LD Vx, K
+		key, pressed := keypad.GetPressed()
+		if pressed {
+			cpu.v[x] = key
+		} else {
+			// Don't advance PC → repeat this opcode next cycle
+			cpu.pc -= 2
+		}
+
+	case 0x15: // LD DT, Vx
+		cpu.dt = cpu.v[x]
+
+	case 0x18: // LD ST, Vx
+		cpu.st = cpu.v[x]
+
+	case 0x1E: // ADD I, Vx
+		cpu.i += uint16(cpu.v[x])
+
+	case 0x33:
+		val := cpu.v[x]
+		memory.Write(cpu.i+0, val/100)     // hundreds
+		memory.Write(cpu.i+1, (val/10)%10) // tens
+		memory.Write(cpu.i+2, val%10)      // ones
+
+	case 0x55:
+		for r := uint16(0); r <= uint16(x); r++ {
+			memory.Write(cpu.i+r, cpu.v[r])
+		}
+
+	case 0x65:
+		for r := uint16(0); r <= uint16(x); r++ {
+			cpu.v[r] = memory.Read(cpu.i + r)
+		}
+
+	default: // ignored
 	}
 }
 
