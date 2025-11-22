@@ -31,7 +31,7 @@ func (cpu *Cpu) TickTimers() {
 
 func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
 	opcode := cpu.fetch(memory)
-	cpu.execute(opcode, display)
+	cpu.execute(opcode, memory, display)
 }
 
 func (cpu *Cpu) fetch(memory *Memory) uint16 {
@@ -43,7 +43,7 @@ func (cpu *Cpu) fetch(memory *Memory) uint16 {
 	return opcode
 }
 
-func (cpu *Cpu) execute(op uint16, display *Display) {
+func (cpu *Cpu) execute(op uint16, memory *Memory, display *Display) {
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
@@ -104,6 +104,19 @@ func (cpu *Cpu) execute(op uint16, display *Display) {
 		x := read_x(op)
 		nn := read_nn(op)
 		cpu.v[x] = byte(rand.Intn(256)) & nn
+
+	case 0xD000: // DRW Vx, Vy, nibble
+		x := cpu.v[read_x(op)]
+		y := cpu.v[read_y(op)]
+		height := uint16(read_n(op))
+		sprite := memory.ReadSprite(cpu.i, height)
+		collision := display.DrawSprite(x, y, sprite)
+
+		if collision {
+			cpu.v[0xF] = 1
+		} else {
+			cpu.v[0xF] = 0
+		}
 
 	default:
 		// todo: handle others
@@ -169,6 +182,10 @@ func read_x(op uint16) uint16 {
 
 func read_y(op uint16) uint16 {
 	return (op >> 4) & 0x0F
+}
+
+func read_n(op uint16) byte {
+	return byte(op & 0x000F)
 }
 
 func read_nn(op uint16) byte {

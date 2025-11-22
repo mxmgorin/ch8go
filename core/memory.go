@@ -54,8 +54,13 @@ func (m *Memory) Write(addr uint16, val byte) {
 	m.bytes[addr] = val
 }
 
+func (m *Memory) ReadSprite(i uint16, height uint16) []byte {
+	// NOTE: i and height are always valid in real CHIP-8 ROMs
+	return m.bytes[i : i+height]
+}
+
 func (m *Memory) loadFont() {
-    for i, b := range font {
-        m.bytes[FontStart+i] = b
-    }
+	for i, b := range font {
+		m.bytes[FontStart+i] = b
+	}
 }
