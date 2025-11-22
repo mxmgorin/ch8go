@@ -5,16 +5,16 @@ import "fmt"
 type Chip8 struct {
 	cpu     *Cpu
 	memory  *Memory
-	display *Display
-	keypad  *Keypad
+	Display *Display
+	Keypad  *Keypad
 }
 
 func NewChip8() *Chip8 {
 	return &Chip8{
 		cpu:     NewCpu(),
 		memory:  NewMemory(),
-		display: NewDisplay(),
-		keypad:  NewKeypad(),
+		Display: NewDisplay(),
+		Keypad:  NewKeypad(),
 	}
 }
 
@@ -28,5 +28,5 @@ func (c *Chip8) LoadRom(bytes []byte) error {
 }
 
 func (c *Chip8) Step() {
-	c.cpu.Step(c.memory, c.display, c.keypad)
+	c.cpu.Step(c.memory, c.Display, c.Keypad)
 }

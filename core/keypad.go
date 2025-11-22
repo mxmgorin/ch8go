@@ -3,7 +3,7 @@ package core
 const KEYS_COUNT = 16
 
 type Keypad struct {
-	keys [KEYS_COUNT]byte
+	Keys [KEYS_COUNT]bool
 }
 
 func NewKeypad() *Keypad {
@@ -12,29 +12,29 @@ func NewKeypad() *Keypad {
 
 func (k *Keypad) Press(key byte) {
 	if key < KEYS_COUNT {
-		k.keys[key] = 1
+		k.Keys[key] = true
 	}
 }
 
 func (k *Keypad) Release(key byte) {
 	if key < KEYS_COUNT {
-		k.keys[key] = 0
+		k.Keys[key] = false
 	}
 }
 
 func (k *Keypad) IsPressed(key byte) bool {
-	return key < KEYS_COUNT && k.keys[key] == 1
+	return key < KEYS_COUNT && k.Keys[key]
 }
 
 func (k *Keypad) Reset() {
-	for i := range k.keys {
-		k.keys[i] = 0
+	for i := range k.Keys {
+		k.Keys[i] = false
 	}
 }
 
 func (k *Keypad) GetPressed() (byte, bool) {
-	for i, v := range k.keys {
-		if v == 1 {
+	for i, v := range k.Keys {
+		if v {
 			return byte(i), true
 		}
 	}
