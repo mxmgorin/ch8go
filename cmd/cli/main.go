@@ -25,7 +25,7 @@ func main() {
 	}
 	chip := core.NewChip8()
 
-	if err := chip.LoadROM(romBytes); err != nil {
+	if err := chip.LoadRom(romBytes); err != nil {
 		log.Fatalf("Failed to load ROM: %v", err)
 	}
 

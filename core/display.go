@@ -1,12 +1,12 @@
 package core
 
 const (
-	Width  = 64
-	Height = 32
+	DisplayWidth  = 64
+	DisplayHeight = 32
 )
 
 type Display struct {
-	Pixels [Width * Height]byte
+	Pixels [DisplayWidth * DisplayHeight]byte
 }
 
 func NewDisplay() *Display {
@@ -34,9 +34,9 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
 				continue
 			}
 
-			px := (X + uint16(col)) % uint16(Width)
-			py := (Y + uint16(row)) % uint16(Height)
-			idx := py*uint16(Width) + px
+			px := (X + uint16(col)) % uint16(DisplayWidth)
+			py := (Y + uint16(row)) % uint16(DisplayHeight)
+			idx := py*uint16(DisplayWidth) + px
 
 			if d.Pixels[idx] == 1 {
 				collision = true

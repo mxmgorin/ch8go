@@ -18,8 +18,8 @@ func NewChip8() *Chip8 {
 	}
 }
 
-func (c *Chip8) LoadROM(bytes []byte) error {
-	err := c.memory.LoadRom(bytes)
+func (c *Chip8) LoadRom(bytes []byte) error {
+	err := c.memory.Load(bytes)
 	if err != nil {
 		return fmt.Errorf("failed to load ROM: %w", err)
 	}

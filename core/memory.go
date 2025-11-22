@@ -37,9 +37,9 @@ func NewMemory() *Memory {
 	return m
 }
 
-func (m *Memory) LoadRom(bytes []byte) error {
+func (m *Memory) Load(bytes []byte) error {
 	if len(bytes)+ProgramStart > MemorySize {
-		return fmt.Errorf("ROM too large")
+		return fmt.Errorf("Size is too large")
 	}
 
 	copy(m.bytes[ProgramStart:], bytes)
