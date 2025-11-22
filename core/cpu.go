@@ -15,11 +15,20 @@ func NewCpu() *Cpu {
 }
 
 func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
+	opcode := cpu.fetch(memory)
+	cpu.execute(opcode)
+}
+
+func (cpu *Cpu) fetch(memory *Memory) uint16 {
 	hi := memory.Read(cpu.pc)
 	lo := memory.Read(cpu.pc + 1)
-	opcode := uint16(hi)<<8 | uint16(lo)
 	cpu.pc += 2
+	opcode := uint16(hi)<<8 | uint16(lo)
 
+	return opcode
+}
+
+func (cpu *Cpu) execute(opcode uint16) {
 	switch opcode & 0xF000 {
 	case 0x1000: // JP addr
 		cpu.pc = opcode & 0x0FFF
