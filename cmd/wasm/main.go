@@ -13,7 +13,6 @@ import (
 const (
 	W     = chip8.DisplayWidth
 	H     = chip8.DisplayHeight
-	SCALE = 10
 )
 
 var (
@@ -34,13 +33,8 @@ func main() {
 	// Setup canvas
 	doc := js.Global().Get("document")
 	canvas := doc.Call("getElementById", "chip8-canvas")
-
-	// internal resolution (raw pixels)
 	canvas.Set("width", W)
 	canvas.Set("height", H)
-	canvas.Get("style").Set("width", fmt.Sprintf("%dpx", W*SCALE))
-    canvas.Get("style").Set("height", fmt.Sprintf("%dpx", H*SCALE))
-
 	ctx = canvas.Call("getContext", "2d")
 	imageData = ctx.Call("createImageData", W, H)
 	rgbaBuf = make([]byte, W*H*4)
