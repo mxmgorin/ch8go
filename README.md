@@ -4,6 +4,7 @@ A CHIP-8 emulator written in Go.
 The goal of this project is to have fun and practice Go while exploring CHIP-8 internals.
 
 ## Features
+
 - **Full CHIP-8 CPU Emulation**: Implements all standard opcodes, including timers, stack, and registers.
 - **Built-in REPL / CLI Debugger**: Step through instructions, inspect registers, view display buffer, load ROMs, and run commands interactively.
 - **Disassembler**: Convert CHIP-8 ROMs to readable assembly for debugging and learning.
@@ -11,24 +12,28 @@ The goal of this project is to have fun and practice Go while exploring CHIP-8 i
 - **SDL2 Frontend**: Hardware-accelerated graphics window.
 
 ## CLI Usage
+
 The project includes an interactive CLI / REPL for debugging and inspecting CHIP-8 programs.
 Start it with:
+
 ```bash
 go run ./cmd/cli --rom path/to/game.ch8
 ```
+
 Once inside the prompt (chip8>), you can type help at any time to see all available commands.
-| Command       | Description                                                       |
+| Command | Description |
 | ------------- | ----------------------------------------------------------------- |
-| `help`        | Show a list of all supported commands.                            |
-| `load <file>` | Load a CHIP-8 ROM into memory.                                    |
-| `step`        | Execute a single instruction.                                     |
-| `run <steps>` | Execute multiple instructions (default: 10).                      |
-| `regs`        | Print registers. |
-| `disasm <n>`  | Disassemble the next *n* instructions starting at the current PC. |
-| `draw`        | Render the current display buffer in ASCII.                       |
-| `quit`        | Exit the REPL.                                                    |
+| `help` | Show a list of all supported commands. |
+| `load <file>` | Load a CHIP-8 ROM into memory. |
+| `step` | Execute a single instruction. |
+| `run <steps>` | Execute multiple instructions (default: 10). |
+| `regs` | Print registers. |
+| `disasm <n>` | Disassemble the next _n_ instructions starting at the current PC. |
+| `draw` | Render the current display buffer in ASCII. |
+| `quit` | Exit the REPL. |
 
 **Example session**
+
 ```bash
 ❯ go run ./cmd/cli --rom ./roms/test_opcode.ch8
 CHIP-8 CLI. Type 'help' for commands.
@@ -56,3 +61,4 @@ Useful resources for CHIP-8 development:
 - [Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 - [Awesome CHIP-8](https://github.com/tobiasvl/awesome-chip-8)
+- [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)
