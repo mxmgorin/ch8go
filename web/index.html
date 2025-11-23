@@ -19,16 +19,29 @@
                 image-rendering: pixelated;
             }
             .page {
-                width: 512px;
                 margin-left: auto;
                 margin-right: auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                justify-items: center;
+                align-items: center;
             }
             .screen {
-                width: 512px;
-                height: 256px;
+                width: 640px;
+                height: 320px;
                 border: 1px solid var(--terminal-color);
                 padding: 5px;
-                margin-bottom: 20px;
+                margin: 20px;
+            }
+            .loaders {
+                display: flex;
+                gap: 30px;
+            }
+
+            .group {
+                display: flex;
+                gap: 10px;
             }
 
             body {
@@ -63,28 +76,37 @@
 
     <body>
         <div class="page">
-            <h2>CHIP-8</h2>
+            <h2>ch8go</h2>
+            <p>
+                A CHIP-8 interpreter written in Go and compiled to WebAssembly.
+            </p>
+            <div class="loaders">
+                <div class="group">
+                    <span class="label">ROM:</span>
+                    <select id="roms">
+                        <option value="roms/INVADERS">INVADERS</option>
+                        <option value="roms/TETRIS">TETRIS</option>
+                        <option value="roms/PONG">PONG</option>
+                        <option value="roms/PONG2">PONG2</option>
+                        <option value="roms/TANK">TANK</option>
+                    </select>
+                </div>
 
-            <p>Choose a ROM and press 'Start' to play!</p>
-
-            <span class="label">ROM:</span>
-            <select id="roms"></select>
-            <button id="run">Start</button>
-            <span class="label">File:</span>
-            <input type="file" id="romInput" accept=".ch8" />
+                <div class="group">
+                    <span class="label">FILE:</span>
+                    <input type="file" id="romInput" accept=".ch8" />
+                </div>
+            </div>
 
             <div class="screen">
                 <canvas
                     id="chip8-canvas"
-                    style="transform: scale(8); transform-origin: top left"
+                    style="transform: scale(10); transform-origin: top left"
                 ></canvas>
             </div>
         </div>
 
-        <br />
-
         <script src="wasm_exec.js"></script>
-
         <script>
             const go = new Go();
 
@@ -105,6 +127,21 @@
                     const data = new Uint8Array(await file.arrayBuffer());
                     chip8_loadROM(data);
                 };
+
+                const select = document.getElementById("roms");
+                select.onchange = async (e) => {
+                    const path = e.target.value;
+                    if (path) loadRomFromUrl(path);
+                };
+
+                const firstRom = select.options[0].value;
+                await loadRomFromUrl(firstRom);
+            }
+
+            async function loadRomFromUrl(url) {
+                const resp = await fetch(url);
+                const buf = new Uint8Array(await resp.arrayBuffer());
+                chip8_loadROM(buf);
             }
 
             init();
