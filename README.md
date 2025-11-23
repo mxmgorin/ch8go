@@ -3,16 +3,26 @@
 A CHIP-8 emulator written in Go.
 The goal of this project is to have fun and practice Go while exploring CHIP-8.
 
-🌐 [Try the Live Demo here](https://mxmgorin.github.io/ch8go/web/)
+🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
+
+## Controls
+
+```
+CHIP-8              Keyboard
+1  2  3  C   →      1  2  3  4
+4  5  6  D   →      Q  W  E  R
+7  8  9  E   →      A  S  D  F
+A  0  B  F   →      Z  X  C  V
+```
 
 ## Features
 
-- **Full CHIP-8 CPU Emulation**: Implements all standard opcodes, including timers, stack, and registers.
+- **Full CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **Built-in REPL / CLI Debugger**: Step through instructions, inspect registers, view display buffer, load ROMs, and run commands interactively.
 - **Disassembler**: Convert CHIP-8 ROMs to readable assembly.
-- **ASCII Display Renderer**: Render the CHIP-8 display directly in the terminal.
+- **ASCII Renderer**: View the CHIP-8 display directly in your terminal.
 - **SDL2 Frontend**: Hardware-accelerated graphics window.
-- **WebAssembly Frontend (WASM)**: Run the emulator in the browser using WASM. Includes HTML/JS bindings for display output, keyboard input, and ROM loading.
+- **WebAssembly Frontend**: Run the emulator directly in the browser using WASM.
 
 ## CLI Usage
 
