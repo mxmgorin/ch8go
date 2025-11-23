@@ -22,7 +22,7 @@ func DebugRegisters(cpu *Cpu) string {
 func RenderASCII(d *Display) string {
 	const (
 		on  = "█"
-		off = "·"
+		off = "░"
 	)
 
 	out := strings.Builder{}
