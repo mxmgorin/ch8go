@@ -9,8 +9,8 @@ type Emu struct {
 	Keypad  *Keypad
 }
 
-func NewEmu() Emu {
-	return Emu{
+func NewEmu() *Emu {
+	return &Emu{
 		cpu:     NewCpu(),
 		memory:  NewMemory(),
 		Display: NewDisplay(),

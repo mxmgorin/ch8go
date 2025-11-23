@@ -47,7 +47,7 @@ type App struct {
 	Window   *sdl.Window
 	Texture  *sdl.Texture
 	Renderer *sdl.Renderer
-	Emu      chip8.Emu
+	Emu      *chip8.Emu
 	rgbBuf   []byte
 }
 
