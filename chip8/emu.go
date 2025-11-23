@@ -18,17 +18,21 @@ func NewEmu() *Emu {
 	}
 }
 
-func (cpu *Emu) LoadRom(bytes []byte) error {
-	err := cpu.memory.Load(bytes)
+func (e *Emu) LoadRom(bytes []byte) error {
+	err := e.memory.Load(bytes)
 	if err != nil {
 		return fmt.Errorf("failed to load ROM: %w", err)
 	}
+	e.Display.Clear()
+	e.Keypad.Reset()
+	e.Cpu.Reset()
 
 	return nil
 }
 
-func (cpu *Emu) Step() {
-	cpu.Cpu.Step(&cpu.memory, &cpu.Display, &cpu.Keypad)
+func (e *Emu) Step() {
+	e.Cpu.Step(&e.memory, &e.Display, &e.Keypad)
+	e.Cpu.UpdateTimers()
 }
 
 func (e *Emu) DisasmNext() DisasmInfo {

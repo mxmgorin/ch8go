@@ -24,6 +24,23 @@ func NewCpu() Cpu {
 	}
 }
 
+func (c *Cpu) Reset() {
+	for i := range c.v {
+		c.v[i] = 0
+	}
+
+	c.i = 0
+	c.pc = 0x200
+	c.sp = 0
+	c.dt = 0
+	c.st = 0
+	c.lastTick = time.Now()
+
+	for i := range c.stack {
+		c.stack[i] = 0
+	}
+}
+
 func (c *Cpu) UpdateTimers() {
 	now := time.Now()
 	elapsed := now.Sub(c.lastTick)
