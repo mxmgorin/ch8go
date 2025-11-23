@@ -1,6 +1,7 @@
 package chip8
 
 import (
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -44,6 +45,10 @@ func (c *Cpu) UpdateTimers() {
 func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
 	opcode := cpu.fetch(memory)
 	cpu.execute(opcode, memory, display, keypad)
+}
+
+func (cpu *Cpu) DebugRegisters() string {
+	return fmt.Sprintf("PC=%04X I=%04X V=%v", cpu.pc, cpu.i, cpu.v)
 }
 
 func (cpu *Cpu) fetch(memory *Memory) uint16 {

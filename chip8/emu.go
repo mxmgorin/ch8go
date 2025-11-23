@@ -3,7 +3,7 @@ package chip8
 import "fmt"
 
 type Emu struct {
-	cpu     *Cpu
+	Cpu     *Cpu
 	memory  *Memory
 	Display *Display
 	Keypad  *Keypad
@@ -11,15 +11,15 @@ type Emu struct {
 
 func NewEmu() *Emu {
 	return &Emu{
-		cpu:     NewCpu(),
+		Cpu:     NewCpu(),
 		memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
 	}
 }
 
-func (c *Emu) LoadRom(bytes []byte) error {
-	err := c.memory.Load(bytes)
+func (cpu *Emu) LoadRom(bytes []byte) error {
+	err := cpu.memory.Load(bytes)
 	if err != nil {
 		return fmt.Errorf("failed to load ROM: %w", err)
 	}
@@ -27,6 +27,6 @@ func (c *Emu) LoadRom(bytes []byte) error {
 	return nil
 }
 
-func (c *Emu) Step() {
-	c.cpu.Step(c.memory, c.Display, c.Keypad)
+func (cpu *Emu) Step() {
+	cpu.Cpu.Step(cpu.memory, cpu.Display, cpu.Keypad)
 }
