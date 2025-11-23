@@ -47,10 +47,12 @@ func main() {
 
 		case "step":
 			fmt.Println(emu.DisasmNext())
+			fmt.Println()
 			emu.Step()
 
 		case "regs":
 			fmt.Println(chip8.DebugRegisters(&emu.Cpu))
+			fmt.Println()
 
 		case "run":
 			runCmd(emu, args)
@@ -73,6 +75,7 @@ func main() {
 func printHelp() {
 	fmt.Println(`
 Commands:
+  help            Show a list of all supported commands.
   load <file>     Load ROM
   step            Execute one instruction
   run <steps>     Execute multiple steps
@@ -80,6 +83,7 @@ Commands:
   disasm <n>      Disassemble N instructions
   draw            Render display in ascii
   quit            Exit`)
+	fmt.Println()
 }
 
 func loadRom(emu *chip8.Emu, path string) {
@@ -90,7 +94,8 @@ func loadRom(emu *chip8.Emu, path string) {
 	}
 
 	emu.LoadRom(rom)
-	fmt.Println("ROM loaded.")
+	fmt.Printf("ROM loaded (%d bytes).\n", len(rom))
+	fmt.Println()
 }
 
 func runCmd(emu *chip8.Emu, args []string) {
@@ -109,6 +114,7 @@ func runCmd(emu *chip8.Emu, args []string) {
 	}
 
 	fmt.Printf("Executed %d steps.\n", steps)
+	fmt.Println()
 }
 
 func disasmCmd(emu *chip8.Emu, args []string) {
@@ -127,4 +133,6 @@ func disasmCmd(emu *chip8.Emu, args []string) {
 	for _, info := range list {
 		fmt.Println(info)
 	}
+
+	fmt.Println()
 }
