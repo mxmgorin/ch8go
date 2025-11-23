@@ -1,17 +1,21 @@
 package chip8
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 const OP_SIZE = 2
 
 type Cpu struct {
-	v     [16]byte
-	i     uint16
-	pc    uint16
-	sp    byte
-	stack [16]uint16
-	dt    byte
-	st    byte
+	v        [16]byte
+	i        uint16
+	pc       uint16
+	sp       byte
+	stack    [16]uint16
+	dt       byte
+	st       byte
+	lastTick time.Time
 }
 
 func NewCpu() *Cpu {
@@ -20,12 +24,20 @@ func NewCpu() *Cpu {
 	}
 }
 
-func (cpu *Cpu) TickTimers() {
-	if cpu.dt > 0 {
-		cpu.dt--
-	}
-	if cpu.st > 0 {
-		cpu.st--
+func (c *Cpu) UpdateTimers() {
+	now := time.Now()
+	elapsed := now.Sub(c.lastTick)
+
+	if elapsed >= time.Second/60 {
+		// Update 60Hz timers
+		if c.dt > 0 {
+			c.dt--
+		}
+		if c.st > 0 {
+			c.st--
+		}
+
+		c.lastTick = now
 	}
 }
 
