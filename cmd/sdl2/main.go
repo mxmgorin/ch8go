@@ -8,7 +8,7 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/mxmgorin/ch8go/core"
+	"github.com/mxmgorin/ch8go/chip8"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -47,7 +47,7 @@ type App struct {
 	Window   *sdl.Window
 	Texture  *sdl.Texture
 	Renderer *sdl.Renderer
-	Emu      core.Chip8
+	Emu      chip8.Emu
 	rgbBuf   []byte
 }
 
@@ -59,8 +59,8 @@ func NewApp() (*App, error) {
 	window, err := sdl.CreateWindow("CHIP-8",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
-		core.DisplayWidth*WindowScale,
-		core.DisplayHeight*WindowScale,
+		chip8.DisplayWidth*WindowScale,
+		chip8.DisplayHeight*WindowScale,
 		sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, err
@@ -71,12 +71,12 @@ func NewApp() (*App, error) {
 		return nil, err
 	}
 
-	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, core.DisplayWidth, core.DisplayHeight)
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, chip8.DisplayWidth, chip8.DisplayHeight)
 	if err != nil {
 		return nil, err
 	}
-	bufSize := core.DisplayWidth * core.DisplayHeight * 3
-	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: core.NewChip8(), rgbBuf: make([]byte, bufSize)}, nil
+	bufSize := chip8.DisplayWidth * chip8.DisplayHeight * 3
+	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: chip8.NewEmu(), rgbBuf: make([]byte, bufSize)}, nil
 }
 
 func (a *App) Quit() {
@@ -136,13 +136,13 @@ func (a *App) draw() {
 		buf[i*3+2] = v
 	}
 
-	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), core.DisplayWidth*3)
+	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), chip8.DisplayWidth*3)
 	a.Renderer.Clear()
 	a.Renderer.Copy(a.Texture, nil, nil)
 	a.Renderer.Present()
 }
 
-func handleKey(key sdl.Keycode, keypad *core.Keypad, down bool) {
+func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {
 	mapping := map[sdl.Keycode]byte{
 		sdl.K_1: 0x1,
 		sdl.K_2: 0x2,

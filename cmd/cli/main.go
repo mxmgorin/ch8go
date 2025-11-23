@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mxmgorin/ch8go/core"
+	"github.com/mxmgorin/ch8go/chip8"
 )
 
 func main() {
@@ -23,9 +23,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read ROM: %v", err)
 	}
-	chip := core.NewChip8()
+	emu := chip8.NewEmu()
 
-	if err := chip.LoadRom(romBytes); err != nil {
+	if err := emu.LoadRom(romBytes); err != nil {
 		log.Fatalf("Failed to load ROM: %v", err)
 	}
 
@@ -39,7 +39,7 @@ func main() {
 
 	for {
 		start := time.Now()
-		chip.Step()
+		emu.Step()
 
 		elapsed := time.Since(start)
 		if elapsed < cycleDelay {

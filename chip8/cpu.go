@@ -1,4 +1,4 @@
-package core
+package chip8
 
 import "math/rand"
 
