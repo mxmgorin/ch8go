@@ -58,6 +58,9 @@ func main() {
 		case "disasm", "d":
 			disasmCmd(emu, args)
 
+		case "draw":
+			println(chip8.RenderASCII(&emu.Display))
+
 		case "exit", "quit":
 			return
 
@@ -74,7 +77,8 @@ Commands:
   step            Execute one instruction
   run <steps>     Execute multiple steps
   regs            Print registers
-  disasm <n>      Disassembles N instructions
+  disasm <n>      Disassemble N instructions
+  draw            Render display in ascii
   quit            Exit`)
 }
 

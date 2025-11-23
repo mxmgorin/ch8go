@@ -1,6 +1,9 @@
 package chip8
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type DisasmInfo struct {
 	PC  uint16
@@ -14,6 +17,29 @@ func (d DisasmInfo) String() string {
 
 func DebugRegisters(cpu *Cpu) string {
 	return fmt.Sprintf("PC=%04X I=%04X V=%v", cpu.pc, cpu.i, cpu.v)
+}
+
+func RenderASCII(d *Display) string {
+	const (
+		on  = "█"
+		off = "·"
+	)
+
+	out := strings.Builder{}
+	out.Grow(64 * 32 * 2) // small optimization
+
+	for y := range DisplayHeight {
+		for x := range DisplayWidth {
+			if d.Pixels[y*DisplayWidth+x] != 0 {
+				out.WriteString(on)
+			} else {
+				out.WriteString(off)
+			}
+		}
+		out.WriteByte('\n')
+	}
+
+	return out.String()
 }
 
 func DisasmOp(op uint16) string {
