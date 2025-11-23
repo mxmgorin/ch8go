@@ -1,7 +1,6 @@
 package chip8
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -19,8 +18,8 @@ type Cpu struct {
 	lastTick time.Time
 }
 
-func NewCpu() *Cpu {
-	return &Cpu{
+func NewCpu() Cpu {
+	return Cpu{
 		pc: 0x200,
 	}
 }
@@ -47,15 +46,9 @@ func (cpu *Cpu) Step(memory *Memory, display *Display, keypad *Keypad) {
 	cpu.execute(opcode, memory, display, keypad)
 }
 
-func (cpu *Cpu) DebugRegisters() string {
-	return fmt.Sprintf("PC=%04X I=%04X V=%v", cpu.pc, cpu.i, cpu.v)
-}
-
 func (cpu *Cpu) fetch(memory *Memory) uint16 {
-	hi := memory.Read(cpu.pc)
-	lo := memory.Read(cpu.pc + 1)
+	opcode := memory.ReadU16(cpu.pc)
 	cpu.pc += 2
-	opcode := uint16(hi)<<8 | uint16(lo)
 
 	return opcode
 }

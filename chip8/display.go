@@ -9,8 +9,8 @@ type Display struct {
 	Pixels [DisplayWidth * DisplayHeight]byte
 }
 
-func NewDisplay() *Display {
-	return &Display{}
+func NewDisplay() Display {
+	return Display{}
 }
 
 func (d *Display) Clear() {

@@ -31,8 +31,8 @@ type Memory struct {
 	bytes [MemorySize]byte
 }
 
-func NewMemory() *Memory {
-	m := &Memory{}
+func NewMemory() Memory {
+	m := Memory{}
 	m.loadFont()
 	return m
 }
@@ -57,6 +57,12 @@ func (m *Memory) Write(addr uint16, val byte) {
 func (m *Memory) ReadSprite(i uint16, height uint16) []byte {
 	// NOTE: i and height are always valid in real CHIP-8 ROMs
 	return m.bytes[i : i+height]
+}
+
+func (m *Memory) ReadU16(addr uint16) uint16 {
+	hi := m.Read(addr)
+	lo := m.Read(addr + 1)
+	return uint16(hi)<<8 | uint16(lo)
 }
 
 func (m *Memory) loadFont() {

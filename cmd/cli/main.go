@@ -29,51 +29,40 @@ func main() {
 		if err != nil {
 			return
 		}
-		fields := strings.Fields(strings.TrimSpace(line))
-		if len(fields) == 0 {
+		args := strings.Fields(strings.TrimSpace(line))
+		if len(args) == 0 {
 			continue
 		}
 
-		switch fields[0] {
+		switch args[0] {
 		case "help":
 			printHelp()
 
 		case "load":
-			if len(fields) < 2 {
+			if len(args) < 2 {
 				fmt.Println("Usage: load <rom>")
 				continue
 			}
-			loadRom(emu, fields[1])
+			loadRom(emu, args[1])
 
 		case "step":
+			fmt.Println(emu.DisasmNext())
 			emu.Step()
-			fmt.Println(emu.Cpu.DebugRegisters())
 
 		case "regs":
-			fmt.Println(emu.Cpu.DebugRegisters())
+			fmt.Println(chip8.DebugRegisters(&emu.Cpu))
 
 		case "run":
-			steps := 10
+			runCmd(emu, args)
 
-			if len(fields) >= 2 {
-				n, err := strconv.Atoi(fields[1])
-				if err != nil {
-					fmt.Println("Invalid number:", fields[1])
-				}
-				steps = n
-			}
-
-			for i := 0; i < steps; i++ {
-				emu.Step()
-			}
-
-			fmt.Printf("Executed %d steps.\n", steps)
+		case "disasm", "d":
+			disasmCmd(emu, args)
 
 		case "exit", "quit":
 			return
 
 		default:
-			fmt.Println("Unknown command:", fields[0])
+			fmt.Println("Unknown command:", args[0])
 		}
 	}
 }
@@ -85,6 +74,7 @@ Commands:
   step            Execute one instruction
   run <steps>     Execute multiple steps
   regs            Print registers
+  disasm <n>      Disassembles N instructions
   quit            Exit`)
 }
 
@@ -97,4 +87,40 @@ func loadRom(emu *chip8.Emu, path string) {
 
 	emu.LoadRom(rom)
 	fmt.Println("ROM loaded.")
+}
+
+func runCmd(emu *chip8.Emu, args []string) {
+	steps := 10
+
+	if len(args) >= 2 {
+		n, err := strconv.Atoi(args[1])
+		if err != nil {
+			fmt.Println("Invalid number:", args[1])
+		}
+		steps = n
+	}
+
+	for i := 0; i < steps; i++ {
+		emu.Step()
+	}
+
+	fmt.Printf("Executed %d steps.\n", steps)
+}
+
+func disasmCmd(emu *chip8.Emu, args []string) {
+	n := 10
+
+	if len(args) >= 2 {
+		if v, err := strconv.Atoi(args[1]); err == nil {
+			n = v
+		} else {
+			fmt.Println("Invalid number:", args[0])
+			return
+		}
+	}
+
+	list := emu.DisasmN(n)
+	for _, info := range list {
+		fmt.Println(info)
+	}
 }

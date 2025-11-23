@@ -6,8 +6,8 @@ type Keypad struct {
 	Keys [KEYS_COUNT]bool
 }
 
-func NewKeypad() *Keypad {
-	return &Keypad{}
+func NewKeypad() Keypad {
+	return Keypad{}
 }
 
 func (k *Keypad) Press(key byte) {

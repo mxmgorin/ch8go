@@ -104,9 +104,9 @@ func (a *App) Run(rom []byte, hz int) error {
 			case *sdl.KeyboardEvent:
 				switch ev.Type {
 				case sdl.KEYDOWN:
-					handleKey(ev.Keysym.Sym, a.Emu.Keypad, true)
+					handleKey(ev.Keysym.Sym, &a.Emu.Keypad, true)
 				case sdl.KEYUP:
-					handleKey(ev.Keysym.Sym, a.Emu.Keypad, false)
+					handleKey(ev.Keysym.Sym, &a.Emu.Keypad, false)
 				}
 			}
 		}
