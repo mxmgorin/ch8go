@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	W     = chip8.DisplayWidth
-	H     = chip8.DisplayHeight
+	W = chip8.DisplayWidth
+	H = chip8.DisplayHeight
 )
 
 var (
@@ -57,9 +57,9 @@ func main() {
 }
 
 func loadROM(this js.Value, args []js.Value) any {
-	u8 := args[0]
-	buf := make([]byte, u8.Length())
-	js.CopyBytesToGo(buf, u8)
+	jsBuff := args[0]
+	buf := make([]byte, jsBuff.Length())
+	js.CopyBytesToGo(buf, jsBuff)
 	emu.LoadRom(buf)
 	romLoaded = true
 	fmt.Println("Rom loaded")
@@ -101,12 +101,9 @@ func loop(this js.Value, args []js.Value) any {
 	dt := now.Sub(lastTime).Seconds()
 	lastTime = now
 	// Run CPU approx. 500Hz
-	steps := int(500 * dt)
-	if steps < 1 {
-		steps = 1
-	}
+	steps := max(int(500*dt), 1)
 
-	for i := 0; i < steps; i++ {
+	for range steps {
 		emu.Step()
 	}
 
@@ -120,7 +117,7 @@ func loop(this js.Value, args []js.Value) any {
 func drawScreen() {
 	pixels := emu.Display.Pixels
 
-	for i := 0; i < W*H; i++ {
+	for i := range pixels {
 		v := byte(0)
 		if pixels[i] != 0 {
 			v = 255
