@@ -5,6 +5,15 @@ The goal of this project is to have fun and practice Go while exploring CHIP-8.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
+## Features
+
+- **Full CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
+- **Built-in REPL / CLI Debugger**: Step through instructions, inspect registers, view display buffer, load ROMs, and run commands interactively.
+- **Disassembler**: Convert CHIP-8 ROMs to readable assembly.
+- **ASCII Renderer**: View the CHIP-8 display directly in your terminal.
+- **SDL2 Frontend**: Hardware-accelerated graphics window.
+- **WebAssembly Frontend**: Run the emulator directly in the browser using WASM.
+
 ## Controls
 
 ```
@@ -14,15 +23,6 @@ CHIP-8              Keyboard
 7  8  9  E   →      A  S  D  F
 A  0  B  F   →      Z  X  C  V
 ```
-
-## Features
-
-- **Full CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
-- **Built-in REPL / CLI Debugger**: Step through instructions, inspect registers, view display buffer, load ROMs, and run commands interactively.
-- **Disassembler**: Convert CHIP-8 ROMs to readable assembly.
-- **ASCII Renderer**: View the CHIP-8 display directly in your terminal.
-- **SDL2 Frontend**: Hardware-accelerated graphics window.
-- **WebAssembly Frontend**: Run the emulator directly in the browser using WASM.
 
 ## CLI Usage
 
