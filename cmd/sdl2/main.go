@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"time"
 	"unsafe"
-	"log"
 
 	"github.com/mxmgorin/ch8go/core"
 	"github.com/veandco/go-sdl2/sdl"
@@ -31,85 +31,71 @@ func main() {
 		panic(err)
 	}
 
-	chip8 := core.NewChip8()
-	if err := chip8.LoadRom(rom); err != nil {
-		panic(err)
-	}
-
 	fmt.Println("CHIP-8 SDL2")
 	fmt.Printf("ROM: %s\n", *romPath)
 	fmt.Printf("Speed: %d Hz\n", *hz)
 
-	app := newApp()
-	app.run(chip8, hz)
-	app.quit()
+	app, err := NewApp()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer app.Quit()
+	app.Run(rom, *hz)
 }
 
 type App struct {
 	Window   *sdl.Window
 	Texture  *sdl.Texture
 	Renderer *sdl.Renderer
+	Emu      core.Chip8
+	rgbBuf   []byte
 }
 
-func newApp() App {
-	app := App{}
-	app.init()
-	return app
-}
-
-func (app *App) init() {
+func NewApp() (*App, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_AUDIO); err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	window, err := sdl.CreateWindow(
-		"CHIP-8",
+	window, err := sdl.CreateWindow("CHIP-8",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
 		core.DisplayWidth*WindowScale,
 		core.DisplayHeight*WindowScale,
-		sdl.WINDOW_SHOWN,
-	)
+		sdl.WINDOW_SHOWN)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	app.Window = window
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	app.Renderer = renderer
-
-	texture, err := renderer.CreateTexture(
-		sdl.PIXELFORMAT_RGB24,
-		sdl.TEXTUREACCESS_STREAMING,
-		core.DisplayWidth,
-		core.DisplayHeight,
-	)
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, core.DisplayWidth, core.DisplayHeight)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-
-	app.Texture = texture
+	bufSize := core.DisplayWidth * core.DisplayHeight * 3
+	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: core.NewChip8(), rgbBuf: make([]byte, bufSize)}, nil
 }
 
-func (app *App) quit() {
+func (a *App) Quit() {
+	a.Texture.Destroy()
+	a.Renderer.Destroy()
+	a.Window.Destroy()
 	sdl.Quit()
-	app.Window.Destroy()
-	app.Renderer.Destroy()
-	app.Texture.Destroy()
 }
 
-func (app *App) run(chip8 *core.Chip8, hz *int) {
-	cycleDelay := time.Second / time.Duration(*hz)
+func (a *App) Run(rom []byte, hz int) error {
+	if err := a.Emu.LoadRom(rom); err != nil {
+		return err
+	}
+	cycleDelay := time.Second / time.Duration(hz)
 
 	running := true
 	for running {
 		frameStart := time.Now()
 
-		// Handle events
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch ev := event.(type) {
 			case *sdl.QuitEvent:
@@ -118,28 +104,28 @@ func (app *App) run(chip8 *core.Chip8, hz *int) {
 			case *sdl.KeyboardEvent:
 				switch ev.Type {
 				case sdl.KEYDOWN:
-					handleKey(ev.Keysym.Sym, chip8.Keypad, true)
+					handleKey(ev.Keysym.Sym, a.Emu.Keypad, true)
 				case sdl.KEYUP:
-					handleKey(ev.Keysym.Sym, chip8.Keypad, false)
+					handleKey(ev.Keysym.Sym, a.Emu.Keypad, false)
 				}
 			}
 		}
 
-		chip8.Step()
-		app.draw(chip8.Display)
+		a.Emu.Step()
+		a.draw()
 
 		elapsed := time.Since(frameStart)
 		if elapsed < cycleDelay {
 			time.Sleep(cycleDelay - elapsed)
 		}
 	}
+
+	return nil
 }
 
-func (app *App) draw(d *core.Display) {
-	// Convert pixel array -> RGB buffer
-	buf := make([]byte, len(d.Pixels)*3)
-
-	for i, px := range d.Pixels {
+func (a *App) draw() {
+	buf := a.rgbBuf
+	for i, px := range a.Emu.Display.Pixels {
 		v := byte(0)
 		if px != 0 {
 			v = 255
@@ -150,10 +136,10 @@ func (app *App) draw(d *core.Display) {
 		buf[i*3+2] = v
 	}
 
-	app.Texture.Update(nil, unsafe.Pointer(&buf[0]), core.DisplayWidth*3)
-	app.Renderer.Clear()
-	app.Renderer.Copy(app.Texture, nil, nil)
-	app.Renderer.Present()
+	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), core.DisplayWidth*3)
+	a.Renderer.Clear()
+	a.Renderer.Copy(a.Texture, nil, nil)
+	a.Renderer.Present()
 }
 
 func handleKey(key sdl.Keycode, keypad *core.Keypad, down bool) {

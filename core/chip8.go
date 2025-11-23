@@ -9,8 +9,8 @@ type Chip8 struct {
 	Keypad  *Keypad
 }
 
-func NewChip8() *Chip8 {
-	return &Chip8{
+func NewChip8() Chip8 {
+	return Chip8{
 		cpu:     NewCpu(),
 		memory:  NewMemory(),
 		Display: NewDisplay(),
