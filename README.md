@@ -38,10 +38,9 @@ Once inside the prompt (chip8>), you can type help at any time to see all availa
 | ------------- | ----------------------------------------------------------------- |
 | `help` | Show a list of all supported commands. |
 | `load <file>` | Load a CHIP-8 ROM into memory. |
-| `step` | Execute a single instruction. |
-| `run <steps>` | Execute multiple instructions (default: 10). |
+| `step <n>` | Execute n instructions. |
 | `regs` | Print registers. |
-| `disasm <n>` | Disassemble the next _n_ instructions starting at the current PC. |
+| `dis <n>` | Disassemble the next _n_ instructions starting at the current PC. |
 | `draw` | Render the current display buffer in ASCII. |
 | `quit` | Exit the REPL. |
 
@@ -52,16 +51,12 @@ Once inside the prompt (chip8>), you can type help at any time to see all availa
 CHIP-8 CLI. Type 'help' for commands.
 ROM loaded (478 bytes).
 
-chip8> disasm 3
+chip8> dis 2
 0200: 124E  JP  24E
 024E: 6801  LD  V8, 01
-0250: 6905  LD  V9, 05
 
 chip8> step
 0200: 124E  JP  24E
-
-chip8> run 500
-Executed 500 steps.
 
 chip8> regs
 PC=03DC I=0202 V=[1 3 7 0 0 42 137 236 44 48 52 26 0 0 0 0]

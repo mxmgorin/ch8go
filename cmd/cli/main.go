@@ -24,7 +24,7 @@ func main() {
 	}
 
 	for {
-		fmt.Print("chip8> ")
+		fmt.Print("ch8go> ")
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			return
@@ -46,22 +46,16 @@ func main() {
 			loadRom(emu, args[1])
 
 		case "step":
-			fmt.Println(emu.DisasmNext())
-			fmt.Println()
-			emu.Step()
+			step(emu, args)
 
 		case "regs":
-			fmt.Println(chip8.DebugRegisters(&emu.Cpu))
-			fmt.Println()
+			regs(emu)
 
-		case "run":
-			runCmd(emu, args)
-
-		case "disasm", "d":
-			disasmCmd(emu, args)
+		case "dis":
+			disasm(emu, args)
 
 		case "draw":
-			println(chip8.RenderASCII(&emu.Display))
+			draw(emu)
 
 		case "exit", "quit":
 			return
@@ -77,10 +71,9 @@ func printHelp() {
 Commands:
   help            Show a list of all supported commands.
   load <file>     Load ROM
-  step            Execute one instruction
-  run <steps>     Execute multiple steps
+  step <n>        Execute n instruction
   regs            Print registers
-  disasm <n>      Disassemble N instructions
+  dis <n>         Disassemble N instructions
   draw            Render display in ascii
   quit            Exit`)
 	fmt.Println()
@@ -98,8 +91,21 @@ func loadRom(emu *chip8.Emu, path string) {
 	fmt.Println()
 }
 
-func runCmd(emu *chip8.Emu, args []string) {
-	steps := 10
+func regs(emu *chip8.Emu) {
+	if noRom(emu) {
+		return
+	}
+
+	fmt.Println(chip8.DebugRegisters(&emu.Cpu))
+	fmt.Println()
+}
+
+func step(emu *chip8.Emu, args []string) {
+	if noRom(emu) {
+		return
+	}
+
+	steps := 1
 
 	if len(args) >= 2 {
 		n, err := strconv.Atoi(args[1])
@@ -109,15 +115,33 @@ func runCmd(emu *chip8.Emu, args []string) {
 		steps = n
 	}
 
-	for i := 0; i < steps; i++ {
+	for range steps {
 		emu.Step()
 	}
 
-	fmt.Printf("Executed %d steps.\n", steps)
+	if steps > 1 {
+		fmt.Printf("Executed %d steps.\n", steps)
+	} else {
+		fmt.Println(emu.DisasmNext())
+	}
+
 	fmt.Println()
 }
 
-func disasmCmd(emu *chip8.Emu, args []string) {
+func draw(emu *chip8.Emu) {
+	if noRom(emu) {
+		return
+	}
+
+	println(chip8.RenderASCII(&emu.Display))
+	fmt.Println()
+}
+
+func disasm(emu *chip8.Emu, args []string) {
+	if noRom(emu) {
+		return
+	}
+
 	n := 10
 
 	if len(args) >= 2 {
@@ -135,4 +159,14 @@ func disasmCmd(emu *chip8.Emu, args []string) {
 	}
 
 	fmt.Println()
+}
+
+func noRom(e *chip8.Emu) bool {
+	if e.Status == chip8.StatusNoRom {
+		fmt.Println("No ROM. Use 'load <file>' first.")
+		fmt.Println()
+		return true
+	}
+
+	return false
 }

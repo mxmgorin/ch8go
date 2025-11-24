@@ -2,7 +2,15 @@ package chip8
 
 import "fmt"
 
+type EmuStatus int
+
+const (
+	StatusNoRom EmuStatus = iota
+	StatusReady
+)
+
 type Emu struct {
+	Status  EmuStatus
 	Cpu     Cpu
 	Memory  Memory
 	Display Display
@@ -26,6 +34,7 @@ func (e *Emu) LoadRom(bytes []byte) error {
 	e.Display.Clear()
 	e.Keypad.Reset()
 	e.Cpu.Reset()
+	e.Status = StatusReady
 
 	return nil
 }
