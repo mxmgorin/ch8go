@@ -6,7 +6,7 @@ type EmuStatus int
 
 const (
 	StatusNoRom EmuStatus = iota
-	StatusReady
+	StatusLoaded
 )
 
 type Emu struct {
@@ -15,6 +15,7 @@ type Emu struct {
 	Memory  Memory
 	Display Display
 	Keypad  Keypad
+	RomSize int
 }
 
 func NewEmu() *Emu {
@@ -34,7 +35,8 @@ func (e *Emu) LoadRom(bytes []byte) error {
 	e.Display.Clear()
 	e.Keypad.Reset()
 	e.Cpu.Reset()
-	e.Status = StatusReady
+	e.Status = StatusLoaded
+	e.RomSize = len(bytes)
 
 	return nil
 }
@@ -45,14 +47,14 @@ func (e *Emu) Step() {
 	e.Cpu.tickTimers()
 }
 
-func (e *Emu) DisasmNext() DisasmInfo {
+func (e *Emu) PeekNext() DisasmInfo {
 	pc := e.Cpu.pc
 	op := e.Memory.ReadU16(pc)
 	asm := DisasmOp(op)
 	return DisasmInfo{PC: pc, Op: op, Asm: asm}
 }
 
-func (e *Emu) DisasmN(n int) []DisasmInfo {
+func (e *Emu) Peek(n int) []DisasmInfo {
 	emuCopy := *e
 	results := make([]DisasmInfo, 0, n)
 
@@ -73,6 +75,25 @@ func (e *Emu) DisasmN(n int) []DisasmInfo {
 		})
 
 		emuCopy.Step()
+	}
+
+	return results
+}
+
+func (e *Emu) DisasmRom() []DisasmInfo {
+	start := ProgramStart
+	end := ProgramStart + e.RomSize
+	results := make([]DisasmInfo, 0, e.RomSize/OP_SIZE)
+
+	for pc := uint16(start); pc < uint16(end); pc += OP_SIZE {
+		op := e.Memory.ReadU16(pc)
+		asm := DisasmOp(op)
+
+		results = append(results, DisasmInfo{
+			PC:  pc,
+			Op:  op,
+			Asm: asm,
+		})
 	}
 
 	return results

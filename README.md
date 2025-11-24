@@ -36,13 +36,14 @@ go run ./cmd/cli --rom path/to/game.ch8
 Once inside the prompt (chip8>), you can type help at any time to see all available commands.
 | Command | Description |
 | ------------- | ----------------------------------------------------------------- |
-| `help` | Show a list of all supported commands. |
-| `load <file>` | Load a CHIP-8 ROM into memory. |
-| `step <n>` | Execute n instructions. |
-| `regs` | Print registers. |
-| `dis <n>` | Disassemble the next _n_ instructions starting at the current PC. |
-| `draw` | Render the current display buffer in ASCII. |
-| `quit` | Exit the REPL. |
+| `help` | Show a list of all supported commands |
+| `load <file>` | Load a CHIP-8 ROM into memory |
+| `step <n>` | Execute n instructions |
+| `peek <n>` | Disassemble 1 or N instructions starting from PC |
+| `regs` | Show registers |
+| `dis <n>` | Disassemble ROM |
+| `draw` | Render the current display buffer in ASCII |
+| `quit` | Exit the REPL |
 
 **Example session**
 
@@ -51,7 +52,7 @@ Once inside the prompt (chip8>), you can type help at any time to see all availa
 CHIP-8 CLI. Type 'help' for commands.
 ROM loaded (478 bytes).
 
-chip8> dis 2
+chip8> peek 2
 0200: 124E  JP  24E
 024E: 6801  LD  V8, 01
 

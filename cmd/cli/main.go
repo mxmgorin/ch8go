@@ -51,11 +51,14 @@ func main() {
 		case "regs":
 			regs(emu)
 
-		case "dis":
-			disasm(emu, args)
+		case "peek":
+			peek(emu, args)
 
 		case "draw":
 			draw(emu)
+
+		case "dis":
+			dis(emu)
 
 		case "exit", "quit":
 			return
@@ -69,11 +72,12 @@ func main() {
 func printHelp() {
 	fmt.Println(`
 Commands:
-  help            Show a list of all supported commands.
+  help            Show a list of all supported commands
   load <file>     Load ROM
-  step <n>        Execute n instruction
-  regs            Print registers
-  dis <n>         Disassemble N instructions
+  step <n>        Execute 1 or N instructions
+  peek <n>        Disassemble 1 or N instructions starting from PC
+  regs            Show registers
+  dis             Disassemble ROM
   draw            Render display in ascii
   quit            Exit`)
 	fmt.Println()
@@ -122,7 +126,7 @@ func step(emu *chip8.Emu, args []string) {
 	if steps > 1 {
 		fmt.Printf("Executed %d steps.\n", steps)
 	} else {
-		fmt.Println(emu.DisasmNext())
+		fmt.Println(emu.PeekNext())
 	}
 
 	fmt.Println()
@@ -137,7 +141,7 @@ func draw(emu *chip8.Emu) {
 	fmt.Println()
 }
 
-func disasm(emu *chip8.Emu, args []string) {
+func peek(emu *chip8.Emu, args []string) {
 	if noRom(emu) {
 		return
 	}
@@ -153,7 +157,20 @@ func disasm(emu *chip8.Emu, args []string) {
 		}
 	}
 
-	list := emu.DisasmN(n)
+	list := emu.Peek(n)
+	for _, info := range list {
+		fmt.Println(info)
+	}
+
+	fmt.Println()
+}
+
+func dis(e *chip8.Emu) {
+	if noRom(e) {
+		return
+	}
+
+	list := e.DisasmRom()
 	for _, info := range list {
 		fmt.Println(info)
 	}
