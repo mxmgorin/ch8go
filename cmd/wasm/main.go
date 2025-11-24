@@ -10,11 +10,6 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
-const (
-	W = chip8.DisplayWidth
-	H = chip8.DisplayHeight
-)
-
 var (
 	ctx       js.Value
 	imageData js.Value
@@ -31,13 +26,15 @@ func main() {
 	emu = chip8.NewEmu()
 
 	// Setup canvas
+	w := emu.Display.Width
+	h := emu.Display.Height
 	doc := js.Global().Get("document")
 	canvas := doc.Call("getElementById", "chip8-canvas")
-	canvas.Set("width", W)
-	canvas.Set("height", H)
+	canvas.Set("width", w)
+	canvas.Set("height", h)
 	ctx = canvas.Call("getContext", "2d")
-	imageData = ctx.Call("createImageData", W, H)
-	rgbaBuf = make([]byte, W*H*4)
+	imageData = ctx.Call("createImageData", w, h)
+	rgbaBuf = make([]byte, w*h*4)
 
 	// Export ROM loader
 	js.Global().Set("chip8_loadROM", js.FuncOf(loadROM))
