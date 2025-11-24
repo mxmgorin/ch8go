@@ -50,7 +50,7 @@ func (e *Emu) Step() {
 func (e *Emu) PeekNext() DisasmInfo {
 	pc := e.Cpu.pc
 	op := e.Memory.ReadU16(pc)
-	asm := DisasmOp(op)
+	asm := Disasm(op)
 	return DisasmInfo{PC: pc, Op: op, Asm: asm}
 }
 
@@ -66,7 +66,7 @@ func (e *Emu) Peek(n int) []DisasmInfo {
 		}
 
 		op := emuCopy.Memory.ReadU16(pc)
-		asm := DisasmOp(op)
+		asm := Disasm(op)
 
 		results = append(results, DisasmInfo{
 			PC:  pc,
@@ -87,7 +87,7 @@ func (e *Emu) DisasmRom() []DisasmInfo {
 
 	for pc := uint16(start); pc < uint16(end); pc += OP_SIZE {
 		op := e.Memory.ReadU16(pc)
-		asm := DisasmOp(op)
+		asm := Disasm(op)
 
 		results = append(results, DisasmInfo{
 			PC:  pc,

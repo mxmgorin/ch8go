@@ -42,7 +42,7 @@ func RenderASCII(d *Display) string {
 	return out.String()
 }
 
-func DisasmOp(op uint16) string {
+func Disasm(op uint16) string {
 	x := read_x(op)
 	y := read_y(op)
 	n := read_n(op)
@@ -133,5 +133,6 @@ func DisasmOp(op uint16) string {
 		}
 	}
 
-	return fmt.Sprintf("UNKNOWN %04X", op)
+	return fmt.Sprintf(".DW %04X", op)
+
 }
