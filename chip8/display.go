@@ -95,12 +95,11 @@ func (d *Display) TogglePixel(x, y int) bool {
 	// wrap around screen
 	x = x % d.Width
 	y = y % d.Height
-	i := y * x
+	i := y * d.Width + x
 	pixel := d.Pixels[i]
 	d.Pixels[i] ^= 1
 
-	// collision if prev==1 and now==0
-	return pixel == 1 && d.Pixels[i] == 0
+	return pixel == 1
 }
 
 // schip extension
