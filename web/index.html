@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>CHIP-8 WASM</title>
+        <title>ch8go WASM</title>
 
         <link
             href="https://fonts.googleapis.com/css?family=VT323"
@@ -34,15 +34,33 @@
                 padding: 5px;
                 margin: 20px;
             }
+
             .loaders {
                 display: flex;
-                gap: 30px;
+                flex-direction: row;
+                align-items: center;
+                gap: 20px;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
             }
 
             .group {
                 display: flex;
-                gap: 10px;
+                flex-direction: row;
+                align-items: center;
+                gap: 6px;
             }
+
+            .label {
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            .separator {
+                font-weight: bold;
+                opacity: 0.7;
+            }
+
 
             body {
                 font-family: "VT323", monospace;
@@ -80,20 +98,26 @@
             <p>
                 A CHIP-8 interpreter written in Go and compiled to WebAssembly.
             </p>
+
             <div class="loaders">
                 <div class="group">
-                    <span class="label">ROM:</span>
+                    <label for="roms" class="label">Select Game:</label>
                     <select id="roms">
-                        <option value="roms/INVADERS">INVADERS</option>
-                        <option value="roms/TETRIS">TETRIS</option>
-                        <option value="roms/PONG">PONG</option>
-                        <option value="roms/PONG2">PONG2</option>
-                        <option value="roms/TANK">TANK</option>
+                        <option value="roms/INVADERS">Invaders</option>
+                        <option value="roms/TETRIS">Tetris</option>
+                        <option value="roms/snake.ch8">Snake</option>
+                        <option value="roms/PONG">Pong</option>
+                        <option value="roms/PONG2">Pong 2</option>
+                        <option value="roms/TANK">Tank</option>
                     </select>
                 </div>
 
+                <div class="separator">OR</div>
+
                 <div class="group">
-                    <span class="label">FILE:</span>
+                    <label for="romInput" class="label"
+                        >Upload ROM</label
+                    >
                     <input type="file" id="romInput" accept=".ch8" />
                 </div>
             </div>
