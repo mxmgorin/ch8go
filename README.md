@@ -1,7 +1,8 @@
+[![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
+
 # ch8go
 
-A CHIP-8 emulator written in Go.
-The goal of this project is to have fun and practice Go while exploring CHIP-8.
+`ch8go` is an interpreter (emulator) written in Go, created as a fun project to practice the language and explore the CHIP-8. The goal of this project is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
@@ -13,6 +14,7 @@ The goal of this project is to have fun and practice Go while exploring CHIP-8.
 - **ASCII Renderer**: View the CHIP-8 display directly in your terminal.
 - **SDL2 Frontend**: Hardware-accelerated graphics window.
 - **WebAssembly Frontend**: Run the emulator directly in the browser using WASM.
+- **Integration Tests**: Uses CI to run community-made test suites.
 
 ## Controls
 
