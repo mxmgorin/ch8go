@@ -60,6 +60,49 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
 	return collision
 }
 
+// DrawSprite16 draws a 16x16 Super-CHIP sprite.
+// sprite is 32 bytes: 2 bytes per row × 16 rows.
+// Returns true if collision occurred.
+func (d *Display) DrawSprite16(x, y byte, sprite []byte) bool {
+	collision := false
+
+	for row := range 16 {
+		b1 := sprite[row*2]   // high byte
+		b2 := sprite[row*2+1] // low byte
+
+		// Combine into 16 bits
+		rowBits := uint16(b1)<<8 | uint16(b2)
+
+		for col := range 16 {
+			bit := (rowBits >> (15 - col)) & 1
+			if bit == 1 {
+				if d.TogglePixel(
+					int(x)+col,
+					int(y)+row,
+				) {
+					collision = true
+				}
+			}
+		}
+	}
+
+	return collision
+}
+
+// TogglePixel XORs the pixel at (x, y).
+// Returns true if this operation turned a pixel off (collision).
+func (d *Display) TogglePixel(x, y int) bool {
+	// wrap around screen
+	x = x % d.Width
+	y = y % d.Height
+	i := y * x
+	pixel := d.Pixels[i]
+	d.Pixels[i] ^= 1
+
+	// collision if prev==1 and now==0
+	return pixel == 1 && d.Pixels[i] == 0
+}
+
 // schip extension
 func (d *Display) ScrollDown(n byte) {
 	N := int(n)
