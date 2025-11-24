@@ -252,6 +252,10 @@ func (c *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 	case 0x1E: // ADD I, Vx
 		c.i += uint16(c.v[x])
 
+	case 0x30: // FX30 - point I to 8x10 big digit sprite
+		digit := c.v[x] & 0x0F
+		c.i = uint16(BigFontStart) + uint16(digit)*16
+
 	case 0x33:
 		val := c.v[x]
 		memory.Write(c.i+0, val/100)     // hundreds
