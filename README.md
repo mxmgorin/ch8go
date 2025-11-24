@@ -2,13 +2,14 @@
 
 # ch8go
 
-`ch8go` is an interpreter (emulator) written in Go, created as a fun project to practice the language and explore the CHIP-8. The goal of this project is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
+`ch8go` is a CHIP-8 and Super-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal of this project is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
 ## Features
 
-- **Full CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
+- **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
+- **SUPER-CHIP Support**: Implements extended SCHIP instructions, high-resolution mode, 16×16 sprites, scrolling, and additional font.
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WebAssembly Frontend**: Runs directly in the browser using WASM.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
