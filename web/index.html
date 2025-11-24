@@ -2,94 +2,12 @@
 <html>
     <head>
         <meta charset="utf-8" />
-        <title>ch8go WASM</title>
-
+        <link rel="stylesheet" href="main.css" />
         <link
             href="https://fonts.googleapis.com/css?family=VT323"
             rel="stylesheet"
         />
-
-        <style>
-            :root {
-                --terminal-color: #ffffff;
-            }
-            canvas {
-                image-rendering: -moz-crisp-edges;
-                image-rendering: -webkit-crisp-edges;
-                image-rendering: pixelated;
-            }
-            .page {
-                margin-left: auto;
-                margin-right: auto;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                justify-items: center;
-                align-items: center;
-            }
-            .screen {
-                width: 640px;
-                height: 320px;
-                border: 1px solid var(--terminal-color);
-                padding: 5px;
-                margin: 20px;
-            }
-
-            .loaders {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 20px;
-                margin-bottom: 15px;
-                flex-wrap: wrap;
-            }
-
-            .group {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 6px;
-            }
-
-            .label {
-                font-weight: bold;
-                font-size: 14px;
-            }
-
-            .separator {
-                font-weight: bold;
-                opacity: 0.7;
-            }
-
-
-            body {
-                font-family: "VT323", monospace;
-                font-size: 20px;
-                line-height: 22px;
-                color: var(--terminal-color);
-                background-color: black;
-            }
-            h2 {
-                font-size: 50px;
-                text-align: center;
-            }
-
-            button {
-                font-family: "VT323", monospace;
-                font-size: 30px;
-                width: 100px;
-                border: 3px solid var(--terminal-color);
-                color: var(--terminal-color);
-                background-color: black;
-                outline: none;
-                margin-bottom: 10px;
-            }
-
-            button:active {
-                color: black;
-                background-color: var(--terminal-color);
-            }
-        </style>
+        <title>ch8go WASM</title>
     </head>
 
     <body>
@@ -115,9 +33,7 @@
                 <div class="separator">OR</div>
 
                 <div class="group">
-                    <label for="romInput" class="label"
-                        >Upload ROM</label
-                    >
+                    <label for="romInput" class="label">Upload ROM</label>
                     <input type="file" id="romInput" accept=".ch8" />
                 </div>
             </div>
@@ -131,44 +47,6 @@
         </div>
 
         <script src="wasm_exec.js"></script>
-        <script>
-            const go = new Go();
-
-            async function init() {
-                const resp = await fetch("main.wasm");
-                const bytes = await resp.arrayBuffer();
-                const result = await WebAssembly.instantiate(
-                    bytes,
-                    go.importObject,
-                );
-
-                go.run(result.instance);
-
-                document.getElementById("romInput").onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    const data = new Uint8Array(await file.arrayBuffer());
-                    chip8_loadROM(data);
-                };
-
-                const select = document.getElementById("roms");
-                select.onchange = async (e) => {
-                    const path = e.target.value;
-                    if (path) loadRomFromUrl(path);
-                };
-
-                const firstRom = select.options[0].value;
-                await loadRomFromUrl(firstRom);
-            }
-
-            async function loadRomFromUrl(url) {
-                const resp = await fetch(url);
-                const buf = new Uint8Array(await resp.arrayBuffer());
-                chip8_loadROM(buf);
-            }
-
-            init();
-        </script>
+        <script src="main.js" type="module"></script>
     </body>
 </html>
