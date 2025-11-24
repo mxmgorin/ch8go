@@ -1,22 +1,33 @@
 package chip8
 
-const (
-	DisplayWidth  = 64
-	DisplayHeight = 32
-)
-
 type Display struct {
-	Pixels [DisplayWidth * DisplayHeight]byte
+	Pixels []byte
+	Width  int
+	Height int
 }
 
 func NewDisplay() Display {
-	return Display{}
+	d := Display{}
+	d.setResolution(false)
+	return d
 }
 
 func (d *Display) Clear() {
 	for i := range d.Pixels {
 		d.Pixels[i] = 0
 	}
+}
+
+func (d *Display) setResolution(hires bool) {
+	if hires {
+		d.Width = 128
+		d.Height = 64
+	} else {
+		d.Width = 64
+		d.Height = 32
+	}
+
+	d.Pixels = make([]byte, d.Width*d.Height)
 }
 
 // DrawSprite draws N rows of sprite data at (x,y).
@@ -34,9 +45,9 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
 				continue
 			}
 
-			px := (X + uint16(col)) % uint16(DisplayWidth)
-			py := (Y + uint16(row)) % uint16(DisplayHeight)
-			idx := py*uint16(DisplayWidth) + px
+			px := (X + uint16(col)) % uint16(d.Width)
+			py := (Y + uint16(row)) % uint16(d.Height)
+			idx := py*uint16(d.Width) + px
 
 			if d.Pixels[idx] == 1 {
 				collision = true

@@ -70,5 +70,7 @@ Useful resources for CHIP-8 development:
 - [Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 - [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
+- [CHIP-8 Research Facility](https://chip-8.github.io/)
 - [Awesome CHIP-8](https://github.com/tobiasvl/awesome-chip-8)
 - [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)
+- [Mastering SuperChip](https://johnearnest.github.io/Octo/docs/SuperChip.html)

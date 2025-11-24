@@ -57,12 +57,12 @@ func NewApp() (*App, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_AUDIO); err != nil {
 		return nil, err
 	}
-
+	emu := chip8.NewEmu()
 	window, err := sdl.CreateWindow("CHIP-8",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
-		chip8.DisplayWidth*WindowScale,
-		chip8.DisplayHeight*WindowScale,
+		int32(emu.Display.Width*WindowScale),
+		int32(emu.Display.Height*WindowScale),
 		sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, err
@@ -73,12 +73,12 @@ func NewApp() (*App, error) {
 		return nil, err
 	}
 
-	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, chip8.DisplayWidth, chip8.DisplayHeight)
+	texture, err := renderer.CreateTexture(sdl.PIXELFORMAT_RGB24, sdl.TEXTUREACCESS_STREAMING, int32(emu.Display.Width), int32(emu.Display.Height))
 	if err != nil {
 		return nil, err
 	}
-	bufSize := chip8.DisplayWidth * chip8.DisplayHeight * 3
-	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: chip8.NewEmu(), rgbBuf: make([]byte, bufSize)}, nil
+	bufSize := emu.Display.Width * emu.Display.Height * 3
+	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: emu, rgbBuf: make([]byte, bufSize)}, nil
 }
 
 func (a *App) Quit() {
@@ -138,7 +138,7 @@ func (a *App) draw() {
 		buf[i*3+2] = v
 	}
 
-	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), chip8.DisplayWidth*3)
+	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), a.Emu.Display.Width*3)
 	a.Renderer.Clear()
 	a.Renderer.Copy(a.Texture, nil, nil)
 	a.Renderer.Present()

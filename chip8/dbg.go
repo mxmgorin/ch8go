@@ -21,16 +21,16 @@ func DebugRegisters(cpu *Cpu) string {
 
 func RenderASCII(d *Display) string {
 	const (
-		on  = "█"
-		off = "░"
+		on  = "██"
+		off = "░░"
 	)
 
 	out := strings.Builder{}
-	out.Grow(DisplayHeight * DisplayWidth * 2)
+	out.Grow(d.Height * d.Width * 2)
 
-	for y := range DisplayHeight {
-		for x := range DisplayWidth {
-			if d.Pixels[y*DisplayWidth+x] != 0 {
+	for y := range d.Height {
+		for x := range d.Width {
+			if d.Pixels[y*d.Width+x] != 0 {
 				out.WriteString(on)
 			} else {
 				out.WriteString(off)

@@ -75,6 +75,12 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		case 0xEE: // 00EE - RET
 			c.ret()
 
+		case 0xFE: // 00FE - lowres schip
+			display.setResolution(false)
+
+		case 0xFF: // 00FF - hires schip
+			display.setResolution(true)
+
 		default:
 			// 0NNN - SYS addr (ignored)
 		}
