@@ -16,6 +16,7 @@ type Cpu struct {
 	st    byte
 	hz    int
 	timer float64
+	rpl   [8]byte // schip extension
 }
 
 func NewCpu() Cpu {
@@ -250,7 +251,7 @@ func (c *Cpu) execute_8xyn(op uint16) {
 }
 
 func (c *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
-	x := (op >> 8) & 0x0F
+	x := read_x(op)
 
 	switch op & 0x00FF {
 	case 0x07: // LD Vx, DT
@@ -292,6 +293,17 @@ func (c *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 	case 0x65:
 		for r := uint16(0); r <= uint16(x); r++ {
 			c.v[r] = memory.Read(c.i + r)
+		}
+
+	case 0x75: // FX75 - store V0..VX into RPL flags
+		for i := byte(0); i <= byte(x) && i < 8; i++ {
+			c.rpl[i] = c.v[i]
+
+		}
+
+	case 0x85: // FX85 - load V0..VX from RPL flags
+		for i := byte(0); i <= byte(x) && i < 8; i++ {
+			c.v[i] = c.rpl[i]
 		}
 
 	default: // ignored
