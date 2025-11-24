@@ -13,7 +13,7 @@ var roms = map[string]string{
 	"../roms/test/timendus/1-chip8-logo.ch8": "aec99a55453e70020320e8c93bf582b561df516c4efb05d10f43eda1ee3c6b53",
 	"../roms/test/timendus/2-ibm-logo.ch8":   "b12be07c247d2a94b678808638361649ca8d14c22f1e1468c9849fd0aefa4421",
 	"../roms/test/timendus/3-corax+.ch8":     "f7accf00a65c264fadfd94280d57f6c6564115df4b99316395e8253ff1729024",
-	// "../roms/test/timendus/4-flags.ch8":      "", //todo: FIXME
+	"../roms/test/timendus/4-flags.ch8":      "c9b71cf8aa770baf37cbf0f85b2455fafdc1e537392a258cc3ac9af0ee17d771",
 }
 
 func TestRoms(t *testing.T) {

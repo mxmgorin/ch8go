@@ -180,7 +180,7 @@ func (c *Cpu) execute_8xyn(op uint16) {
 		sum := uint16(c.v[x]) + uint16(c.v[y])
 		carry := byte(sum >> 8)
 		c.v[x] = byte(sum) // store result FIRST
-		c.v[0xF] = carry   // store VF LAST
+		c.v[0xF] = carry
 
 	case 0x5: // SUB Vx, Vy (Vx = Vx - Vy)
 		vy := c.v[y]
@@ -190,13 +190,14 @@ func (c *Cpu) execute_8xyn(op uint16) {
 			borrow = 1
 		}
 
-		c.v[x] = vx - vy  // store result FIRST
-		c.v[0xF] = borrow // store VF LAST
+		c.v[x] = vx - vy // store result FIRST
+		c.v[0xF] = borrow
 
 	case 0x6: // SHR Vx {, Vy} – shifts Vx right by 1
-		// VF = least significant bit *before* shift
-		c.v[0xF] = c.v[x] & 0x1
-		c.v[x] >>= 1
+		vy := c.v[y]
+		flag := vy & 0x1
+		c.v[x] = vy >> 1
+		c.v[0xF] = flag
 
 	case 0x7: // SUBN Vx, Vy (Vx = Vy - Vx)
 		vy := c.v[y]
@@ -206,12 +207,14 @@ func (c *Cpu) execute_8xyn(op uint16) {
 			borrow = 1
 		}
 
-		c.v[x] = vy - vx  // store result FIRST
-		c.v[0xF] = borrow // store VF LAST
+		c.v[x] = vy - vx // store result FIRST
+		c.v[0xF] = borrow
 
-	case 0xE: // SHL Vx {, Vy} – shifts Vx left by 1
-		c.v[0xF] = (c.v[x] >> 7) & 0x1
-		c.v[x] <<= 1
+	case 0xE: // SHL Vx, Vy
+		vy := c.v[y]
+		flag := (vy >> 7) & 0x1
+		c.v[x] = vy << 1
+		c.v[0xF] = flag
 
 	default:
 		// Unknown 8XY* instruction
