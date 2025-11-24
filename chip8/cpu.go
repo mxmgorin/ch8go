@@ -183,8 +183,9 @@ func (cpu *Cpu) execute_8xyn(op uint16) {
 
 	case 0x4: // ADD Vx, Vy (with carry)
 		sum := uint16(cpu.v[x]) + uint16(cpu.v[y])
-		cpu.v[0xF] = byte(sum >> 8) // carry bit
-		cpu.v[x] = byte(sum)
+		carry := byte(sum >> 8)
+		cpu.v[x] = byte(sum) // store result FIRST
+		cpu.v[0xF] = carry   // store VF LAST
 
 	case 0x5: // SUB Vx, Vy (Vx = Vx - Vy)
 		cpu.v[0xF] = 0
