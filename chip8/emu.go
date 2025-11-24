@@ -31,8 +31,9 @@ func (e *Emu) LoadRom(bytes []byte) error {
 }
 
 func (e *Emu) Step() {
-	e.Cpu.Step(&e.Memory, &e.Display, &e.Keypad)
-	e.Cpu.UpdateTimers()
+	opcode := e.Cpu.fetch(&e.Memory)
+	e.Cpu.execute(opcode, &e.Memory, &e.Display, &e.Keypad)
+	e.Cpu.tickTimers()
 }
 
 func (e *Emu) DisasmNext() DisasmInfo {
