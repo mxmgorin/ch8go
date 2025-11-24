@@ -26,7 +26,7 @@ func RenderASCII(d *Display) string {
 	)
 
 	out := strings.Builder{}
-	out.Grow(64 * 32 * 2) // small optimization
+	out.Grow(DisplayHeight * DisplayWidth * 2)
 
 	for y := range DisplayHeight {
 		for x := range DisplayWidth {

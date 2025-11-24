@@ -10,6 +10,7 @@ import (
 )
 
 var roms = map[string]string{
+	"../roms/test/corax_test_opcode.ch8":     "0dbbc7542cb7c6f7eef694d109a94f934431e6ce226933b57f1ef6c512367505",
 	"../roms/test/timendus/1-chip8-logo.ch8": "aec99a55453e70020320e8c93bf582b561df516c4efb05d10f43eda1ee3c6b53",
 	"../roms/test/timendus/2-ibm-logo.ch8":   "b12be07c247d2a94b678808638361649ca8d14c22f1e1468c9849fd0aefa4421",
 	"../roms/test/timendus/3-corax+.ch8":     "f7accf00a65c264fadfd94280d57f6c6564115df4b99316395e8253ff1729024",
@@ -34,7 +35,7 @@ func TestRoms(t *testing.T) {
 			actualHash := hash(emu.Display.Pixels[:])
 
 			if actualHash != expectedHash {
-				t.Fatalf("Buffer hash mismatch:\nExpected: %s\nActual: %s", expectedHash, actualHash)
+				t.Fatalf("hash mismatch:\nexpected: %s\nactual: %s", expectedHash, actualHash)
 			}
 		})
 	}
