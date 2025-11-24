@@ -86,6 +86,9 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		case 0xFC:
 			display.ScrollLeft4()
 
+		case 0xFD:
+			c.Reset()
+
 		case 0xFE: // 00FE - lowres schip
 			display.setResolution(false)
 
@@ -145,11 +148,11 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.v[x] = byte(rand.Intn(256)) & nn
 
 	case 0xD000: // DRW Vx, Vy, nibble
-		x := c.v[read_x(op)]
-		y := c.v[read_y(op)]
-		height := uint16(read_n(op))
-		sprite := memory.ReadSprite(c.i, height)
-		collision := display.DrawSprite(x, y, sprite)
+		vx := c.v[read_x(op)]
+		vy := c.v[read_y(op)]
+		n := uint16(read_n(op))
+		sprite := memory.ReadSprite(c.i, n)
+		collision := display.DrawSprite(vx, vy, sprite)
 
 		if collision {
 			c.v[0xF] = 1

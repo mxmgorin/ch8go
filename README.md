@@ -49,17 +49,17 @@ Once inside the prompt (chip8>), you can type help at any time to see all availa
 
 ```bash
 ❯ go run ./cmd/cli --rom ./roms/test_opcode.ch8
-CHIP-8 CLI. Type 'help' for commands.
+ch8go CLI. Type 'help' for commands.
 ROM loaded (478 bytes).
 
-chip8> peek 2
+ch8go> peek 2
 0200: 124E  JP  24E
 024E: 6801  LD  V8, 01
 
-chip8> step
+ch8go> step
 0200: 124E  JP  24E
 
-chip8> regs
+ch8go> regs
 PC=03DC I=0202 V=[1 3 7 0 0 42 137 236 44 48 52 26 0 0 0 0]
 ```
 

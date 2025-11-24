@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	fmt.Println("CHIP-8 CLI. Type 'help' for commands.")
+	fmt.Println("ch8go CLI. Type 'help' for commands.")
 
 	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
 	flag.Parse()
