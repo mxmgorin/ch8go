@@ -200,11 +200,16 @@ func (cpu *Cpu) execute_8xyn(op uint16) {
 		cpu.v[x] >>= 1
 
 	case 0x7: // SUBN Vx, Vy (Vx = Vy - Vx)
-		cpu.v[0xF] = 0
-		if cpu.v[y] > cpu.v[x] {
-			cpu.v[0xF] = 1
+		vy := cpu.v[y]
+		vx := cpu.v[x]
+
+		borrow := byte(0)
+		if vy >= vx {
+			borrow = 1
 		}
-		cpu.v[x] = cpu.v[y] - cpu.v[x]
+
+		cpu.v[x] = vy - vx   // store result FIRST
+		cpu.v[0xF] = borrow // store VF LAST
 
 	case 0xE: // SHL Vx {, Vy} – shifts Vx left by 1
 		cpu.v[0xF] = (cpu.v[x] >> 7) & 0x1
