@@ -183,11 +183,15 @@ func (c *Cpu) execute_8xyn(op uint16) {
 		c.v[0xF] = carry   // store VF LAST
 
 	case 0x5: // SUB Vx, Vy (Vx = Vx - Vy)
-		c.v[0xF] = 0
-		if c.v[x] > c.v[y] {
-			c.v[0xF] = 1
+		vy := c.v[y]
+		vx := c.v[x]
+		borrow := byte(0)
+		if vx >= vy {
+			borrow = 1
 		}
-		c.v[x] = c.v[x] - c.v[y]
+
+		c.v[x] = vx - vy  // store result FIRST
+		c.v[0xF] = borrow // store VF LAST
 
 	case 0x6: // SHR Vx {, Vy} – shifts Vx right by 1
 		// VF = least significant bit *before* shift
@@ -197,7 +201,6 @@ func (c *Cpu) execute_8xyn(op uint16) {
 	case 0x7: // SUBN Vx, Vy (Vx = Vy - Vx)
 		vy := c.v[y]
 		vx := c.v[x]
-
 		borrow := byte(0)
 		if vy >= vx {
 			borrow = 1
