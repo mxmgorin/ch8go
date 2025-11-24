@@ -69,11 +69,22 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
+
+		case 0xC0: // 00CN
+			n := read_n(op)
+			display.ScrollDown(n)
+
 		case 0xE0: // 00E0 - CLS
 			display.Clear()
 
 		case 0xEE: // 00EE - RET
 			c.ret()
+
+		case 0xFB:
+			display.ScrollRight4()
+
+		case 0xFC:
+			display.ScrollLeft4()
 
 		case 0xFE: // 00FE - lowres schip
 			display.setResolution(false)

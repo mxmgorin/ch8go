@@ -59,3 +59,59 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
 
 	return collision
 }
+
+// schip extension
+func (d *Display) ScrollDown(n byte) {
+	N := int(n)
+	h := d.Height
+	w := d.Width
+
+	// Scroll from bottom upwards
+	for y := h - 1; y >= N; y-- {
+		copy(d.Pixels[y*w:y*w+w], d.Pixels[(y-N)*w:(y-N)*w+w])
+	}
+
+	// Clear new top rows
+	for y := range N {
+		for x := range w {
+			d.Pixels[y*w+x] = 0
+		}
+	}
+}
+
+func (d *Display) ScrollRight4() {
+	w := d.Width
+	h := d.Height
+
+	for y := range h {
+		row := y * w
+
+		// scroll right
+		for x := w - 1; x >= 4; x-- {
+			d.Pixels[row+x] = d.Pixels[row+(x-4)]
+		}
+
+		for x := range 4 {
+			d.Pixels[row+x] = 0
+		}
+	}
+}
+
+func (d *Display) ScrollLeft4() {
+	w := d.Width
+	h := d.Height
+
+	for y := range h {
+		row := y * w
+
+		// shift left
+		for x := 0; x < w-4; x++ {
+			d.Pixels[row+x] = d.Pixels[row+(x+4)]
+		}
+
+		// clear rightmost 4 pixels
+		for x := w - 4; x < w; x++ {
+			d.Pixels[row+x] = 0
+		}
+	}
+}
