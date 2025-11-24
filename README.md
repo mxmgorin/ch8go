@@ -9,11 +9,9 @@
 ## Features
 
 - **Full CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
-- **Built-in REPL / CLI Debugger**: Step through instructions, inspect registers, view display buffer, load ROMs, and run commands interactively.
-- **Disassembler**: Convert CHIP-8 ROMs to readable assembly.
-- **ASCII Renderer**: View the CHIP-8 display directly in your terminal.
-- **SDL2 Frontend**: Hardware-accelerated graphics window.
-- **WebAssembly Frontend**: Run the emulator directly in the browser using WASM.
+- **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
+- **WebAssembly Frontend**: Runs directly in the browser using WASM.
+- **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
 - **Integration Tests**: Uses CI to run community-made test suites.
 
 ## Controls

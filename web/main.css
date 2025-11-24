@@ -6,6 +6,28 @@ canvas {
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;
 }
+body {
+    font-family: "VT323", monospace;
+    font-size: 20px;
+    line-height: 22px;
+    color: var(--terminal-color);
+    background-color: black;
+}
+button {
+    font-family: "VT323", monospace;
+    font-size: 30px;
+    width: 100px;
+    border: 3px solid var(--terminal-color);
+    color: var(--terminal-color);
+    background-color: black;
+    outline: none;
+    margin-bottom: 10px;
+}
+
+button:active {
+    color: black;
+    background-color: var(--terminal-color);
+}
 .page {
     margin-left: auto;
     margin-right: auto;
@@ -49,30 +71,14 @@ canvas {
     opacity: 0.7;
 }
 
-body {
-    font-family: "VT323", monospace;
-    font-size: 20px;
-    line-height: 22px;
-    color: var(--terminal-color);
-    background-color: black;
-}
-h2 {
-    font-size: 50px;
-    text-align: center;
+.title {
+    font-size: 3rem;
+    margin: 0 0 0.3rem;
 }
 
-button {
-    font-family: "VT323", monospace;
-    font-size: 30px;
-    width: 100px;
-    border: 3px solid var(--terminal-color);
-    color: var(--terminal-color);
-    background-color: black;
-    outline: none;
-    margin-bottom: 10px;
-}
-
-button:active {
-    color: black;
-    background-color: var(--terminal-color);
+.subtitle {
+    font-size: 1.15rem;
+    color: #ccc;
+    margin: 0 0 0.6rem;
+    line-height: 1.4;
 }
