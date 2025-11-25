@@ -30,13 +30,9 @@ func (d *Display) setResolution(hires bool) {
 	d.Pixels = make([]byte, d.Width*d.Height)
 }
 
-// DrawSprite draws N rows of sprite data at (x,y).
-// Returns true if any pixel was unset (collision).
-func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
-	collision = false
-	X := uint16(x)
-	Y := uint16(y)
-
+// Draws a 8xN sprite at (x,y).
+// Returns count of collisions occurred.
+func (d *Display) DrawSprite(x, y byte, sprite []byte) (collisions int) {
 	for row := range sprite {
 		b := sprite[row]
 
@@ -45,33 +41,26 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collision bool) {
 				continue
 			}
 
-			px := (X + uint16(col)) % uint16(d.Width)
-			py := (Y + uint16(row)) % uint16(d.Height)
-			idx := py*uint16(d.Width) + px
-
-			if d.Pixels[idx] == 1 {
-				collision = true
+			if d.TogglePixel(
+				int(x)+col,
+				int(y)+row,
+			) {
+				collisions += 1
 			}
-
-			d.Pixels[idx] ^= 1
 		}
 	}
 
-	return collision
+	return collisions
 }
 
-// DrawSprite16 draws a 16x16 Super-CHIP sprite.
+// Draws a 16x16 Super-CHIP sprite.
 // sprite is 32 bytes: 2 bytes per row × 16 rows.
-// Returns true if collision occurred.
-func (d *Display) DrawSprite16(x, y byte, sprite []byte) bool {
-	collision := false
-
+// Returns count of collisions occurred.
+func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
 	for row := range 16 {
-		b1 := sprite[row*2]   // high byte
-		b2 := sprite[row*2+1] // low byte
-
-		// Combine into 16 bits
-		rowBits := uint16(b1)<<8 | uint16(b2)
+		hi := sprite[row*2]   // high byte
+		lo := sprite[row*2+1] // low byte
+		rowBits := uint16(hi)<<8 | uint16(lo)
 
 		for col := range 16 {
 			bit := (rowBits >> (15 - col)) & 1
@@ -80,22 +69,22 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte) bool {
 					int(x)+col,
 					int(y)+row,
 				) {
-					collision = true
+					collisions += 1
 				}
 			}
 		}
 	}
 
-	return collision
+	return collisions
 }
 
-// TogglePixel XORs the pixel at (x, y).
+// XORs the pixel at (x, y).
 // Returns true if this operation turned a pixel off (collision).
 func (d *Display) TogglePixel(x, y int) bool {
 	// wrap around screen
 	x = x % d.Width
 	y = y % d.Height
-	i := y * d.Width + x
+	i := y*d.Width + x
 	pixel := d.Pixels[i]
 	d.Pixels[i] ^= 1
 

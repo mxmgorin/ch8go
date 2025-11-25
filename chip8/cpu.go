@@ -152,18 +152,18 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		vx := c.v[read_x(op)]
 		vy := c.v[read_y(op)]
 		n := uint16(read_n(op))
-		var collision bool
+		var collisions int
 
 		if n == 0 {
 			// SCHIP 16x16 sprite (32 bytes = 16 pixels, 2 bytes per row)
 			sprite := memory.ReadSprite(c.i, 32)
-			collision = display.DrawSprite16(vx, vy, sprite)
+			collisions = display.DrawSprite16(vx, vy, sprite)
 		} else {
 			// Classic CHIP-8 8×N sprite
 			sprite := memory.ReadSprite(c.i, uint16(n))
-			collision = display.DrawSprite(vx, vy, sprite)
+			collisions = display.DrawSprite(vx, vy, sprite)
 		}
-		if collision {
+		if collisions > 0 {
 			c.v[0xF] = 1
 		} else {
 			c.v[0xF] = 0
