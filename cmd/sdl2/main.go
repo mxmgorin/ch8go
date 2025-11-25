@@ -14,14 +14,33 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-const (
-	WindowScale = 12
-)
+const bpp = 3
+
+var keymap = map[sdl.Keycode]byte{
+	sdl.K_1: 0x1,
+	sdl.K_2: 0x2,
+	sdl.K_3: 0x3,
+	sdl.K_4: 0xC,
+
+	sdl.K_q: 0x4,
+	sdl.K_w: 0x5,
+	sdl.K_e: 0x6,
+	sdl.K_r: 0xD,
+
+	sdl.K_a: 0x7,
+	sdl.K_s: 0x8,
+	sdl.K_d: 0x9,
+	sdl.K_f: 0xE,
+
+	sdl.K_z: 0xA,
+	sdl.K_x: 0x0,
+	sdl.K_c: 0xB,
+	sdl.K_v: 0xF,
+}
 
 func main() {
-	fmt.Println("Running sdl2")
 	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
-	hz := flag.Int("hz", 500, "cpu cycles per second")
+	scale := flag.Int("scale", 12, "window scale")
 	flag.Parse()
 
 	if *romPath == "" {
@@ -30,39 +49,40 @@ func main() {
 
 	rom, err := os.ReadFile(*romPath)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
-	fmt.Println("CHIP-8 SDL2")
-	fmt.Printf("ROM: %s\n", *romPath)
-	fmt.Printf("Speed: %d Hz\n", *hz)
-
-	app, err := NewApp()
+	app, err := NewApp(*scale)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer app.Quit()
-	app.Run(rom, *hz)
+
+	fmt.Println("ch8go SDL2")
+	fmt.Printf("ROM: %s\n", *romPath)
+
+	app.Run(rom)
 }
 
 type App struct {
-	Window   *sdl.Window
-	Texture  *sdl.Texture
-	Renderer *sdl.Renderer
-	Emu      *chip8.Emu
+	window   *sdl.Window
+	texture  *sdl.Texture
+	renderer *sdl.Renderer
+	emu      *chip8.Emu
 	rgbBuf   []byte
+	scale    int
 }
 
-func NewApp() (*App, error) {
+func NewApp(scale int) (*App, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_AUDIO); err != nil {
 		return nil, err
 	}
 	emu := chip8.NewEmu()
-	window, err := sdl.CreateWindow("CHIP-8",
+	window, err := sdl.CreateWindow("ch8go",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
-		int32(emu.Display.Width*WindowScale),
-		int32(emu.Display.Height*WindowScale),
+		int32(emu.Display.Width*scale),
+		int32(emu.Display.Height*scale),
 		sdl.WINDOW_SHOWN)
 	if err != nil {
 		return nil, err
@@ -77,19 +97,19 @@ func NewApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	bufSize := emu.Display.Width * emu.Display.Height * 3
-	return &App{Window: window, Renderer: renderer, Texture: texture, Emu: emu, rgbBuf: make([]byte, bufSize)}, nil
+	bufSize := emu.Display.Width * emu.Display.Height * bpp
+	return &App{window: window, renderer: renderer, texture: texture, emu: emu, rgbBuf: make([]byte, bufSize)}, nil
 }
 
 func (a *App) Quit() {
-	a.Texture.Destroy()
-	a.Renderer.Destroy()
-	a.Window.Destroy()
+	a.texture.Destroy()
+	a.renderer.Destroy()
+	a.window.Destroy()
 	sdl.Quit()
 }
 
-func (a *App) Run(rom []byte, hz int) error {
-	if err := a.Emu.LoadRom(rom); err != nil {
+func (a *App) Run(rom []byte) error {
+	if err := a.emu.LoadRom(rom); err != nil {
 		return err
 	}
 	frameDelay := time.Second / 60 // target 60 FPS
@@ -106,14 +126,14 @@ func (a *App) Run(rom []byte, hz int) error {
 			case *sdl.KeyboardEvent:
 				switch ev.Type {
 				case sdl.KEYDOWN:
-					handleKey(ev.Keysym.Sym, &a.Emu.Keypad, true)
+					handleKey(ev.Keysym.Sym, &a.emu.Keypad, true)
 				case sdl.KEYUP:
-					handleKey(ev.Keysym.Sym, &a.Emu.Keypad, false)
+					handleKey(ev.Keysym.Sym, &a.emu.Keypad, false)
 				}
 			}
 		}
 
-		if a.Emu.RunFrame() {
+		if a.emu.RunFrame() {
 			a.draw()
 		}
 
@@ -127,48 +147,25 @@ func (a *App) Run(rom []byte, hz int) error {
 }
 
 func (a *App) draw() {
-	buf := a.rgbBuf
-	for i, px := range a.Emu.Display.Pixels {
+	for i, px := range a.emu.Display.Pixels {
 		v := byte(0)
 		if px != 0 {
 			v = 255
 		}
 
-		buf[i*3+0] = v
-		buf[i*3+1] = v
-		buf[i*3+2] = v
+		a.rgbBuf[i*bpp+0] = v
+		a.rgbBuf[i*bpp+1] = v
+		a.rgbBuf[i*bpp+2] = v
 	}
 
-	a.Texture.Update(nil, unsafe.Pointer(&buf[0]), a.Emu.Display.Width*3)
-	a.Renderer.Clear()
-	a.Renderer.Copy(a.Texture, nil, nil)
-	a.Renderer.Present()
+	a.texture.Update(nil, unsafe.Pointer(&a.rgbBuf[0]), a.emu.Display.Width*bpp)
+	a.renderer.Clear()
+	a.renderer.Copy(a.texture, nil, nil)
+	a.renderer.Present()
 }
 
 func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {
-	mapping := map[sdl.Keycode]byte{
-		sdl.K_1: 0x1,
-		sdl.K_2: 0x2,
-		sdl.K_3: 0x3,
-		sdl.K_4: 0xC,
-
-		sdl.K_q: 0x4,
-		sdl.K_w: 0x5,
-		sdl.K_e: 0x6,
-		sdl.K_r: 0xD,
-
-		sdl.K_a: 0x7,
-		sdl.K_s: 0x8,
-		sdl.K_d: 0x9,
-		sdl.K_f: 0xE,
-
-		sdl.K_z: 0xA,
-		sdl.K_x: 0x0,
-		sdl.K_c: 0xB,
-		sdl.K_v: 0xF,
-	}
-
-	if k, ok := mapping[key]; ok {
-		keypad.Keys[k] = down
+	if k, ok := keymap[key]; ok {
+		keypad.HandleKey(k, down)
 	}
 }

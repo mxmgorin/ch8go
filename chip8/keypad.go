@@ -3,39 +3,45 @@ package chip8
 const KEYS_COUNT = 16
 
 type Keypad struct {
-	Keys [KEYS_COUNT]bool
+	keys [KEYS_COUNT]bool
 }
 
 func NewKeypad() Keypad {
 	return Keypad{}
 }
 
+func (k *Keypad) HandleKey(key byte, pressed bool) {
+	if key < KEYS_COUNT {
+		k.keys[key] = pressed
+	}
+}
+
 func (k *Keypad) Press(key byte) {
 	if key < KEYS_COUNT {
-		k.Keys[key] = true
+		k.keys[key] = true
 	}
 }
 
 func (k *Keypad) Release(key byte) {
 	if key < KEYS_COUNT {
-		k.Keys[key] = false
+		k.keys[key] = false
 	}
 }
 
 func (k *Keypad) IsPressed(key byte) bool {
-	return key < KEYS_COUNT && k.Keys[key]
+	return key < KEYS_COUNT && k.keys[key]
 }
 
 func (k *Keypad) Reset() {
-	for i := range k.Keys {
-		k.Keys[i] = false
+	for key := range k.keys {
+		k.keys[key] = false
 	}
 }
 
-func (k *Keypad) GetPressed() (byte, bool) {
-	for i, v := range k.Keys {
-		if v {
-			return byte(i), true
+func (k *Keypad) GetPressed() (key byte, ok bool) {
+	for key, pressed := range k.keys {
+		if pressed {
+			return byte(key), true
 		}
 	}
 	return 0, false
