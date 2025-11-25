@@ -2,7 +2,7 @@
 
 # ch8go
 
-`ch8go` is a CHIP-8 and Super-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal of this project is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
+`ch8go` is a CHIP-8 and Super-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
@@ -27,14 +27,13 @@ A  0  B  F   →      Z  X  C  V
 
 ## CLI Usage
 
-The project includes an interactive CLI / REPL for debugging and inspecting CHIP-8 programs.
-Start it with:
+Run the CLI with:
 
 ```bash
 go run ./cmd/cli --rom path/to/game.ch8
 ```
 
-Once inside the prompt (chip8>), you can type help at any time to see all available commands.
+Once inside the prompt (ch8go>), you can type help at any time to see all available commands.
 | Command | Description |
 | ------------- | ----------------------------------------------------------------- |
 | `help` | Show a list of all supported commands |
@@ -75,3 +74,4 @@ Useful resources for CHIP-8 development:
 - [Awesome CHIP-8](https://github.com/tobiasvl/awesome-chip-8)
 - [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)
 - [Mastering SuperChip](https://johnearnest.github.io/Octo/docs/SuperChip.html)
+- [ROM metadata](https://github.com/chip-8/chip-8-database)
