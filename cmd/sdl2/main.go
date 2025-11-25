@@ -92,7 +92,7 @@ func (a *App) Run(rom []byte, hz int) error {
 	if err := a.Emu.LoadRom(rom); err != nil {
 		return err
 	}
-	cycleDelay := time.Second / time.Duration(hz)
+	frameDelay := time.Second / 60 // target 60 FPS
 
 	running := true
 	for running {
@@ -113,14 +113,13 @@ func (a *App) Run(rom []byte, hz int) error {
 			}
 		}
 
-		a.Emu.Step()
-		if a.Emu.Display.PollDirty() {
+		if a.Emu.RunFrame() {
 			a.draw()
 		}
 
 		elapsed := time.Since(frameStart)
-		if elapsed < cycleDelay {
-			time.Sleep(cycleDelay - elapsed)
+		if elapsed < frameDelay {
+			time.Sleep(frameDelay - elapsed)
 		}
 	}
 

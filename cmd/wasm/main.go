@@ -92,17 +92,9 @@ func loop(this js.Value, args []js.Value) any {
 		return nil
 	}
 
-	now := time.Now()
-	dt := now.Sub(lastTime).Seconds()
-	lastTime = now
-	// Run CPU approx. 500Hz
-	steps := max(int(500*dt), 1)
-
-	for range steps {
-		emu.Step()
+	if emu.RunFrame() {
+		drawScreen()
 	}
-
-	drawScreen()
 
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", loopFunc)

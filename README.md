@@ -34,16 +34,17 @@ go run ./cmd/cli --rom path/to/game.ch8
 ```
 
 Inside the prompt (`ch8go>`), you can use the following commands:
-| Command | Description |
-| ------------- | ----------------------------------------------------------------- |
-| `help` | Show all supported commands |
-| `load <file>` | Load a ROM into memory |
-| `step <n>` | Execute 1 or n n instructions |
-| `peek <n>` | Disassemble 1 or n instructions starting from PC |
-| `regs` | Show registers |
-| `dis` | Disassemble the loaded ROM |
-| `draw` | Render the current display buffer in ASCII |
-| `quit` | Exit the REPL |
+
+| Command       | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `help`        | Show all supported commands                      |
+| `load <file>` | Load a ROM into memory                           |
+| `step <n>`    | Execute 1 or N instructions                      |
+| `peek <n>`    | Disassemble 1 or N instructions starting from PC |
+| `regs`        | Show registers                                   |
+| `dis`         | Disassemble the loaded ROM                       |
+| `draw`        | Render the current display buffer in ASCII       |
+| `quit`        | Exit the REPL                                    |
 
 **Example session**
 
