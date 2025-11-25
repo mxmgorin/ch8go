@@ -114,7 +114,9 @@ func (a *App) Run(rom []byte, hz int) error {
 		}
 
 		a.Emu.Step()
-		a.draw()
+		if a.Emu.Display.PollDirty() {
+			a.draw()
+		}
 
 		elapsed := time.Since(frameStart)
 		if elapsed < cycleDelay {

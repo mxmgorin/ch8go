@@ -4,6 +4,7 @@ type Display struct {
 	Pixels []byte
 	Width  int
 	Height int
+	dirty bool
 }
 
 func NewDisplay() Display {
@@ -16,6 +17,15 @@ func (d *Display) Clear() {
 	for i := range d.Pixels {
 		d.Pixels[i] = 0
 	}
+
+	d.dirty = true
+}
+
+func (d *Display) PollDirty() bool {
+	result := d.dirty
+	d.dirty = false;
+
+	return result
 }
 
 func (d *Display) setResolution(hires bool) {
@@ -87,12 +97,14 @@ func (d *Display) TogglePixel(x, y int) bool {
 	i := y*d.Width + x
 	pixel := d.Pixels[i]
 	d.Pixels[i] ^= 1
+	d.dirty = true
 
 	return pixel == 1
 }
 
 // schip extension
 func (d *Display) ScrollDown(n byte) {
+	d.dirty = true
 	N := int(n)
 	h := d.Height
 	w := d.Width
@@ -111,6 +123,7 @@ func (d *Display) ScrollDown(n byte) {
 }
 
 func (d *Display) ScrollRight4() {
+	d.dirty = true
 	w := d.Width
 	h := d.Height
 
@@ -129,6 +142,7 @@ func (d *Display) ScrollRight4() {
 }
 
 func (d *Display) ScrollLeft4() {
+	d.dirty = true
 	w := d.Width
 	h := d.Height
 

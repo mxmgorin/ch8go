@@ -16,9 +16,7 @@ var (
 	rgbaBuf   []byte
 	emu       *chip8.Emu
 	lastTime  time.Time
-	romLoaded bool
-
-	loopFunc js.Func
+	loopFunc  js.Func
 )
 
 func main() {
@@ -58,7 +56,6 @@ func loadROM(this js.Value, args []js.Value) any {
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
 	emu.LoadRom(buf)
-	romLoaded = true
 	fmt.Println("Rom loaded")
 	return nil
 }
@@ -89,11 +86,12 @@ var keymap = map[string]byte{
 }
 
 func loop(this js.Value, args []js.Value) any {
-	if !romLoaded {
+	if emu.Status == chip8.StatusNoRom {
 		// Don't run CPU until ROM exists
 		js.Global().Call("requestAnimationFrame", loopFunc)
 		return nil
 	}
+
 	now := time.Now()
 	dt := now.Sub(lastTime).Seconds()
 	lastTime = now
