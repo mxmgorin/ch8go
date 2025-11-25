@@ -9,7 +9,7 @@
 ## Features
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
-- **SUPER-CHIP Support**: Implements extended SCHIP instructions, high-resolution mode, 16×16 sprites, scrolling, and additional font.
+- **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WebAssembly Frontend**: Runs directly in the browser using WASM.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
@@ -33,15 +33,15 @@ Run the CLI with:
 go run ./cmd/cli --rom path/to/game.ch8
 ```
 
-Once inside the prompt (ch8go>), you can type help at any time to see all available commands.
+Inside the prompt (`ch8go>`), you can use the following commands:
 | Command | Description |
 | ------------- | ----------------------------------------------------------------- |
-| `help` | Show a list of all supported commands |
-| `load <file>` | Load a CHIP-8 ROM into memory |
-| `step <n>` | Execute n instructions |
-| `peek <n>` | Disassemble 1 or N instructions starting from PC |
+| `help` | Show all supported commands |
+| `load <file>` | Load a ROM into memory |
+| `step <n>` | Execute 1 or n n instructions |
+| `peek <n>` | Disassemble 1 or n instructions starting from PC |
 | `regs` | Show registers |
-| `dis <n>` | Disassemble ROM |
+| `dis` | Disassemble the loaded ROM |
 | `draw` | Render the current display buffer in ASCII |
 | `quit` | Exit the REPL |
 
