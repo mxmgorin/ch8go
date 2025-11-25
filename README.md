@@ -69,6 +69,7 @@ PC=03DC I=0202 V=[1 3 7 0 0 42 137 236 44 48 52 26 0 0 0 0]
 Useful resources for CHIP-8 development:
 
 - [Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
+- [Opcode Table](https://chip8.gulrak.net)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 - [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
 - [CHIP-8 Research Facility](https://chip-8.github.io/)
