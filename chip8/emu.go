@@ -10,14 +10,14 @@ const (
 )
 
 type Emu struct {
-	Status     EmuStatus
-	Cpu        Cpu
-	Memory     Memory
-	Display    Display
-	Keypad     Keypad
-	RomSize    int
-	cpuHz      float64
-	fps        float64
+	Status  EmuStatus
+	Cpu     Cpu
+	Memory  Memory
+	Display Display
+	Keypad  Keypad
+	RomSize int
+	cpuHz   float64
+	fps     float64
 
 	timerAccum float64
 	cycleAccum float64
@@ -57,12 +57,12 @@ func (e *Emu) Step() {
 func (e *Emu) RunFrame() bool {
 	e.cycleAccum += e.cpuHz / e.fps
 
-    for e.cycleAccum >= 1.0 {
-        e.cycleAccum -= 1.0
-        e.Step()
-    }
+	for e.cycleAccum >= 1.0 {
+		e.cycleAccum -= 1.0
+		e.Step()
+	}
 
-	return e.Display.PollDirty()
+	return e.Display.pollDirty()
 }
 
 func (e *Emu) tickTimers() {

@@ -10,11 +10,11 @@ import (
 )
 
 var roms = map[string]string{
-	"../roms/test/corax_test_opcode.ch8":     "0dbbc7542cb7c6f7eef694d109a94f934431e6ce226933b57f1ef6c512367505",
-	"../roms/test/timendus/1-chip8-logo.ch8": "aec99a55453e70020320e8c93bf582b561df516c4efb05d10f43eda1ee3c6b53",
-	"../roms/test/timendus/2-ibm-logo.ch8":   "b12be07c247d2a94b678808638361649ca8d14c22f1e1468c9849fd0aefa4421",
-	"../roms/test/timendus/3-corax+.ch8":     "f7accf00a65c264fadfd94280d57f6c6564115df4b99316395e8253ff1729024",
-	"../roms/test/timendus/4-flags.ch8":      "c9b71cf8aa770baf37cbf0f85b2455fafdc1e537392a258cc3ac9af0ee17d771",
+	"../roms/test/corax_test_opcode.ch8":     "53e3214ea1cfc7c81f8d5f05c652d5196e8a547fa9d762e65370462fce08bd24",
+	"../roms/test/timendus/1-chip8-logo.ch8": "081dcfdcf4fb9384f2c6a9161ddce5349efe88939415dc721ce5c745e538ba81",
+	"../roms/test/timendus/2-ibm-logo.ch8":   "daed3448a74f730cf1867672fe07073baf63bf01cad5ba25c93d996ee0ad33c2",
+	"../roms/test/timendus/3-corax+.ch8":     "91eab06fdca9acf793593135d551fafd5c0e3764135c9e066ad526c67563f5fa",
+	"../roms/test/timendus/4-flags.ch8":      "7b6d24ec24c5cd2b7ed4b2176a6a28f8b3b6120d4d1503190674901063113556",
 }
 
 func TestRoms(t *testing.T) {

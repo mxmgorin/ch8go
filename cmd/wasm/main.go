@@ -26,10 +26,18 @@ func main() {
 	// Setup canvas
 	w := emu.Display.Width
 	h := emu.Display.Height
+	scale := 5
 	doc := js.Global().Get("document")
 	canvas := doc.Call("getElementById", "chip8-canvas")
 	canvas.Set("width", w)
 	canvas.Set("height", h)
+	canvasStyle := canvas.Get("style")
+	canvasStyle.Set("transform", fmt.Sprintf("scale(%d)", scale))
+
+	screen := doc.Call("getElementById", "chip8-screen")
+	screen.Set("width", w*scale)
+	screen.Set("height", h*scale)
+
 	ctx = canvas.Call("getContext", "2d")
 	imageData = ctx.Call("createImageData", w, h)
 	rgbaBuf = make([]byte, w*h*4)

@@ -4,7 +4,8 @@ type Display struct {
 	Pixels []byte
 	Width  int
 	Height int
-	dirty bool
+	dirty  bool
+	hires  bool
 }
 
 func NewDisplay() Display {
@@ -21,22 +22,17 @@ func (d *Display) Clear() {
 	d.dirty = true
 }
 
-func (d *Display) PollDirty() bool {
+func (d *Display) pollDirty() bool {
 	result := d.dirty
-	d.dirty = false;
+	d.dirty = false
 
 	return result
 }
 
 func (d *Display) setResolution(hires bool) {
-	if hires {
-		d.Width = 128
-		d.Height = 64
-	} else {
-		d.Width = 64
-		d.Height = 32
-	}
-
+	d.Width = 128
+	d.Height = 64
+	d.hires = hires
 	d.Pixels = make([]byte, d.Width*d.Height)
 }
 
@@ -51,7 +47,7 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collisions int) {
 				continue
 			}
 
-			if d.TogglePixel(
+			if d.togglePixelScaled(
 				int(x)+col,
 				int(y)+row,
 			) {
@@ -75,7 +71,7 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
 		for col := range 16 {
 			bit := (rowBits >> (15 - col)) & 1
 			if bit == 1 {
-				if d.TogglePixel(
+				if d.togglePixelScaled(
 					int(x)+col,
 					int(y)+row,
 				) {
@@ -88,9 +84,26 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
 	return collisions
 }
 
+func (d *Display) togglePixelScaled(x, y int) (collision bool) {
+	if d.hires {
+		return d.togglePixel(x, y)
+
+	}
+
+	// scale coordinates
+	x *= 2
+	y *= 2
+	// toggle a 2x2 block
+	collision = d.togglePixel(x, y) || collision
+	collision = d.togglePixel(x+1, y) || collision
+	collision = d.togglePixel(x, y+1) || collision
+	collision = d.togglePixel(x+1, y+1) || collision
+	return collision
+}
+
 // XORs the pixel at (x, y).
 // Returns true if this operation turned a pixel off (collision).
-func (d *Display) TogglePixel(x, y int) bool {
+func (d *Display) togglePixel(x, y int) bool {
 	// wrap around screen
 	x = x % d.Width
 	y = y % d.Height
