@@ -39,9 +39,11 @@ func (d *Display) setResolution(hires bool) {
 // Draws a 8xN sprite at (x,y).
 // Returns count of collisions occurred.
 func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions int) {
-	for row := range sprite {
-		b := sprite[row]
+	w := 8
+	h := len(sprite)
+	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
 
+	for row, b := range sprite {
 		for col := range 8 {
 			if b&(0x80>>col) == 0 {
 				continue
@@ -64,6 +66,10 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions in
 // sprite is 32 bytes: 2 bytes per row × 16 rows.
 // Returns count of collisions occurred.
 func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions int) {
+	w := 16
+	h := 16
+	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
+
 	for row := range 16 {
 		hi := sprite[row*2]   // high byte
 		lo := sprite[row*2+1] // low byte
@@ -89,7 +95,6 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions 
 func (d *Display) togglePixelScaled(x, y int, wrap bool) (collision bool) {
 	if d.hires {
 		return d.togglePixel(x, y, wrap)
-
 	}
 
 	// scale coordinates
@@ -122,6 +127,16 @@ func (d *Display) togglePixel(x, y int, wrap bool) bool {
 	d.dirty = true
 
 	return pixel == 1
+}
+
+// A sprite fully offscreen should wrap around screen
+func (d *Display) spriteWrap(x, y, w, h int) bool {
+	if !d.hires {
+		x = x * 2
+		y = y * 2
+	}
+
+	return d.spriteFullyOffscreen(x, y, w, h)
 }
 
 func (d *Display) spriteFullyOffscreen(x, y, w, h int) bool {
