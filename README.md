@@ -45,6 +45,7 @@ Inside the prompt (`ch8go>`), you can use the following commands:
 | `regs`        | Show registers                                   |
 | `dis`         | Disassemble the loaded ROM                       |
 | `draw`        | Render the current display buffer in ASCII       |
+| `info`        | Show metadata about a ROM                        |
 | `quit`        | Exit the REPL                                    |
 
 **Example session**

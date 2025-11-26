@@ -2,14 +2,18 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/mxmgorin/ch8go/app"
 	"github.com/mxmgorin/ch8go/chip8"
 )
+
+var romHash string
 
 func main() {
 	fmt.Println("ch8go CLI. Type 'help' for commands.")
@@ -17,10 +21,10 @@ func main() {
 	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
 	flag.Parse()
 	reader := bufio.NewReader(os.Stdin)
-	emu := chip8.NewEmu()
+	app := app.NewApp()
 
 	if *romPath != "" {
-		loadRom(emu, *romPath)
+		loadRom(app, *romPath)
 	}
 
 	for {
@@ -43,22 +47,27 @@ func main() {
 				fmt.Println("Usage: load <rom>")
 				continue
 			}
-			loadRom(emu, args[1])
+			loadRom(app, args[1])
 
 		case "step":
-			step(emu, args)
+			step(&app.Emu, args)
 
 		case "regs":
-			regs(emu)
+			regs(&app.Emu)
 
 		case "peek":
-			peek(emu, args)
+			peek(&app.Emu, args)
 
 		case "draw":
-			draw(emu)
+			draw(&app.Emu)
 
 		case "dis":
-			dis(emu)
+			dis(&app.Emu)
+
+		case "info":
+			info := app.ROMInfo()
+			b, _ := json.MarshalIndent(info, "", "  ")
+			fmt.Println(string(b))
 
 		case "exit", "quit":
 			return
@@ -72,26 +81,21 @@ func main() {
 func printHelp() {
 	fmt.Println(`
 Commands:
-  help            Show a list of all supported commands
-  load <file>     Load ROM
+  help            Show all supported commands
+  load <file>     Load a ROM into memory
   step <n>        Execute 1 or N instructions
   peek <n>        Disassemble 1 or N instructions starting from PC
   regs            Show registers
-  dis             Disassemble ROM
-  draw            Render display in ascii
+  dis             Disassemble the loaded ROM
+  draw            Render the current display buffer in ASCII
+  info            Show metadata about a ROM
   quit            Exit`)
 	fmt.Println()
 }
 
-func loadRom(emu *chip8.Emu, path string) {
-	rom, err := os.ReadFile(path)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	emu.LoadRom(rom)
-	fmt.Printf("ROM loaded (%d bytes).\n", len(rom))
+func loadRom(app *app.App, path string) {
+	len := app.LoadRom(path)
+	fmt.Printf("ROM loaded (%d bytes).\n", len)
 	fmt.Println()
 }
 
