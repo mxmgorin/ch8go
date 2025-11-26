@@ -37,3 +37,32 @@ type Quirks struct {
 	// False: `8XY1`, `8XY2` and `8XY3` (OR, AND and XOR) will leave `vF` unchanged (unless `vF` is the parameter `X`)
 	VFReset bool
 }
+
+var (
+	QuirksOriginalChip = Quirks{
+		Shift:         false,
+		MemIncIByX:    false,
+		MemIUnchanged: false,
+		Wrap:          false,
+		Jump:          false,
+		VBlank:        true,
+		VFReset:       true,
+	}
+	QuirksModernChip = Quirks{
+		Shift:         false,
+		MemIncIByX:    false,
+		MemIUnchanged: false,
+		Wrap:          false,
+		Jump:          false,
+		VBlank:        true,
+		VFReset:       true,
+	}
+	QuirksSchip11 = Quirks{
+		Shift:         true,
+		MemIUnchanged: true,
+		Wrap:          false,
+		Jump:          true,
+		VBlank:        false,
+		VFReset:       false,
+	}
+)
