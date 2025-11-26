@@ -17,13 +17,32 @@ type Quirks struct {
 	//   - `8XY6` and `8XYE` take `vY` as input and store the result in `vX`.
 	Shift bool
 
-	// True: `FX55` and `FX65` increment the `i` register with `X`.
-	// False: `FX55` and `FX65` increment the `i` register with `X + 1`.
+	// MemIncIByX controls the first load/store quirk.
+	//
+	// On most systems, storing or loading registers with `FX55` and `FX65`
+	// increments the `I` register by `X + 1`, i.e., once for each register
+	// transferred. The CHIP-48 interpreter for the HP-48 incremented `I` only
+	// by `X`, introducing this quirk.
+	//
+	// When true:
+	//   - `FX55` and `FX65` increment `I` by `X`.
+	//
+	// When false:
+	//   - `FX55` and `FX65` increment `I` by `X + 1`.
 	MemIncIByX bool
 
-	// True: `FX55` and `FX65` leave the `i` register unchanged.
-	// False: `FX55` and `FX65` increment the `i` register.
-	MemIUnchanged bool
+	// MemLeaveI controls the second load/store quirk.
+	//
+	// On most systems, `FX55` and `FX65` increment the `I` register based on
+	// how many registers are read or written. The Superchip 1.1 interpreter for
+	// the HP-48 did not increment `I` at all, introducing this quirk.
+	//
+	// When true:
+	//   - `FX55` and `FX65` leave the `I` register unchanged.
+	//
+	// When false:
+	//   - `FX55` and `FX65` increment the `I` register normally.
+	MemLeaveI bool
 
 	// True: `DXYN` wraps around to the other side of the screen when drawing at the edges.
 	// False: `DXYN` clips when drawing at the edges of the screen.
@@ -67,31 +86,43 @@ type Quirks struct {
 	VFReset bool
 }
 
+func (q *Quirks) exec_mem(c *Cpu, x uint16) {
+	if q.MemLeaveI {
+		// Do nothing (Superchip 1.1 behavior)
+	} else if q.MemIncIByX {
+		// CHIP-48 quirk: increment by X
+		c.i += x
+	} else {
+		// Normal behavior: increment by X + 1
+		c.i += x + 1
+	}
+}
+
 var (
 	QuirksOriginalChip = Quirks{
-		Shift:         false,
-		MemIncIByX:    false,
-		MemIUnchanged: false,
-		Wrap:          false,
-		Jump:          false,
-		VBlank:        true,
-		VFReset:       true,
+		Shift:      false,
+		MemIncIByX: false,
+		MemLeaveI:  false,
+		Wrap:       false,
+		Jump:       false,
+		VBlank:     true,
+		VFReset:    true,
 	}
 	QuirksModernChip = Quirks{
-		Shift:         false,
-		MemIncIByX:    false,
-		MemIUnchanged: false,
-		Wrap:          false,
-		Jump:          false,
-		VBlank:        true,
-		VFReset:       true,
+		Shift:      false,
+		MemIncIByX: false,
+		MemLeaveI:  false,
+		Wrap:       false,
+		Jump:       false,
+		VBlank:     true,
+		VFReset:    true,
 	}
 	QuirksSchip11 = Quirks{
-		Shift:         true,
-		MemIUnchanged: true,
-		Wrap:          false,
-		Jump:          true,
-		VBlank:        false,
-		VFReset:       false,
+		Shift:     true,
+		MemLeaveI: true,
+		Wrap:      false,
+		Jump:      true,
+		VBlank:    false,
+		VFReset:   false,
 	}
 )

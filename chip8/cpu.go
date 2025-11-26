@@ -196,12 +196,21 @@ func (c *Cpu) execute_8xyn(op uint16) {
 
 	case 0x1: // OR Vx, Vy
 		c.v[x] |= c.v[y]
+		if c.quirks.VFReset {
+			c.v[0xF] = 0
+		}
 
 	case 0x2: // AND Vx, Vy
 		c.v[x] &= c.v[y]
+		if c.quirks.VFReset {
+			c.v[0xF] = 0
+		}
 
 	case 0x3: // XOR Vx, Vy
 		c.v[x] ^= c.v[y]
+		if c.quirks.VFReset {
+			c.v[0xF] = 0
+		}
 
 	case 0x4: // ADD Vx, Vy (with carry)
 		sum := uint16(c.v[x]) + uint16(c.v[y])
@@ -293,11 +302,13 @@ func (c *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 		for r := uint16(0); r <= uint16(x); r++ {
 			memory.Write(c.i+r, c.v[r])
 		}
+		c.quirks.exec_mem(c, x)
 
 	case 0x65:
 		for r := uint16(0); r <= uint16(x); r++ {
 			c.v[r] = memory.Read(c.i + r)
 		}
+		c.quirks.exec_mem(c, x)
 
 	case 0x75: // FX75 - store V0..VX into RPL flags
 		for i := byte(0); i <= byte(x) && i < 8; i++ {

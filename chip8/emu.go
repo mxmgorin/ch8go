@@ -25,7 +25,7 @@ type Emu struct {
 
 func NewEmu() *Emu {
 	return &Emu{
-		Cpu:     NewCpu(QuirksSchip11),
+		Cpu:     NewCpu(QuirksOriginalChip),
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
