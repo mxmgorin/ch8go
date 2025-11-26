@@ -82,3 +82,82 @@ button:active {
     margin: 0 0 0.6rem;
     line-height: 1.4;
 }
+
+.github-corner:hover .octo-arm {
+    animation: octocat-wave 1500ms ease-in-out infinite;
+}
+@keyframes octocat-wave {
+    0%,
+    10% {
+        transform: rotate(0);
+    }
+    20%,
+    40% {
+        transform: rotate(-25deg);
+    }
+    30%,
+    50% {
+        transform: rotate(10deg);
+    }
+    60%,
+    100% {
+        /* pause here */
+        transform: rotate(0);
+    }
+}
+@media (max-width: 500px) {
+    .github-corner:hover .octo-arm {
+        animation: none;
+    }
+
+    .github-corner .octo-arm {
+        animation: octocat-wave 1500ms ease-in-out infinite;
+    }
+}
+
+/* controls */
+h4 {
+    text-decoration: underline;
+    font-weight: normal;
+    margin-top: 30px;
+    margin-bottom: 25px;
+    font-size: 30px;
+}
+#keyboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+caption {
+    padding-bottom: 14px;
+    font-size: 14px;
+}
+.tg {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+.tg td,
+.tg th {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 30px;
+    overflow: hidden;
+    padding: 15px;
+    word-break: normal;
+}
+.tg .tg-il3a {
+    border-color: #ffffff;
+    color: #ffffff;
+    text-align: left;
+    vertical-align: top;
+    text-align: center;
+}
+.keyboard-element {
+    margin-left: 10px;
+    margin-right: 10px;
+    display: inline-block;
+}
+#arrow {
+    font-size: 70px;
+}
