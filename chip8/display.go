@@ -1,11 +1,12 @@
 package chip8
 
 type Display struct {
-	Pixels []byte
-	Width  int
-	Height int
-	dirty  bool
-	hires  bool
+	Pixels        []byte
+	Width         int
+	Height        int
+	dirty         bool
+	hires         bool
+	pendingVBlank bool
 }
 
 func NewDisplay() Display {
@@ -22,9 +23,10 @@ func (d *Display) Clear() {
 	d.dirty = true
 }
 
-func (d *Display) pollDirty() bool {
+func (d *Display) poll() bool {
 	result := d.dirty
 	d.dirty = false
+	d.pendingVBlank = false
 
 	return result
 }
@@ -39,6 +41,7 @@ func (d *Display) setResolution(hires bool) {
 // Draws a 8xN sprite at (x,y).
 // Returns count of collisions occurred.
 func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions int) {
+	d.pendingVBlank = true
 	w := 8
 	h := len(sprite)
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
@@ -66,6 +69,7 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions in
 // sprite is 32 bytes: 2 bytes per row × 16 rows.
 // Returns count of collisions occurred.
 func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions int) {
+	d.pendingVBlank = true
 	w := 16
 	h := 16
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)

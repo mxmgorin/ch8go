@@ -1,31 +1,43 @@
 package chip8
 
 var (
-	QuirksOriginalChip = Quirks{
+	// CHIP-8 was first designed by Joseph Weisbecker for the Cosmac VIP hobbyist DIY computer in 1977.
+	// After publishing about the virtual instruction set in the december 1978 issue of Byte magazine it took off on more hobbyist computers.
+	// One of the biggest advantages of programming in CHIP-8, apart from being relatively easy to use,
+	// was the fact that CHIP-8 ROMs were binary compatible between several different hobbyist computers.
+	QuirksOriginalChip8 = Quirks{
 		Shift:      false,
 		MemIncIByX: false,
 		MemLeaveI:  false,
 		Wrap:       false,
 		Jump:       false,
-		VBlank:     true,
+		VBlankWait: true,
 		VFReset:    true,
 	}
-	QuirksModernChip = Quirks{
+	// This is the way CHIP-8 is usually implemented in modern times. People often don't bother implementing the vBlank quirk, which leads to a more fluid,
+	// slightly faster execution. The vF reset on logic operations is also usually ignored because the impact is minimal and the quirk is fairly unknown.
+	// Some ROMs have come to depend on this \"simpler\" implementation, and as a result do not run very well on the original interpreter.
+	QuirksModernChip8 = Quirks{
 		Shift:      false,
 		MemIncIByX: false,
 		MemLeaveI:  false,
 		Wrap:       false,
 		Jump:       false,
-		VBlank:     true,
+		VBlankWait: true,
 		VFReset:    true,
 	}
-	QuirksSchip11 = Quirks{
-		Shift:     true,
-		MemLeaveI: true,
-		Wrap:      false,
-		Jump:      true,
-		VBlank:    false,
-		VFReset:   false,
+	// Superchip 1.1 is the platform that most \"superchip\" interpreters implement, because it is the latest version and also
+	// because the difference between Superchip version 1.0 and 1.1 is pretty small.
+	// This version is faster than its predecessor and adds scroll instructions and a large numeric font.
+	// It does however introduces a new quirk by not incrementing the index register when reading or writing registers to memory.
+	QuirksSuperChip11 = Quirks{
+		Shift:      true,
+		MemIncIByX: false,
+		MemLeaveI:  true,
+		Wrap:       false,
+		Jump:       true,
+		VBlankWait: false,
+		VFReset:    false,
 	}
 )
 
@@ -105,7 +117,7 @@ type Quirks struct {
 	// Some programs rely on this speed limit to be playable. Vertical blank happens at 60Hz, and as such its logic be combined with the timers.
 	// True: `DXYN` waits for vertical blank (so max 60 sprites drawn per second).
 	// False: `DXYN` draws immediately (number of sprites drawn per second only limited to number of CPU cycles per frame).
-	VBlank bool
+	VBlankWait bool
 
 	// VFReset controls how the emulator handles the `vF` register after logic
 	// operations.

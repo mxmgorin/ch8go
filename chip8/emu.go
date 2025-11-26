@@ -25,11 +25,11 @@ type Emu struct {
 
 func NewEmu() *Emu {
 	return &Emu{
-		Cpu:     NewCpu(QuirksSchip11),
+		Cpu:     NewCpu(QuirksSuperChip11),
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
-		cpuHz:   500.0,
+		cpuHz:   600.0,
 		fps:     60.0,
 	}
 }
@@ -49,8 +49,11 @@ func (e *Emu) LoadRom(bytes []byte) error {
 }
 
 func (e *Emu) Step() {
-	opcode := e.Cpu.fetch(&e.Memory)
-	e.Cpu.execute(opcode, &e.Memory, &e.Display, &e.Keypad)
+	if !e.Display.pendingVBlank || !e.Cpu.quirks.VBlankWait {
+		opcode := e.Cpu.fetch(&e.Memory)
+		e.Cpu.execute(opcode, &e.Memory, &e.Display, &e.Keypad)
+	}
+
 	e.tickTimers()
 }
 
@@ -62,7 +65,7 @@ func (e *Emu) RunFrame() bool {
 		e.Step()
 	}
 
-	return e.Display.pollDirty()
+	return e.Display.poll()
 }
 
 func (e *Emu) tickTimers() {

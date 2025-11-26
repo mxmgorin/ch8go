@@ -10,6 +10,7 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
+- **Quirks Support**: Implements all common CHIP-8 / SCHIP / XO quirks, including shift behavior, jump offsets, VF reset rules, screen clipping, memory increment behavior, and VBlank timings.
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WebAssembly Frontend**: Runs directly in the browser using WASM.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
@@ -69,6 +70,7 @@ PC=03DC I=0202 V=[1 3 7 0 0 42 137 236 44 48 52 26 0 0 0 0]
 Useful resources for CHIP-8 development:
 
 - [Technical Reference](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM)
+- [Chip-8 on the COSMAC VIP](https://www.laurencescotford.net/2020/07/25/chip-8-on-the-cosmac-vip-index)
 - [Opcode Table](https://chip8.gulrak.net)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 - [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
