@@ -14,7 +14,7 @@
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
-- **Integration Tests**: Uses CI to run community-made test ROMs.
+- **Integration Tests**: Uses Go’s testing framework and CI to run community-made test ROMs.
 
 ## Controls
 
