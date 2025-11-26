@@ -132,7 +132,14 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.i = read_nnn(op)
 
 	case 0xB000: // JP V0, addr
-		c.jp(read_nnn(op) + uint16(c.v[0]))
+		var v byte
+		if c.quirks.Jump {
+			x := read_x(op)
+			v = c.v[x]
+		} else {
+			v = c.v[0]
+		}
+		c.jp(read_nnn(op) + uint16(v))
 
 	case 0xC000: // RND Vx, byte
 		x := read_x(op)

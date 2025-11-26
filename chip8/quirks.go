@@ -29,9 +29,17 @@ type Quirks struct {
 	// False: `DXYN` clips when drawing at the edges of the screen.
 	Wrap bool
 
-	// The jump to `<address> + v0` opcode was wronly implemented on all the HP48 interpreters as jump to `<address> + vX`, introducing the jump quirk."
-	// True: `BXNN` jumps to address `XNN + vX`.
-	// False: `BNNN` jumps to address `NNN + v0`.
+	// Jump controls how the indexed jump opcode interprets its offset register.
+	//
+	// The jump-to-<address+V0> opcode (`BNNN`) was incorrectly implemented on all
+	// HP-48 interpreters as <address+Vx>, introducing what is known as the
+	// jump quirk.
+	//
+	// When true:
+	//   - `BXNN` jumps to address `XNN + Vx`.
+	//
+	// When false:
+	//   - `BNNN` jumps to address `NNN + V0`.
 	Jump bool
 
 	// The original Cosmac VIP interpreter would wait for vertical blank before each sprite draw.
