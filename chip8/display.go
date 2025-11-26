@@ -38,7 +38,7 @@ func (d *Display) setResolution(hires bool) {
 
 // Draws a 8xN sprite at (x,y).
 // Returns count of collisions occurred.
-func (d *Display) DrawSprite(x, y byte, sprite []byte) (collisions int) {
+func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions int) {
 	for row := range sprite {
 		b := sprite[row]
 
@@ -50,6 +50,7 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collisions int) {
 			if d.togglePixelScaled(
 				int(x)+col,
 				int(y)+row,
+				wrap,
 			) {
 				collisions += 1
 			}
@@ -62,7 +63,7 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte) (collisions int) {
 // Draws a 16x16 Super-CHIP sprite.
 // sprite is 32 bytes: 2 bytes per row × 16 rows.
 // Returns count of collisions occurred.
-func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
+func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions int) {
 	for row := range 16 {
 		hi := sprite[row*2]   // high byte
 		lo := sprite[row*2+1] // low byte
@@ -74,6 +75,7 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
 				if d.togglePixelScaled(
 					int(x)+col,
 					int(y)+row,
+					wrap,
 				) {
 					collisions += 1
 				}
@@ -84,9 +86,9 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte) (collisions int) {
 	return collisions
 }
 
-func (d *Display) togglePixelScaled(x, y int) (collision bool) {
+func (d *Display) togglePixelScaled(x, y int, wrap bool) (collision bool) {
 	if d.hires {
-		return d.togglePixel(x, y)
+		return d.togglePixel(x, y, wrap)
 
 	}
 
@@ -94,25 +96,36 @@ func (d *Display) togglePixelScaled(x, y int) (collision bool) {
 	x *= 2
 	y *= 2
 	// toggle a 2x2 block
-	collision = d.togglePixel(x, y) || collision
-	collision = d.togglePixel(x+1, y) || collision
-	collision = d.togglePixel(x, y+1) || collision
-	collision = d.togglePixel(x+1, y+1) || collision
+	collision = d.togglePixel(x, y, wrap) || collision
+	collision = d.togglePixel(x+1, y, wrap) || collision
+	collision = d.togglePixel(x, y+1, wrap) || collision
+	collision = d.togglePixel(x+1, y+1, wrap) || collision
 	return collision
 }
 
 // XORs the pixel at (x, y).
 // Returns true if this operation turned a pixel off (collision).
-func (d *Display) togglePixel(x, y int) bool {
-	// wrap around screen
-	x = x % d.Width
-	y = y % d.Height
+func (d *Display) togglePixel(x, y int, wrap bool) bool {
+	if wrap {
+		// wrap around screen
+		x = x % d.Width
+		y = y % d.Height
+	} else {
+		// Clip: skip pixel if outside visible area
+		if x < 0 || x >= d.Width || y < 0 || y >= d.Height {
+			return false // no collision, nothing toggled
+		}
+	}
 	i := y*d.Width + x
 	pixel := d.Pixels[i]
 	d.Pixels[i] ^= 1
 	d.dirty = true
 
 	return pixel == 1
+}
+
+func (d *Display) spriteFullyOffscreen(x, y, w, h int) bool {
+	return x+w <= 0 || x >= d.Width || y+h <= 0 || y >= d.Height
 }
 
 // schip extension

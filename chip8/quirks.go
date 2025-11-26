@@ -1,5 +1,34 @@
 package chip8
 
+var (
+	QuirksOriginalChip = Quirks{
+		Shift:      false,
+		MemIncIByX: false,
+		MemLeaveI:  false,
+		Wrap:       false,
+		Jump:       false,
+		VBlank:     true,
+		VFReset:    true,
+	}
+	QuirksModernChip = Quirks{
+		Shift:      false,
+		MemIncIByX: false,
+		MemLeaveI:  false,
+		Wrap:       false,
+		Jump:       false,
+		VBlank:     true,
+		VFReset:    true,
+	}
+	QuirksSchip11 = Quirks{
+		Shift:     true,
+		MemLeaveI: true,
+		Wrap:      false,
+		Jump:      true,
+		VBlank:    false,
+		VFReset:   false,
+	}
+)
+
 type Quirks struct {
 	// Shift controls how the shift opcodes interpret their input and output
 	// registers.
@@ -44,8 +73,18 @@ type Quirks struct {
 	//   - `FX55` and `FX65` increment the `I` register normally.
 	MemLeaveI bool
 
-	// True: `DXYN` wraps around to the other side of the screen when drawing at the edges.
-	// False: `DXYN` clips when drawing at the edges of the screen.
+	// Wrap controls how sprites behave when drawn at the edges of the screen.
+	//
+	// Most CHIP-8 systems clip sprites when drawing near screen boundaries.
+	// The Octo interpreter—later used in the XO-CHIP variant—wraps sprites
+	// around to the opposite side of the screen instead, introducing the wrap
+	// quirk.
+	//
+	// When true:
+	//   - `DXYN` wraps sprites around the screen edges.
+	//
+	// When false:
+	//   - `DXYN` clips sprites at the screen boundaries.
 	Wrap bool
 
 	// Jump controls how the indexed jump opcode interprets its offset register.
@@ -97,32 +136,3 @@ func (q *Quirks) exec_mem(c *Cpu, x uint16) {
 		c.i += x + 1
 	}
 }
-
-var (
-	QuirksOriginalChip = Quirks{
-		Shift:      false,
-		MemIncIByX: false,
-		MemLeaveI:  false,
-		Wrap:       false,
-		Jump:       false,
-		VBlank:     true,
-		VFReset:    true,
-	}
-	QuirksModernChip = Quirks{
-		Shift:      false,
-		MemIncIByX: false,
-		MemLeaveI:  false,
-		Wrap:       false,
-		Jump:       false,
-		VBlank:     true,
-		VFReset:    true,
-	}
-	QuirksSchip11 = Quirks{
-		Shift:     true,
-		MemLeaveI: true,
-		Wrap:      false,
-		Jump:      true,
-		VBlank:    false,
-		VFReset:   false,
-	}
-)
