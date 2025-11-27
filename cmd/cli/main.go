@@ -13,8 +13,6 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
-var romHash string
-
 func main() {
 	fmt.Println("ch8go CLI. Type 'help' for commands.")
 
@@ -50,19 +48,19 @@ func main() {
 			loadRom(app, args[1])
 
 		case "step":
-			step(&app.Emu, args)
+			step(&app.VM, args)
 
 		case "regs":
-			regs(&app.Emu)
+			regs(&app.VM)
 
 		case "peek":
-			peek(&app.Emu, args)
+			peek(&app.VM, args)
 
 		case "draw":
-			draw(&app.Emu)
+			draw(&app.VM)
 
 		case "dis":
-			dis(&app.Emu)
+			dis(&app.VM)
 
 		case "info":
 			info := app.ROMInfo()
@@ -99,17 +97,17 @@ func loadRom(app *app.App, path string) {
 	fmt.Println()
 }
 
-func regs(emu *chip8.Emu) {
-	if noRom(emu) {
+func regs(vm *chip8.VM) {
+	if noRom(vm) {
 		return
 	}
 
-	fmt.Println(chip8.DebugRegisters(&emu.Cpu))
+	fmt.Println(chip8.DebugRegisters(&vm.Cpu))
 	fmt.Println()
 }
 
-func step(emu *chip8.Emu, args []string) {
-	if noRom(emu) {
+func step(vm *chip8.VM, args []string) {
+	if noRom(vm) {
 		return
 	}
 
@@ -124,29 +122,29 @@ func step(emu *chip8.Emu, args []string) {
 	}
 
 	for range steps {
-		emu.Step()
+		vm.Step()
 	}
 
 	if steps > 1 {
 		fmt.Printf("Executed %d steps.\n", steps)
 	} else {
-		fmt.Println(emu.PeekNext())
+		fmt.Println(vm.PeekNext())
 	}
 
 	fmt.Println()
 }
 
-func draw(emu *chip8.Emu) {
-	if noRom(emu) {
+func draw(vm *chip8.VM) {
+	if noRom(vm) {
 		return
 	}
 
-	println(chip8.RenderASCII(&emu.Display))
+	println(chip8.RenderASCII(&vm.Display))
 	fmt.Println()
 }
 
-func peek(emu *chip8.Emu, args []string) {
-	if noRom(emu) {
+func peek(vm *chip8.VM, args []string) {
+	if noRom(vm) {
 		return
 	}
 
@@ -161,7 +159,7 @@ func peek(emu *chip8.Emu, args []string) {
 		}
 	}
 
-	list := emu.Peek(n)
+	list := vm.Peek(n)
 	for _, info := range list {
 		fmt.Println(info)
 	}
@@ -169,12 +167,12 @@ func peek(emu *chip8.Emu, args []string) {
 	fmt.Println()
 }
 
-func dis(e *chip8.Emu) {
-	if noRom(e) {
+func dis(vm *chip8.VM) {
+	if noRom(vm) {
 		return
 	}
 
-	list := e.DisasmRom()
+	list := vm.DisasmRom()
 	for _, info := range list {
 		fmt.Println(info)
 	}
@@ -182,8 +180,8 @@ func dis(e *chip8.Emu) {
 	fmt.Println()
 }
 
-func noRom(e *chip8.Emu) bool {
-	if e.Status == chip8.StatusNoRom {
+func noRom(vm *chip8.VM) bool {
+	if vm.Status == chip8.StatusNoRom {
 		fmt.Println("No ROM. Use 'load <file>' first.")
 		fmt.Println()
 		return true

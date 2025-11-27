@@ -14,18 +14,18 @@ var (
 	ctx       js.Value
 	imageData js.Value
 	rgbaBuf   []byte
-	emu       *chip8.Emu
+	vm        *chip8.VM
 	lastTime  time.Time
 	loopFunc  js.Func
 )
 
 func main() {
 	fmt.Println("ch8go WASM")
-	emu = chip8.NewEmu()
+	vm = chip8.NewVM()
 
 	// Setup canvas
-	w := emu.Display.Width
-	h := emu.Display.Height
+	w := vm.Display.Width
+	h := vm.Display.Height
 	scale := 5
 	doc := js.Global().Get("document")
 	canvas := doc.Call("getElementById", "chip8-canvas")
@@ -63,7 +63,7 @@ func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	emu.LoadRom(buf)
+	vm.LoadRom(buf)
 	fmt.Println("Rom loaded")
 	return nil
 }
@@ -71,7 +71,7 @@ func loadROM(this js.Value, args []js.Value) any {
 func onKeyDown(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		emu.Keypad.Press(k)
+		vm.Keypad.Press(k)
 		args[0].Call("preventDefault")
 	}
 	return nil
@@ -80,7 +80,7 @@ func onKeyDown(this js.Value, args []js.Value) any {
 func onKeyUp(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		emu.Keypad.Release(k)
+		vm.Keypad.Release(k)
 		args[0].Call("preventDefault")
 	}
 	return nil
@@ -94,13 +94,13 @@ var keymap = map[string]byte{
 }
 
 func loop(this js.Value, args []js.Value) any {
-	if emu.Status == chip8.StatusNoRom {
+	if vm.Status == chip8.StatusNoRom {
 		// Don't run CPU until ROM exists
 		js.Global().Call("requestAnimationFrame", loopFunc)
 		return nil
 	}
 
-	if emu.RunFrame() {
+	if vm.RunFrame() {
 		drawScreen()
 	}
 
@@ -110,7 +110,7 @@ func loop(this js.Value, args []js.Value) any {
 }
 
 func drawScreen() {
-	pixels := emu.Display.Pixels
+	pixels := vm.Display.Pixels
 
 	for i := range pixels {
 		v := byte(0)

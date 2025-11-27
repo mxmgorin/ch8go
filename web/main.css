@@ -50,22 +50,19 @@ button:active {
     flex-direction: row;
     align-items: center;
     gap: 20px;
-    margin-bottom: 15px;
+    margin: 0.5rem;
     flex-wrap: wrap;
 }
-
 .group {
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 6px;
 }
-
 .label {
     font-weight: bold;
     font-size: 14px;
 }
-
 .separator {
     font-weight: bold;
     opacity: 0.7;
@@ -73,14 +70,12 @@ button:active {
 
 .title {
     font-size: 3rem;
-    margin: 0 0 0.3rem;
+    margin: 0 0 0.5rem;
 }
-
 .subtitle {
     font-size: 1.15rem;
     color: #ccc;
-    margin: 0 0 0.6rem;
-    line-height: 1.4;
+    margin: 0 0 0.5rem;
 }
 
 .github-corner:hover .octo-arm {

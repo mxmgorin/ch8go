@@ -17,7 +17,7 @@ type ROMInfo struct {
 }
 
 type App struct {
-	Emu     chip8.Emu
+	VM     chip8.VM
 	DB      *db.DB
 	RomHash string
 }
@@ -40,7 +40,7 @@ func (a *App) LoadRom(path string) int {
 	}
 
 	a.RomHash = db.SHA1Of(rom)
-	a.Emu.LoadRom(rom)
+	a.VM.LoadRom(rom)
 
 	return len(rom)
 }

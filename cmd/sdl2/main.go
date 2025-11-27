@@ -68,7 +68,7 @@ type App struct {
 	window   *sdl.Window
 	texture  *sdl.Texture
 	renderer *sdl.Renderer
-	emu      *chip8.Emu
+	emu      *chip8.VM
 	rgbBuf   []byte
 	scale    int
 }
@@ -77,7 +77,7 @@ func NewApp(scale int) (*App, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO | sdl.INIT_AUDIO); err != nil {
 		return nil, err
 	}
-	emu := chip8.NewEmu()
+	emu := chip8.NewVM()
 	window, err := sdl.CreateWindow("ch8go",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,

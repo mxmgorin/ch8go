@@ -25,14 +25,14 @@ func TestRoms(t *testing.T) {
 				t.Fatalf("failed to read ROM: %v", err)
 			}
 
-			emu := chip8.NewEmu()
-			emu.LoadRom(data)
+			vm := chip8.NewVM()
+			vm.LoadRom(data)
 
 			for range 1_000_000 {
-				emu.Step()
+				vm.Step()
 			}
 
-			actualHash := hash(emu.Display.Pixels[:])
+			actualHash := hash(vm.Display.Pixels[:])
 
 			if actualHash != expectedHash {
 				t.Fatalf("hash mismatch:\nexpected: %s\nactual: %s", expectedHash, actualHash)
