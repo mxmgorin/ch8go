@@ -2,26 +2,32 @@ package chip8
 
 import "fmt"
 
+const defaultCPUHz = 700.0
+
 type VM struct {
-	CPU      CPU
-	Memory   Memory
-	Display  Display
-	Keypad   Keypad
-	RomSize  int
-	tickrate int
+	CPU        CPU
+	Memory     Memory
+	Display    Display
+	Keypad     Keypad
+	RomSize    int
+	cpuHz      float64
+	timerHz    float64
+	cycleAccum float64
+	timerAccum float64
 }
 
 func NewVM() *VM {
 	return &VM{
-		CPU:      NewCpu(QuirksSuperChip11),
-		Memory:   NewMemory(),
-		Display:  NewDisplay(),
-		Keypad:   NewKeypad(),
-		tickrate: 15,
+		CPU:     NewCpu(QuirksSuperChip11),
+		Memory:  NewMemory(),
+		Display: NewDisplay(),
+		Keypad:  NewKeypad(),
+		timerHz: 60.0,
+		cpuHz:   defaultCPUHz,
 	}
 }
 
-func (vm *VM) SetTickrate(r int)  { vm.tickrate = r }
+func (vm *VM) SetTickrate(tr int) { vm.cpuHz = float64(tr) * 60.0 }
 func (vm *VM) SetQuirks(q Quirks) { vm.CPU.quirks = q }
 
 func (vm *VM) LoadROM(bytes []byte) error {
@@ -33,7 +39,7 @@ func (vm *VM) LoadROM(bytes []byte) error {
 	vm.Keypad.Reset()
 	vm.CPU.Reset()
 	vm.RomSize = len(bytes)
-	vm.tickrate = 15
+	vm.cpuHz = defaultCPUHz
 	vm.CPU.quirks = QuirksSuperChip11
 
 	return nil
@@ -46,13 +52,21 @@ func (vm *VM) Step() {
 	}
 }
 
-// Should run at 60 fps
-func (vm *VM) RunFrame() bool {
-	for range vm.tickrate {
+func (vm *VM) RunFrame(dt float64) bool {
+	vm.cycleAccum += vm.cpuHz * dt
+
+	for vm.cycleAccum >= 1 {
+		vm.cycleAccum -= 1
 		vm.Step()
 	}
 
-	vm.CPU.tickTimers()
+	vm.timerAccum += vm.timerHz * dt
+
+	for vm.timerAccum >= 1 {
+		vm.timerAccum -= 1
+		vm.CPU.tickTimers()
+	}
+
 	return vm.Display.poll()
 }
 

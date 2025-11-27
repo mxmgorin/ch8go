@@ -3,17 +3,19 @@ package app
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/mxmgorin/ch8go/app/db"
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
 type App struct {
-	VM      *chip8.VM
-	DB      *db.DB
-	ROMHash string
-	rgbaBuf []byte
-	painter Painter
+	VM       *chip8.VM
+	DB       *db.DB
+	ROMHash  string
+	rgbaBuf  []byte
+	painter  Painter
+	lastTime time.Time
 }
 
 type Painter interface {
@@ -39,7 +41,7 @@ func NewApp(painter Painter) (*App, error) {
 		}
 	}
 
-	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter}, nil
+	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter, lastTime: time.Now()}, nil
 }
 
 func (a *App) Quit() {
@@ -50,9 +52,12 @@ func (a *App) HasROM() bool {
 	return a.ROMHash != ""
 }
 
-// Should be run at 60 fps
 func (a *App) PaintFrame() {
-	if a.VM.RunFrame() && a.HasROM() {
+	now := time.Now()
+	dt := now.Sub(a.lastTime).Seconds()
+	a.lastTime = now
+
+	if a.VM.RunFrame(dt) && a.HasROM() {
 		a.Paint()
 	}
 }
