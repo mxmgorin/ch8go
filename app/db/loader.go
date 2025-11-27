@@ -41,11 +41,18 @@ type ProgramDto struct {
 }
 
 type RomDto struct {
-	File          string   `json:"file"`
-	Platforms     []string `json:"platforms"`
-	Description   string   `json:"description,omitempty"`
-	EmbeddedTitle string   `json:"embeddedTitle,omitempty"`
-	Tickrate    int       `json:"tickrate"`
+	File          string        `json:"file"`
+	Platforms     []string      `json:"platforms"`
+	Description   string        `json:"description,omitempty"`
+	EmbeddedTitle string        `json:"embeddedTitle,omitempty"`
+	Tickrate      int           `json:"tickrate"`
+	Colors        *RomColorsDto `json:"colors,omitempty"`
+}
+
+type RomColorsDto struct {
+	Pixels  []string `json:"pixels"`  // e.g. ["#aa4400", "#ffaa00", "#ff6600", "#662200"]
+	Buzzer  string   `json:"buzzer"`  // e.g. "#ffaa00"
+	Silence string   `json:"silence"` // e.g. "#000000"
 }
 
 type PlatformDto struct {
