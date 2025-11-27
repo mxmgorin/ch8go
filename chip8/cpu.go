@@ -6,7 +6,7 @@ import (
 
 const OP_SIZE = 2
 
-type Cpu struct {
+type CPU struct {
 	v      [16]byte
 	i      uint16
 	pc     uint16
@@ -18,14 +18,14 @@ type Cpu struct {
 	quirks Quirks
 }
 
-func NewCpu(quirks Quirks) Cpu {
-	return Cpu{
+func NewCpu(quirks Quirks) CPU {
+	return CPU{
 		pc:     0x200,
 		quirks: quirks,
 	}
 }
 
-func (c *Cpu) Reset() {
+func (c *CPU) Reset() {
 	for i := range c.v {
 		c.v[i] = 0
 	}
@@ -41,7 +41,7 @@ func (c *Cpu) Reset() {
 	}
 }
 
-func (c *Cpu) tickTimers() {
+func (c *CPU) tickTimers() {
 	if c.dt > 0 {
 		c.dt--
 	}
@@ -50,14 +50,14 @@ func (c *Cpu) tickTimers() {
 	}
 }
 
-func (c *Cpu) fetch(memory *Memory) uint16 {
+func (c *CPU) fetch(memory *Memory) uint16 {
 	opcode := memory.ReadU16(c.pc)
 	c.pc += 2
 
 	return opcode
 }
 
-func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
+func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
@@ -186,7 +186,7 @@ func (c *Cpu) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	}
 }
 
-func (c *Cpu) execute_8xyn(op uint16) {
+func (c *CPU) execute_8xyn(op uint16) {
 	x := read_x(op)
 	y := read_y(op)
 
@@ -263,7 +263,7 @@ func (c *Cpu) execute_8xyn(op uint16) {
 	}
 }
 
-func (c *Cpu) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
+func (c *CPU) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 	x := read_x(op)
 
 	switch op & 0x00FF {
@@ -345,30 +345,30 @@ func read_nnn(op uint16) uint16 {
 	return op & 0x0FFF
 }
 
-func (c *Cpu) push(val uint16) {
+func (c *CPU) push(val uint16) {
 	c.stack[c.sp] = val
 	c.sp += 1
 }
 
-func (c *Cpu) pop() uint16 {
+func (c *CPU) pop() uint16 {
 	c.sp -= 1
 	return c.stack[c.sp]
 }
 
-func (c *Cpu) ret() {
+func (c *CPU) ret() {
 	c.pc = c.pop()
 }
 
-func (c *Cpu) call(addr uint16) {
+func (c *CPU) call(addr uint16) {
 	c.push(c.pc)
 	c.pc = addr
 }
 
-func (c *Cpu) jp(addr uint16) {
+func (c *CPU) jp(addr uint16) {
 	c.pc = addr
 }
 
-func (c *Cpu) skipNextIf(cond bool) {
+func (c *CPU) skipNextIf(cond bool) {
 	if cond {
 		c.pc += 2
 	}

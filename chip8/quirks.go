@@ -137,7 +137,7 @@ type Quirks struct {
 	VFReset bool
 }
 
-func (q *Quirks) exec_mem(c *Cpu, x uint16) {
+func (q *Quirks) exec_mem(c *CPU, x uint16) {
 	if q.MemLeaveI {
 		// Do nothing (Superchip 1.1 behavior)
 	} else if q.MemIncIByX {

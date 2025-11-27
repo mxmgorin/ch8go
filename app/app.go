@@ -29,16 +29,24 @@ func NewApp() *App {
 		fmt.Println("Failed to create DB:", err)
 	}
 
-	return &App{DB: db}
+	return &App{DB: db, VM: *chip8.NewVM()}
 }
 
-func (a *App) LoadROM(path string) int {
+func (a *App) HasROM() bool {
+	return a.ROMHash != ""
+}
+
+func (a *App) ReadROM(path string) int {
 	rom, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return 0
 	}
 
+	return a.LoadROM(rom)
+}
+
+func (a *App) LoadROM(rom []byte) int {
 	a.ROMHash = db.SHA1Of(rom)
 	a.VM.LoadROM(rom)
 

@@ -15,7 +15,7 @@ func (d DisasmInfo) String() string {
 	return fmt.Sprintf("%04X: %04X  %s", d.PC, d.Op, d.Asm)
 }
 
-func DebugRegisters(cpu *Cpu) string {
+func DebugRegisters(cpu *CPU) string {
 	return fmt.Sprintf("PC=%04X I=%04X V=%v", cpu.pc, cpu.i, cpu.v)
 }
 

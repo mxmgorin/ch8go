@@ -13,17 +13,45 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
+type CLI struct {
+	app *app.App
+}
+
+func newCLI() CLI {
+	return CLI{app: app.NewApp()}
+}
+
 func main() {
 	fmt.Println("ch8go CLI. Type 'help' for commands.")
 
 	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
 	flag.Parse()
-	reader := bufio.NewReader(os.Stdin)
-	app := app.NewApp()
 
+	cli := newCLI()
 	if *romPath != "" {
-		loadROM(app, *romPath)
+		cli.loadROM(*romPath)
 	}
+
+	cli.run()
+}
+
+func printHelp() {
+	fmt.Println(`
+Commands:
+  help            Show all supported commands
+  load <file>     Load a ROM into memory
+  step <n>        Execute 1 or N instructions
+  peek <n>        Disassemble 1 or N instructions starting from PC
+  regs            Show registers
+  dis             Disassemble the loaded ROM
+  draw            Render the current display buffer in ASCII
+  info            Show metadata about a ROM
+  quit            Exit`)
+	fmt.Println()
+}
+
+func (cli *CLI) run() {
+	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		fmt.Print("ch8go> ")
@@ -45,25 +73,25 @@ func main() {
 				fmt.Println("Usage: load <rom>")
 				continue
 			}
-			loadROM(app, args[1])
+			cli.loadROM(args[1])
 
 		case "step":
-			step(&app.VM, args)
+			cli.step(args)
 
 		case "regs":
-			regs(&app.VM)
+			cli.regs()
 
 		case "peek":
-			peek(&app.VM, args)
+			cli.peek(args)
 
 		case "draw":
-			draw(&app.VM)
+			cli.draw()
 
 		case "dis":
-			dis(&app.VM)
+			cli.dis()
 
 		case "info":
-			info := app.ROMInfo()
+			info := cli.app.ROMInfo()
 			b, _ := json.MarshalIndent(info, "", "  ")
 			fmt.Println(string(b))
 
@@ -76,38 +104,23 @@ func main() {
 	}
 }
 
-func printHelp() {
-	fmt.Println(`
-Commands:
-  help            Show all supported commands
-  load <file>     Load a ROM into memory
-  step <n>        Execute 1 or N instructions
-  peek <n>        Disassemble 1 or N instructions starting from PC
-  regs            Show registers
-  dis             Disassemble the loaded ROM
-  draw            Render the current display buffer in ASCII
-  info            Show metadata about a ROM
-  quit            Exit`)
-	fmt.Println()
-}
-
-func loadROM(app *app.App, path string) {
-	len := app.LoadROM(path)
+func (cli *CLI) loadROM(path string) {
+	len := cli.app.ReadROM(path)
 	fmt.Printf("ROM loaded (%d bytes).\n", len)
 	fmt.Println()
 }
 
-func regs(vm *chip8.VM) {
-	if noROM(vm) {
+func (cli *CLI) regs() {
+	if cli.noROM() {
 		return
 	}
 
-	fmt.Println(chip8.DebugRegisters(&vm.Cpu))
+	fmt.Println(chip8.DebugRegisters(&cli.app.VM.CPU))
 	fmt.Println()
 }
 
-func step(vm *chip8.VM, args []string) {
-	if noROM(vm) {
+func (cli *CLI) step(args []string) {
+	if cli.noROM() {
 		return
 	}
 
@@ -122,29 +135,29 @@ func step(vm *chip8.VM, args []string) {
 	}
 
 	for range steps {
-		vm.Step()
+		cli.app.VM.Step()
 	}
 
 	if steps > 1 {
 		fmt.Printf("Executed %d steps.\n", steps)
 	} else {
-		fmt.Println(vm.PeekNext())
+		fmt.Println(cli.app.VM.PeekNext())
 	}
 
 	fmt.Println()
 }
 
-func draw(vm *chip8.VM) {
-	if noROM(vm) {
+func (cli *CLI) draw() {
+	if cli.noROM() {
 		return
 	}
 
-	println(chip8.RenderASCII(&vm.Display))
+	println(chip8.RenderASCII(&cli.app.VM.Display))
 	fmt.Println()
 }
 
-func peek(vm *chip8.VM, args []string) {
-	if noROM(vm) {
+func (cli *CLI) peek(args []string) {
+	if cli.noROM() {
 		return
 	}
 
@@ -159,7 +172,7 @@ func peek(vm *chip8.VM, args []string) {
 		}
 	}
 
-	list := vm.Peek(n)
+	list := cli.app.VM.Peek(n)
 	for _, info := range list {
 		fmt.Println(info)
 	}
@@ -167,12 +180,12 @@ func peek(vm *chip8.VM, args []string) {
 	fmt.Println()
 }
 
-func dis(vm *chip8.VM) {
-	if noROM(vm) {
+func (cli *CLI) dis() {
+	if cli.noROM() {
 		return
 	}
 
-	list := vm.DisasmROM()
+	list := cli.app.VM.DisasmROM()
 	for _, info := range list {
 		fmt.Println(info)
 	}
@@ -180,8 +193,8 @@ func dis(vm *chip8.VM) {
 	fmt.Println()
 }
 
-func noROM(vm *chip8.VM) bool {
-	if vm.Status == chip8.StatusNoRom {
+func (cli *CLI) noROM() bool {
+	if !cli.app.HasROM() {
 		fmt.Println("No ROM. Use 'load <file>' first.")
 		fmt.Println()
 		return true
