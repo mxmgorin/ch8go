@@ -62,6 +62,9 @@ func newWASM() WASM {
 	win := js.Global().Get("window")
 	win.Call("addEventListener", "keydown", js.FuncOf(onKeyDown))
 	win.Call("addEventListener", "keyup", js.FuncOf(onKeyUp))
+	// Html keyboard
+	js.Global().Set("triggerKeyDown", js.FuncOf(triggerKeyDown))
+	js.Global().Set("triggerKeyUp", js.FuncOf(triggerKeyUp))
 
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
@@ -112,6 +115,27 @@ func loop(this js.Value, args []js.Value) any {
 	wasm.app.PaintFrame()
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
+	return nil
+}
+
+func triggerKeyDown(this js.Value, args []js.Value) any {
+	key := args[0].String()
+	fmt.Println(key)
+
+	event := js.Global().Get("Object").New()
+	event.Set("key", key)
+
+	onKeyDown(js.Value{}, []js.Value{event})
+	return nil
+}
+
+func triggerKeyUp(this js.Value, args []js.Value) any {
+	key := args[0].String()
+
+	event := js.Global().Get("Object").New()
+	event.Set("key", key)
+
+	onKeyUp(js.Value{}, []js.Value{event})
 	return nil
 }
 

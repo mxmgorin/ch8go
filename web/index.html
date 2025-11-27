@@ -8,117 +8,6 @@
             rel="stylesheet"
         />
         <title>ch8go</title>
-    </head>
-
-    <body>
-        <div class="page">
-            <h1 class="title">ch8go</h1>
-            <p class="subtitle">
-                CHIP-8 in your browser — classic 1977 system powered by Go and
-                WASM.
-            </p>
-
-            <div class="loaders">
-                <div class="group">
-                    <label for="roms" class="label">Select Game:</label>
-                    <select id="roms">
-                        <option value="roms/octogon.ch8">Octogon</option>
-                        <option value="roms/danm8ku.ch8">Danm8ku</option>
-                        <option value="roms/br8kout.ch8">Br8kout</option>
-                        <option value="roms/snake.ch8">Snake</option>
-                        <option value="roms/INVADERS">Invaders</option>
-                        <option value="roms/TETRIS">Tetris</option>
-                        <option value="roms/TANK">Tank</option>
-                    </select>
-                </div>
-
-                <div class="separator">OR</div>
-
-                <div class="group">
-                    <label for="romInput" class="label">Upload ROM</label>
-                    <input type="file" id="romInput" accept=".ch8" />
-                </div>
-            </div>
-
-            <div class="screen" id="chip8-screen">
-                <canvas
-                    id="chip8-canvas"
-                    style="transform: scale(1); transform-origin: top left"
-                ></canvas>
-            </div>
-
-        <h4>Controls</h4>
-        <div id="keyboard">
-            <table class="tg keyboard-element">
-              <caption>Keyboard</caption>
-              <thead>
-                <tr>
-                  <th class="tg-il3a">1</th>
-                  <th class="tg-il3a">2</th>
-                  <th class="tg-il3a">3</th>
-                  <th class="tg-il3a">4</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="tg-il3a">Q</td>
-                  <td class="tg-il3a">W</td>
-                  <td class="tg-il3a">E</td>
-                  <td class="tg-il3a">R</td>
-                </tr>
-                <tr>
-                  <td class="tg-il3a">A</td>
-                  <td class="tg-il3a">S</td>
-                  <td class="tg-il3a">D</td>
-                  <td class="tg-il3a">F</td>
-                </tr>
-                <tr>
-                  <td class="tg-il3a">Z</td>
-                  <td class="tg-il3a">X</td>
-                  <td class="tg-il3a">C</td>
-                  <td class="tg-il3a">V</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <span class="keyboard-element" id="arrow">&#8594;</span>
-
-            <table class="tg keyboard-element">
-              <caption>CHIP-8</caption>
-              <thead>
-                <tr>
-                  <th class="tg-il3a">1</th>
-                  <th class="tg-il3a">2</th>
-                  <th class="tg-il3a">3</th>
-                  <th class="tg-il3a">C</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="tg-il3a">4</td>
-                  <td class="tg-il3a">5</td>
-                  <td class="tg-il3a">6</td>
-                  <td class="tg-il3a">D</td>
-                </tr>
-                <tr>
-                  <td class="tg-il3a">7</td>
-                  <td class="tg-il3a">8</td>
-                  <td class="tg-il3a">9</td>
-                  <td class="tg-il3a">E</td>
-                </tr>
-                <tr>
-                  <td class="tg-il3a">A</td>
-                  <td class="tg-il3a">0</td>
-                  <td class="tg-il3a">B</td>
-                  <td class="tg-il3a">F</td>
-                </tr>
-              </tbody>
-            </table>
-        </div>
-
-        <script src="wasm_exec.js"></script>
-        <script src="main.js" type="module"></script>
-
         <a
             href="https://github.com/mxmgorin/ch8go"
             class="github-corner"
@@ -152,5 +41,80 @@
                     class="octo-body"
                 ></path></svg
         ></a>
+    </head>
+
+    <body>
+        <div class="page">
+            <h1 class="title">ch8go</h1>
+            <p class="subtitle">
+                CHIP-8 in your browser — classic 1977 system powered by Go and
+                WASM.
+            </p>
+
+            <div class="loaders">
+                <div class="group">
+                    <label for="roms" class="label">Select ROM:</label>
+                    <select id="roms">
+                        <option value="roms/octogon.ch8">Octogon</option>
+                        <option value="roms/danm8ku.ch8">Danm8ku</option>
+                        <option value="roms/br8kout.ch8">Br8kout</option>
+                        <option value="roms/snake.ch8">Snake</option>
+                        <option value="roms/INVADERS">Invaders</option>
+                        <option value="roms/TETRIS">Tetris</option>
+                        <option value="roms/TANK">Tank</option>
+                    </select>
+                </div>
+
+                <div class="separator">OR</div>
+
+                <div class="group">
+                    <label for="romInput" class="label">Upload File</label>
+                    <input type="file" id="romInput" accept=".ch8" />
+                </div>
+            </div>
+
+            <div class="screen" id="chip8-screen">
+                <canvas
+                    id="chip8-canvas"
+                    style="transform: scale(1); transform-origin: top left"
+                ></canvas>
+            </div>
+
+        <h4>Controls</h4>
+        <div id="keyboard">
+            <table class="tg keyboard-element">
+              <thead>
+                <tr>
+                  <th class="tg-il3a">1</th>
+                  <th class="tg-il3a">2</th>
+                  <th class="tg-il3a">3</th>
+                  <th class="tg-il3a">4</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tg-il3a">Q</td>
+                  <td class="tg-il3a">W</td>
+                  <td class="tg-il3a">E</td>
+                  <td class="tg-il3a">R</td>
+                </tr>
+                <tr>
+                  <td class="tg-il3a">A</td>
+                  <td class="tg-il3a">S</td>
+                  <td class="tg-il3a">D</td>
+                  <td class="tg-il3a">F</td>
+                </tr>
+                <tr>
+                  <td class="tg-il3a">Z</td>
+                  <td class="tg-il3a">X</td>
+                  <td class="tg-il3a">C</td>
+                  <td class="tg-il3a">V</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+
+        <script src="wasm_exec.js"></script>
+        <script src="main.js" type="module"></script>
     </body>
 </html>

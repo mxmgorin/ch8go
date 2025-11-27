@@ -23,6 +23,8 @@ async function init() {
 
   const firstRom = select.options[0].value;
   await loadRomFromUrl(firstRom);
+
+  setupKeyboard();
 }
 
 async function loadRomFromUrl(url) {
@@ -30,5 +32,33 @@ async function loadRomFromUrl(url) {
   const buf = new Uint8Array(await resp.arrayBuffer());
   chip8_loadROM(buf);
 }
+
+
+function setupKeyboard() {
+    const cells = document.querySelectorAll("#keyboard td, #keyboard th");
+
+    cells.forEach(cell => {
+        const key = cell.textContent.trim().toLowerCase();
+
+        // PRESS
+        cell.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            window.dispatchEvent(new KeyboardEvent("keydown", { key }));
+        });
+
+        // RELEASE
+        cell.addEventListener("pointerup", (e) => {
+            e.preventDefault();
+            window.dispatchEvent(new KeyboardEvent("keyup", { key }));
+        });
+
+        // Safety: handle pointer leaving the key while still pressed
+        cell.addEventListener("pointerleave", (e) => {
+            e.preventDefault();
+            window.dispatchEvent(new KeyboardEvent("keyup", { key }));
+        });
+    });
+}
+
 
 init();
