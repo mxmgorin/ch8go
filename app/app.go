@@ -3,11 +3,21 @@ package app
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mxmgorin/ch8go/app/db"
 	"github.com/mxmgorin/ch8go/chip8"
 )
+
+var DefaultPalette = Palette{
+	Color{0, 0, 0},       // background
+	Color{255, 255, 255}, // foreground
+}
+
+type Color [3]byte
+type Palette [2]Color // [foreground/background][RGB]
 
 type App struct {
 	VM       *chip8.VM
@@ -16,6 +26,7 @@ type App struct {
 	rgbaBuf  []byte
 	painter  Painter
 	lastTime time.Time
+	palette  Palette
 }
 
 type Painter interface {
@@ -41,7 +52,7 @@ func NewApp(painter Painter) (*App, error) {
 		}
 	}
 
-	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter, lastTime: time.Now()}, nil
+	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter, lastTime: time.Now(), palette: DefaultPalette}, nil
 }
 
 func (a *App) Quit() {
@@ -72,6 +83,7 @@ func (a *App) ReadROM(path string) (int, error) {
 }
 
 func (a *App) LoadROM(rom []byte) (int, error) {
+	a.palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
@@ -110,6 +122,10 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 		tickrate = romInfo.Tickrate
 	}
 
+	if romInfo.Colors != nil && romInfo.Colors.Pixels != nil {
+		a.SetPalette(romInfo.Colors.Pixels)
+	}
+
 	if tickrate > 0 {
 		a.VM.SetTickrate(tickrate)
 		fmt.Println("Set tickrate", tickrate)
@@ -132,16 +148,53 @@ func (a *App) Paint() {
 	pixels := a.VM.Display.Pixels
 
 	for i := range pixels {
-		v := byte(0)
-		if pixels[i] != 0 {
-			v = 255
-		}
+		color := a.palette[pixels[i]] // pixels[i] is 0 or 1
 		idx := i * 4
-		a.rgbaBuf[idx] = v
-		a.rgbaBuf[idx+1] = v
-		a.rgbaBuf[idx+2] = v
+
+		a.rgbaBuf[idx] = color[0]
+		a.rgbaBuf[idx+1] = color[1]
+		a.rgbaBuf[idx+2] = color[2]
 		a.rgbaBuf[idx+3] = 255
 	}
 
 	a.painter.Paint(a.rgbaBuf, a.VM.Display.Width, a.VM.Display.Height)
+}
+
+func (a *App) SetPalette(colors []string) error {
+	for i := 0; i < 2 && i < len(colors); i++ {
+		color, err := parseHexColor(colors[i])
+
+		if err != nil {
+			return err
+		}
+
+		a.palette[i] = color
+	}
+
+	return nil
+}
+
+func parseHexColor(s string) (Color, error) {
+	s = strings.TrimPrefix(s, "#")
+
+	if len(s) != 6 {
+		return Color{}, fmt.Errorf("invalid hex color: %q", s)
+	}
+
+	ri, err := strconv.ParseUint(s[0:2], 16, 8)
+	if err != nil {
+		return Color{}, err
+	}
+
+	gi, err := strconv.ParseUint(s[2:4], 16, 8)
+	if err != nil {
+		return Color{}, err
+	}
+
+	bi, err := strconv.ParseUint(s[4:6], 16, 8)
+	if err != nil {
+		return Color{}, err
+	}
+
+	return Color{byte(ri), byte(gi), byte(bi)}, nil
 }
