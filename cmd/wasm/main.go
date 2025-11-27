@@ -23,14 +23,14 @@ type CanvasPainter struct {
 	ctx         js.Value
 	imageData   js.Value
 	screen      js.Value
-	borderColor app.Color
+	screenBgColor *app.Color
 }
 
-func (p *CanvasPainter) setBorder(color app.Color) {
-	if p.borderColor != color {
+func (p *CanvasPainter) setScreenBg(color app.Color) {
+	if p.screenBgColor == nil || *p.screenBgColor != color {
 		hex := color.ToHex()
-		p.screen.Get("style").Set("borderColor", hex)
-		p.borderColor = color
+		p.screen.Get("style").Set("background", hex)
+		p.screenBgColor = &color
 	}
 }
 
@@ -55,7 +55,7 @@ func (p *CanvasPainter) Init(w, h int) error {
 func (p *CanvasPainter) Destroy() {}
 
 func (p *CanvasPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
-	p.setBorder(sc)
+	p.setScreenBg(sc)
 	js.CopyBytesToJS(p.imageData.Get("data"), rgbaBuf)
 	p.ctx.Call("putImageData", p.imageData, 0, 0)
 }
