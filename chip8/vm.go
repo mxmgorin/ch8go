@@ -34,7 +34,7 @@ func NewVM() *VM {
 	}
 }
 
-func (vm *VM) LoadRom(bytes []byte) error {
+func (vm *VM) LoadROM(bytes []byte) error {
 	err := vm.Memory.Load(bytes)
 	if err != nil {
 		return fmt.Errorf("failed to load ROM: %w", err)
@@ -110,7 +110,7 @@ func (vm *VM) Peek(n int) []DisasmInfo {
 	return results
 }
 
-func (vm *VM) DisasmRom() []DisasmInfo {
+func (vm *VM) DisasmROM() []DisasmInfo {
 	start := ProgramStart
 	end := ProgramStart + vm.RomSize
 	results := make([]DisasmInfo, 0, vm.RomSize/OP_SIZE)

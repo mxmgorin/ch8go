@@ -109,7 +109,7 @@ func (a *App) Quit() {
 }
 
 func (a *App) Run(rom []byte) error {
-	if err := a.emu.LoadRom(rom); err != nil {
+	if err := a.emu.LoadROM(rom); err != nil {
 		return err
 	}
 	frameDelay := time.Second / 60 // target 60 FPS

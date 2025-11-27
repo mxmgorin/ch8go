@@ -22,7 +22,7 @@ func main() {
 	app := app.NewApp()
 
 	if *romPath != "" {
-		loadRom(app, *romPath)
+		loadROM(app, *romPath)
 	}
 
 	for {
@@ -45,7 +45,7 @@ func main() {
 				fmt.Println("Usage: load <rom>")
 				continue
 			}
-			loadRom(app, args[1])
+			loadROM(app, args[1])
 
 		case "step":
 			step(&app.VM, args)
@@ -91,14 +91,14 @@ Commands:
 	fmt.Println()
 }
 
-func loadRom(app *app.App, path string) {
-	len := app.LoadRom(path)
+func loadROM(app *app.App, path string) {
+	len := app.LoadROM(path)
 	fmt.Printf("ROM loaded (%d bytes).\n", len)
 	fmt.Println()
 }
 
 func regs(vm *chip8.VM) {
-	if noRom(vm) {
+	if noROM(vm) {
 		return
 	}
 
@@ -107,7 +107,7 @@ func regs(vm *chip8.VM) {
 }
 
 func step(vm *chip8.VM, args []string) {
-	if noRom(vm) {
+	if noROM(vm) {
 		return
 	}
 
@@ -135,7 +135,7 @@ func step(vm *chip8.VM, args []string) {
 }
 
 func draw(vm *chip8.VM) {
-	if noRom(vm) {
+	if noROM(vm) {
 		return
 	}
 
@@ -144,7 +144,7 @@ func draw(vm *chip8.VM) {
 }
 
 func peek(vm *chip8.VM, args []string) {
-	if noRom(vm) {
+	if noROM(vm) {
 		return
 	}
 
@@ -168,11 +168,11 @@ func peek(vm *chip8.VM, args []string) {
 }
 
 func dis(vm *chip8.VM) {
-	if noRom(vm) {
+	if noROM(vm) {
 		return
 	}
 
-	list := vm.DisasmRom()
+	list := vm.DisasmROM()
 	for _, info := range list {
 		fmt.Println(info)
 	}
@@ -180,7 +180,7 @@ func dis(vm *chip8.VM) {
 	fmt.Println()
 }
 
-func noRom(vm *chip8.VM) bool {
+func noROM(vm *chip8.VM) bool {
 	if vm.Status == chip8.StatusNoRom {
 		fmt.Println("No ROM. Use 'load <file>' first.")
 		fmt.Println()

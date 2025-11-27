@@ -17,9 +17,9 @@ type ROMInfo struct {
 }
 
 type App struct {
-	VM     chip8.VM
+	VM      chip8.VM
 	DB      *db.DB
-	RomHash string
+	ROMHash string
 }
 
 func NewApp() *App {
@@ -32,37 +32,25 @@ func NewApp() *App {
 	return &App{DB: db}
 }
 
-func (a *App) LoadRom(path string) int {
+func (a *App) LoadROM(path string) int {
 	rom, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return 0
 	}
 
-	a.RomHash = db.SHA1Of(rom)
-	a.VM.LoadRom(rom)
+	a.ROMHash = db.SHA1Of(rom)
+	a.VM.LoadROM(rom)
 
 	return len(rom)
 }
 
-func (a *App) ROMInfo() *ROMInfo {
-	program := a.DB.FindProgram(a.RomHash)
+func (a *App) ROMInfo() *db.RomDto {
+	program := a.DB.FindProgram(a.ROMHash)
 	if program == nil {
 		return nil // Unknown ROM
 	}
+	rom := program.ROMs[a.ROMHash]
 
-	romDto, ok := program.ROMs[a.RomHash]
-	if !ok || len(romDto.Platforms) == 0 {
-		return nil // Corrupted or incomplete DB entry
-	}
-
-	platformId := romDto.Platforms[0]
-
-	return &ROMInfo{
-		Title:       program.Title,
-		Release:     program.Release,
-		Authors:     program.Authors,
-		Description: program.Description,
-		Platform:    a.DB.FindPlatform(platformId),
-	}
+	return &rom
 }

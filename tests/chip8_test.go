@@ -26,7 +26,7 @@ func TestRoms(t *testing.T) {
 			}
 
 			vm := chip8.NewVM()
-			vm.LoadRom(data)
+			vm.LoadROM(data)
 
 			for range 1_000_000 {
 				vm.Step()

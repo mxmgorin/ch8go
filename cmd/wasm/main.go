@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"syscall/js"
-	"time"
 
 	"github.com/mxmgorin/ch8go/chip8"
 )
@@ -15,7 +14,6 @@ var (
 	imageData js.Value
 	rgbaBuf   []byte
 	vm        *chip8.VM
-	lastTime  time.Time
 	loopFunc  js.Func
 )
 
@@ -52,7 +50,6 @@ func main() {
 
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc = js.FuncOf(loop)
-	lastTime = time.Now()
 	js.Global().Call("requestAnimationFrame", loopFunc)
 
 	// Keep WASM alive
@@ -63,8 +60,8 @@ func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	vm.LoadRom(buf)
-	fmt.Println("Rom loaded")
+	vm.LoadROM(buf)
+	fmt.Println("ROM loaded")
 	return nil
 }
 
@@ -101,7 +98,7 @@ func loop(this js.Value, args []js.Value) any {
 	}
 
 	if vm.RunFrame() {
-		drawScreen()
+		draw()
 	}
 
 	// Schedule next frame
@@ -109,7 +106,7 @@ func loop(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func drawScreen() {
+func draw() {
 	pixels := vm.Display.Pixels
 
 	for i := range pixels {
