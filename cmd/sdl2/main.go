@@ -176,5 +176,7 @@ func main() {
 	fmt.Println("ch8go SDL2")
 	fmt.Printf("ROM: %s\n", *romPath)
 
-	app.Run(rom)
+	if err := app.Run(rom); err != nil {
+		log.Fatal(err)
+	}
 }
