@@ -15,13 +15,22 @@ async function init() {
     chip8_loadROM(data);
   };
 
+  const input = document.getElementById("romInput");
+  const fileName = document.getElementById("fileName");
+
+  input.addEventListener("change", () => {
+    fileName.textContent = input.files[0]?.name || "";
+  });
+
   const select = document.getElementById("roms");
   select.onchange = async (e) => {
     const path = e.target.value;
+    fileName.textContent = e.target.value;
     if (path) loadRomFromUrl(path);
   };
 
   const firstRom = select.options[0].value;
+  fileName.textContent = firstRom;
   await loadRomFromUrl(firstRom);
 
   setupKeyboard();
@@ -33,32 +42,30 @@ async function loadRomFromUrl(url) {
   chip8_loadROM(buf);
 }
 
-
 function setupKeyboard() {
-    const cells = document.querySelectorAll("#keyboard td, #keyboard th");
+  const cells = document.querySelectorAll("#keyboard td, #keyboard th");
 
-    cells.forEach(cell => {
-        const key = cell.textContent.trim().toLowerCase();
+  cells.forEach((cell) => {
+    const key = cell.textContent.trim().toLowerCase();
 
-        // PRESS
-        cell.addEventListener("pointerdown", (e) => {
-            e.preventDefault();
-            window.dispatchEvent(new KeyboardEvent("keydown", { key }));
-        });
-
-        // RELEASE
-        cell.addEventListener("pointerup", (e) => {
-            e.preventDefault();
-            window.dispatchEvent(new KeyboardEvent("keyup", { key }));
-        });
-
-        // Safety: handle pointer leaving the key while still pressed
-        cell.addEventListener("pointerleave", (e) => {
-            e.preventDefault();
-            window.dispatchEvent(new KeyboardEvent("keyup", { key }));
-        });
+    // PRESS
+    cell.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      window.dispatchEvent(new KeyboardEvent("keydown", { key }));
     });
-}
 
+    // RELEASE
+    cell.addEventListener("pointerup", (e) => {
+      e.preventDefault();
+      window.dispatchEvent(new KeyboardEvent("keyup", { key }));
+    });
+
+    // Safety: handle pointer leaving the key while still pressed
+    cell.addEventListener("pointerleave", (e) => {
+      e.preventDefault();
+      window.dispatchEvent(new KeyboardEvent("keyup", { key }));
+    });
+  });
+}
 
 init();
