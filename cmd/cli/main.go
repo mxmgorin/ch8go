@@ -18,36 +18,47 @@ type CLI struct {
 }
 
 func newCLI() CLI {
-	return CLI{app: app.NewApp()}
+	a, _ := app.NewApp(&ASCIIPainter{})
+	return CLI{app: a}
 }
 
-func main() {
-	fmt.Println("ch8go CLI. Type 'help' for commands.")
+type ASCIIPainter struct{}
 
-	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
-	flag.Parse()
+func (p *ASCIIPainter) Init(w, h int) error {
+	return nil
+}
 
-	cli := newCLI()
-	if *romPath != "" {
-		cli.loadROM(*romPath)
+func (p *ASCIIPainter) Destroy() {}
+
+func (p *ASCIIPainter) Paint(rgbaBuf []byte, w, h int) {
+	const (
+		on  = "██"
+		off = "░░"
+	)
+
+	out := strings.Builder{}
+	out.Grow(h * w * 2)
+
+	for y := range h {
+		for x := range w {
+			i := (y*w + x) * 4 // RGBA = 4 bytes per pixel
+			r := rgbaBuf[i]
+			g := rgbaBuf[i+1]
+			b := rgbaBuf[i+2]
+
+			// Simple brightness check
+			if (r | g | b) != 0 {
+				out.WriteString(on)
+			} else {
+				out.WriteString(off)
+			}
+		}
+
+		out.WriteByte('\n')
 	}
 
-	cli.run()
-}
-
-func printHelp() {
-	fmt.Println(`
-Commands:
-  help            Show all supported commands
-  load <file>     Load a ROM into memory
-  step <n>        Execute 1 or N instructions
-  peek <n>        Disassemble 1 or N instructions starting from PC
-  regs            Show registers
-  dis             Disassemble the loaded ROM
-  draw            Render the current display buffer in ASCII
-  info            Show metadata about a ROM
-  quit            Exit`)
-	fmt.Println()
+	ascii := out.String()
+	println(ascii)
 }
 
 func (cli *CLI) run() {
@@ -105,8 +116,13 @@ func (cli *CLI) run() {
 }
 
 func (cli *CLI) loadROM(path string) {
-	len := cli.app.ReadROM(path)
-	fmt.Printf("ROM loaded (%d bytes).\n", len)
+	len, err := cli.app.ReadROM(path)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Printf("ROM loaded (%d bytes).\n", len)
+	}
+
 	fmt.Println()
 }
 
@@ -152,6 +168,7 @@ func (cli *CLI) draw() {
 		return
 	}
 
+	// cli.app.Paint()
 	println(chip8.RenderASCII(&cli.app.VM.Display))
 	fmt.Println()
 }
@@ -201,4 +218,33 @@ func (cli *CLI) noROM() bool {
 	}
 
 	return false
+}
+
+func printHelp() {
+	fmt.Println(`
+Commands:
+  help            Show all supported commands
+  load <file>     Load a ROM into memory
+  step <n>        Execute 1 or N instructions
+  peek <n>        Disassemble 1 or N instructions starting from PC
+  regs            Show registers
+  dis             Disassemble the loaded ROM
+  draw            Render the current display buffer in ASCII
+  info            Show metadata about a ROM
+  quit            Exit`)
+	fmt.Println()
+}
+
+func main() {
+	fmt.Println("ch8go CLI. Type 'help' for commands.")
+
+	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
+	flag.Parse()
+
+	cli := newCLI()
+	if *romPath != "" {
+		cli.loadROM(*romPath)
+	}
+
+	cli.run()
 }

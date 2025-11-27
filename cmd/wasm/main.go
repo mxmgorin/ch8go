@@ -22,7 +22,7 @@ var (
 )
 
 func newWASM() WASM {
-	app := app.NewApp()
+	app, _ := app.NewApp(nil)
 
 	// Setup canvas
 	w := app.VM.Display.Width
