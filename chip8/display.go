@@ -23,6 +23,12 @@ func (d *Display) Clear() {
 	d.dirty = true
 }
 
+func (d *Display) Reset() {
+	d.Clear()
+	d.setResolution(false)
+	d.pendingVBlank = false
+}
+
 func (d *Display) poll() bool {
 	result := d.dirty
 	d.dirty = false
