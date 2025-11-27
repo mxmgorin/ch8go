@@ -3,12 +3,12 @@ package chip8
 import "fmt"
 
 type VM struct {
-	CPU     CPU
-	Memory  Memory
-	Display Display
-	Keypad  Keypad
-	RomSize int
-	tickrate   int
+	CPU      CPU
+	Memory   Memory
+	Display  Display
+	Keypad   Keypad
+	RomSize  int
+	tickrate int
 }
 
 func NewVM() *VM {
@@ -21,6 +21,9 @@ func NewVM() *VM {
 	}
 }
 
+func (vm *VM) SetTickrate(r int)  { vm.tickrate = r }
+func (vm *VM) SetQuirks(q Quirks) { vm.CPU.quirks = q }
+
 func (vm *VM) LoadROM(bytes []byte) error {
 	err := vm.Memory.Load(bytes)
 	if err != nil {
@@ -30,6 +33,8 @@ func (vm *VM) LoadROM(bytes []byte) error {
 	vm.Keypad.Reset()
 	vm.CPU.Reset()
 	vm.RomSize = len(bytes)
+	vm.tickrate = 15
+	vm.CPU.quirks = QuirksSuperChip11
 
 	return nil
 }

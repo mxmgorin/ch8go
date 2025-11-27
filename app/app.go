@@ -72,6 +72,44 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 		return 0, err
 	}
 
+	romInfo := a.ROMInfo()
+	tickrate := 0
+
+	for i := range romInfo.Platforms {
+		id := romInfo.Platforms[i]
+		if id != "xochip" && id != "megachip8" {
+			platform := a.DB.FindPlatform(id)
+
+			if platform != nil {
+				quirks := chip8.Quirks{
+					Shift:      platform.Quirks.Shift,
+					MemIncIByX: platform.Quirks.MemoryIncrementByX,
+					MemLeaveI:  platform.Quirks.MemoryLeaveIUnchanged,
+					Wrap:       platform.Quirks.Wrap,
+					Jump:       platform.Quirks.Jump,
+					VBlankWait: platform.Quirks.VBlank,
+					VFReset:    platform.Quirks.Logic,
+				}
+				a.VM.SetQuirks(quirks)
+				fmt.Println("Set quirks", platform.ID)
+
+				if platform.DefaultTickrate > 0 {
+					tickrate = platform.DefaultTickrate
+				}
+				break
+			}
+		}
+	}
+
+	if romInfo.Tickrate > 0 {
+		tickrate = romInfo.Tickrate
+	}
+
+	if tickrate > 0 {
+		a.VM.SetTickrate(tickrate)
+		fmt.Println("Set tickrate", tickrate)
+	}
+
 	return len(rom), nil
 }
 

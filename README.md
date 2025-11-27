@@ -11,6 +11,7 @@
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
 - **Quirks Support**: Implements all common CHIP-8 / SCHIP / XO quirks, including shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank timings.
+- **CHIP-8 DB Integration**: Automatically applies the proper quirks and tickrate for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.

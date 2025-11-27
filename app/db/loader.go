@@ -45,6 +45,7 @@ type RomDto struct {
 	Platforms     []string `json:"platforms"`
 	Description   string   `json:"description,omitempty"`
 	EmbeddedTitle string   `json:"embeddedTitle,omitempty"`
+	Tickrate    int       `json:"tickrate"`
 }
 
 type PlatformDto struct {
