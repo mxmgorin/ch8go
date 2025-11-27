@@ -8,21 +8,16 @@ type VM struct {
 	Display Display
 	Keypad  Keypad
 	RomSize int
-	cpuHz   float64
-	fps     float64
-
-	timerAccum float64
-	cycleAccum float64
+	tickrate   int
 }
 
 func NewVM() *VM {
 	return &VM{
-		CPU:     NewCpu(QuirksSuperChip11),
-		Memory:  NewMemory(),
-		Display: NewDisplay(),
-		Keypad:  NewKeypad(),
-		cpuHz:   600.0,
-		fps:     60.0,
+		CPU:      NewCpu(QuirksSuperChip11),
+		Memory:   NewMemory(),
+		Display:  NewDisplay(),
+		Keypad:   NewKeypad(),
+		tickrate: 15,
 	}
 }
 
@@ -44,28 +39,16 @@ func (vm *VM) Step() {
 		opcode := vm.CPU.fetch(&vm.Memory)
 		vm.CPU.execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad)
 	}
-
-	vm.tickTimers()
 }
 
+// Should run at 60 fps
 func (vm *VM) RunFrame() bool {
-	vm.cycleAccum += vm.cpuHz / vm.fps
-
-	for vm.cycleAccum >= 1.0 {
-		vm.cycleAccum -= 1.0
+	for range vm.tickrate {
 		vm.Step()
 	}
 
+	vm.CPU.tickTimers()
 	return vm.Display.poll()
-}
-
-func (vm *VM) tickTimers() {
-	vm.timerAccum += 60.0 / vm.cpuHz
-
-	for vm.timerAccum >= 1.0 {
-		vm.timerAccum -= 1.0
-		vm.CPU.tickTimers()
-	}
 }
 
 func (vm *VM) PeekNext() DisasmInfo {

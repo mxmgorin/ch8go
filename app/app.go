@@ -50,6 +50,13 @@ func (a *App) HasROM() bool {
 	return a.ROMHash != ""
 }
 
+// Should be run at 60 fps
+func (a *App) PaintFrame() {
+	if a.VM.RunFrame() && a.HasROM() {
+		a.Paint()
+	}
+}
+
 func (a *App) ReadROM(path string) (int, error) {
 	rom, err := os.ReadFile(path)
 	if err != nil {

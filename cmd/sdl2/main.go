@@ -84,9 +84,7 @@ func (a *Sdl2App) Run(rom []byte) error {
 			}
 		}
 
-		if a.app.VM.RunFrame() {
-			a.app.Paint()
-		}
+		a.app.PaintFrame()
 
 		elapsed := time.Since(frameStart)
 		if elapsed < frameDelay {

@@ -109,16 +109,7 @@ func onKeyUp(this js.Value, args []js.Value) any {
 }
 
 func loop(this js.Value, args []js.Value) any {
-	if !wasm.app.HasROM() {
-		// Don't run CPU until ROM exists
-		js.Global().Call("requestAnimationFrame", wasm.loopFunc)
-		return nil
-	}
-
-	if wasm.app.VM.RunFrame() {
-		wasm.app.Paint()
-	}
-
+	wasm.app.PaintFrame()
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
 	return nil
@@ -126,7 +117,6 @@ func loop(this js.Value, args []js.Value) any {
 
 func main() {
 	fmt.Println("ch8go WASM")
-
 	wasm = newWASM()
 	wasm.run()
 }
