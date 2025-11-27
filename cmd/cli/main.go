@@ -46,7 +46,6 @@ func (p *ASCIIPainter) Paint(rgbaBuf []byte, w, h int) {
 			g := rgbaBuf[i+1]
 			b := rgbaBuf[i+2]
 
-			// Simple brightness check
 			if (r | g | b) != 0 {
 				out.WriteString(on)
 			} else {

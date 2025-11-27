@@ -9,24 +9,22 @@ import (
 	"github.com/mxmgorin/ch8go/app"
 )
 
-type WASM struct {
-	ctx       js.Value
-	imageData js.Value
-	rgbaBuf   []byte
-	loopFunc  js.Func
-	app       *app.App
-}
-
 var (
-	wasm WASM
+	wasm   WASM
+	keymap = map[string]byte{
+		"1": 0x1, "2": 0x2, "3": 0x3, "4": 0xC,
+		"q": 0x4, "w": 0x5, "e": 0x6, "r": 0xD,
+		"a": 0x7, "s": 0x8, "d": 0x9, "f": 0xE,
+		"z": 0xA, "x": 0x0, "c": 0xB, "v": 0xF,
+	}
 )
 
-func newWASM() WASM {
-	app, _ := app.NewApp(nil)
+type CanvasPainter struct {
+	ctx       js.Value
+	imageData js.Value
+}
 
-	// Setup canvas
-	w := app.VM.Display.Width
-	h := app.VM.Display.Height
+func (p *CanvasPainter) Init(w, h int) error {
 	scale := 5
 	doc := js.Global().Get("document")
 	canvas := doc.Call("getElementById", "chip8-canvas")
@@ -39,10 +37,24 @@ func newWASM() WASM {
 	screen.Set("width", w*scale)
 	screen.Set("height", h*scale)
 
-	ctx := canvas.Call("getContext", "2d")
-	imageData := ctx.Call("createImageData", w, h)
-	rgbaBuf := make([]byte, w*h*4)
+	p.ctx = canvas.Call("getContext", "2d")
+	p.imageData = p.ctx.Call("createImageData", w, h)
+	return nil
+}
 
+func (p *CanvasPainter) Destroy() {}
+
+func (p *CanvasPainter) Paint(rgbaBuf []byte, w, h int) {
+	js.CopyBytesToJS(p.imageData.Get("data"), rgbaBuf)
+	p.ctx.Call("putImageData", p.imageData, 0, 0)
+}
+
+type WASM struct {
+	loopFunc js.Func
+	app      *app.App
+}
+
+func newWASM() WASM {
 	// Export ROM loader
 	js.Global().Set("chip8_loadROM", js.FuncOf(loadROM))
 
@@ -55,20 +67,13 @@ func newWASM() WASM {
 	loopFunc := js.FuncOf(loop)
 	js.Global().Call("requestAnimationFrame", loopFunc)
 
+	painter := &CanvasPainter{}
+	app, _ := app.NewApp(painter)
+
 	return WASM{
-		app:       app,
-		ctx:       ctx,
-		imageData: imageData,
-		rgbaBuf:   rgbaBuf,
-		loopFunc:  loopFunc,
+		app:      app,
+		loopFunc: loopFunc,
 	}
-}
-
-func main() {
-	fmt.Println("ch8go WASM")
-
-	wasm = newWASM()
-	wasm.run()
 }
 
 func (wasm *WASM) run() {
@@ -103,13 +108,6 @@ func onKeyUp(this js.Value, args []js.Value) any {
 	return nil
 }
 
-var keymap = map[string]byte{
-	"1": 0x1, "2": 0x2, "3": 0x3, "4": 0xC,
-	"q": 0x4, "w": 0x5, "e": 0x6, "r": 0xD,
-	"a": 0x7, "s": 0x8, "d": 0x9, "f": 0xE,
-	"z": 0xA, "x": 0x0, "c": 0xB, "v": 0xF,
-}
-
 func loop(this js.Value, args []js.Value) any {
 	if !wasm.app.HasROM() {
 		// Don't run CPU until ROM exists
@@ -118,7 +116,7 @@ func loop(this js.Value, args []js.Value) any {
 	}
 
 	if wasm.app.VM.RunFrame() {
-		draw()
+		wasm.app.Paint()
 	}
 
 	// Schedule next frame
@@ -126,21 +124,9 @@ func loop(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func draw() {
-	pixels := wasm.app.VM.Display.Pixels
+func main() {
+	fmt.Println("ch8go WASM")
 
-	for i := range pixels {
-		v := byte(0)
-		if pixels[i] != 0 {
-			v = 255
-		}
-		idx := i * 4
-		wasm.rgbaBuf[idx] = v
-		wasm.rgbaBuf[idx+1] = v
-		wasm.rgbaBuf[idx+2] = v
-		wasm.rgbaBuf[idx+3] = 255
-	}
-
-	js.CopyBytesToJS(wasm.imageData.Get("data"), wasm.rgbaBuf)
-	wasm.ctx.Call("putImageData", wasm.imageData, 0, 0)
+	wasm = newWASM()
+	wasm.run()
 }

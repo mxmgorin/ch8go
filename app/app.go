@@ -33,8 +33,10 @@ func NewApp(painter Painter) (*App, error) {
 	w := vm.Display.Width
 	h := vm.Display.Height
 
-	if err := painter.Init(w, h); err != nil {
-		return nil, err
+	if painter != nil {
+		if err := painter.Init(w, h); err != nil {
+			return nil, err
+		}
 	}
 
 	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter}, nil
