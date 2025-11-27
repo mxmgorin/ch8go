@@ -70,6 +70,10 @@ func (vm *VM) RunFrame(dt float64) bool {
 	return vm.Display.poll()
 }
 
+func (vm *VM) Buzzer() bool {
+	return vm.CPU.st > 0
+}
+
 func (vm *VM) PeekNext() DisasmInfo {
 	pc := vm.CPU.pc
 	op := vm.Memory.ReadU16(pc)

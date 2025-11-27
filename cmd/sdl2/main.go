@@ -133,7 +133,7 @@ func (p *Sdl2Painter) Init(width, height int) error {
 	return nil
 }
 
-func (p *Sdl2Painter) Paint(rgbaBuf []byte, width, height int) {
+func (p *Sdl2Painter) Paint(rgbaBuf []byte, sc app.Color, width, height int) {
 	pitch := width * 4
 	p.texture.Update(nil, unsafe.Pointer(&rgbaBuf[0]), pitch)
 	p.renderer.Clear()

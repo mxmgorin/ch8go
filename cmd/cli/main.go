@@ -30,7 +30,7 @@ func (p *ASCIIPainter) Init(w, h int) error {
 
 func (p *ASCIIPainter) Destroy() {}
 
-func (p *ASCIIPainter) Paint(rgbaBuf []byte, w, h int) {
+func (p *ASCIIPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
 	const (
 		on  = "██"
 		off = "░░"

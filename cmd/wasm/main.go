@@ -20,8 +20,18 @@ var (
 )
 
 type CanvasPainter struct {
-	ctx       js.Value
-	imageData js.Value
+	ctx         js.Value
+	imageData   js.Value
+	screen      js.Value
+	borderColor app.Color
+}
+
+func (p *CanvasPainter) setBorder(color app.Color) {
+	if p.borderColor != color {
+		hex := color.ToHex()
+		p.screen.Get("style").Set("borderColor", hex)
+		p.borderColor = color
+	}
 }
 
 func (p *CanvasPainter) Init(w, h int) error {
@@ -33,9 +43,9 @@ func (p *CanvasPainter) Init(w, h int) error {
 	canvasStyle := canvas.Get("style")
 	canvasStyle.Set("transform", fmt.Sprintf("scale(%d)", scale))
 
-	screen := doc.Call("getElementById", "chip8-screen")
-	screen.Set("width", w*scale)
-	screen.Set("height", h*scale)
+	p.screen = doc.Call("getElementById", "chip8-screen")
+	p.screen.Set("width", w*scale)
+	p.screen.Set("height", h*scale)
 
 	p.ctx = canvas.Call("getContext", "2d")
 	p.imageData = p.ctx.Call("createImageData", w, h)
@@ -44,7 +54,8 @@ func (p *CanvasPainter) Init(w, h int) error {
 
 func (p *CanvasPainter) Destroy() {}
 
-func (p *CanvasPainter) Paint(rgbaBuf []byte, w, h int) {
+func (p *CanvasPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
+	p.setBorder(sc)
 	js.CopyBytesToJS(p.imageData.Get("data"), rgbaBuf)
 	p.ctx.Call("putImageData", p.imageData, 0, 0)
 }
@@ -113,6 +124,7 @@ func onKeyUp(this js.Value, args []js.Value) any {
 
 func loop(this js.Value, args []js.Value) any {
 	wasm.app.PaintFrame()
+
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
 	return nil

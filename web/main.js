@@ -7,6 +7,12 @@ async function init() {
 
   go.run(result.instance);
 
+  function setBorderColor(color) {
+    document
+      .querySelector(".screen")
+      .style.setProperty("--border-color", color);
+  }
+
   document.getElementById("romInput").onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;

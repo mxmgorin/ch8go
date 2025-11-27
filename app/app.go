@@ -12,12 +12,22 @@ import (
 )
 
 var DefaultPalette = Palette{
-	Color{0, 0, 0},       // background
-	Color{255, 255, 255}, // foreground
+	Pixels:  [2]Color{{0, 0, 0}, {255, 255, 255}},
+	Buzzer:  Color{255, 255, 255},
+	Silence: Color{0, 0, 0},
 }
 
 type Color [3]byte
-type Palette [2]Color // [foreground/background][RGB]
+
+func (c Color) ToHex() string {
+	return fmt.Sprintf("#%02x%02x%02x", c[0], c[1], c[2])
+}
+
+type Palette struct {
+	Pixels  [2]Color
+	Buzzer  Color
+	Silence Color
+}
 
 type App struct {
 	VM       *chip8.VM
@@ -31,7 +41,7 @@ type App struct {
 
 type Painter interface {
 	Init(w, h int) error
-	Paint(rgbaBuf []byte, w, h int)
+	Paint(rgbaBuf []byte, sc Color, w, h int)
 	Destroy()
 }
 
@@ -108,7 +118,7 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 					VFReset:    platform.Quirks.Logic,
 				}
 				a.VM.SetQuirks(quirks)
-				fmt.Println("Set quirks", platform.ID)
+				fmt.Println("Quirks:", platform.ID)
 
 				if platform.DefaultTickrate > 0 {
 					tickrate = platform.DefaultTickrate
@@ -122,13 +132,17 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 		tickrate = romInfo.Tickrate
 	}
 
-	if romInfo.Colors != nil && romInfo.Colors.Pixels != nil {
-		a.SetPalette(romInfo.Colors.Pixels)
+	colors := romInfo.Colors
+
+	if colors != nil && colors.Pixels != nil {
+		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
+			fmt.Println("Failed to set palette")
+		}
 	}
 
 	if tickrate > 0 {
 		a.VM.SetTickrate(tickrate)
-		fmt.Println("Set tickrate", tickrate)
+		fmt.Println("Tickrate:", tickrate)
 	}
 
 	return len(rom), nil
@@ -148,7 +162,7 @@ func (a *App) Paint() {
 	pixels := a.VM.Display.Pixels
 
 	for i := range pixels {
-		color := a.palette[pixels[i]] // pixels[i] is 0 or 1
+		color := a.palette.Pixels[pixels[i]] // pixels[i] is 0 or 1
 		idx := i * 4
 
 		a.rgbaBuf[idx] = color[0]
@@ -156,11 +170,16 @@ func (a *App) Paint() {
 		a.rgbaBuf[idx+2] = color[2]
 		a.rgbaBuf[idx+3] = 255
 	}
+	sc := a.palette.Silence
 
-	a.painter.Paint(a.rgbaBuf, a.VM.Display.Width, a.VM.Display.Height)
+	if a.VM.Buzzer() {
+		sc = a.palette.Buzzer
+	}
+
+	a.painter.Paint(a.rgbaBuf, sc, a.VM.Display.Width, a.VM.Display.Height)
 }
 
-func (a *App) SetPalette(colors []string) error {
+func (a *App) SetPalette(colors []string, buzzer, silence string) error {
 	for i := 0; i < 2 && i < len(colors); i++ {
 		color, err := parseHexColor(colors[i])
 
@@ -168,7 +187,27 @@ func (a *App) SetPalette(colors []string) error {
 			return err
 		}
 
-		a.palette[i] = color
+		a.palette.Pixels[i] = color
+	}
+
+	if buzzer != "" {
+		color, err := parseHexColor(buzzer)
+
+		if err != nil {
+			return nil
+		}
+
+		a.palette.Buzzer = color
+	}
+
+	if silence != "" {
+		color, err := parseHexColor(silence)
+
+		if err != nil {
+			return nil
+		}
+
+		a.palette.Buzzer = color
 	}
 
 	return nil
