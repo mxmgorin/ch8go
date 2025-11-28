@@ -51,14 +51,14 @@
                 WASM.
             </p>
 
-            <div class="loaders">
-                <div class="group">
+            <div class="inputs">
+                <div class="input-group">
                     <label for="roms" class="label">Select ROM:</label>
                     <select id="roms">
                         <option value="roms/octogon.ch8">Octogon</option>
                         <option value="roms/danm8ku.ch8">Danm8ku</option>
-                        <option value="roms/supersquare.ch8">SuperSquare</option>
-                        <option value="roms/blackrainbow.ch8">Blackrainbow</option>
+                        <option value="roms/supersquare.ch8">Super Square</option>
+                        <option value="roms/blackrainbow.ch8">Black Rainbow</option>
                         <option value="roms/binding.ch8">Binding</option>
                         <option value="roms/br8kout.ch8">Br8kout</option>
                         <option value="roms/INVADERS">Invaders</option>
@@ -70,7 +70,7 @@
 
                 <div class="separator">OR</div>
 
-                <div class="group">
+                <div class="input-group">
                     <input type="file" id="romInput" accept=".ch8" hidden />
                     <label for="romInput" class="file-btn">Upload ROM
                     </label>
@@ -82,14 +82,18 @@
             <div class="screen" id="chip8-screen">
                 <canvas
                     id="chip8-canvas"
-                    style="transform: scale(5); transform-origin: top left"
+                    style="transform-origin: top left"
                 ></canvas>
             </div>
 
-            <div class="group">
-                <div id="simple-pickers">
-                    <label class="picker">BG: <input id="bgPicker" type="color" value="#000000"></label>
-                    <label class="picker">FG: <input id="fgPicker" type="color" value="#FFFFFF"></label>
+            <div class="inputs">
+                <div class="input-group">
+                    <label>Scale:</label>
+                    <input id="scaleInput" type="range" min="1" max="15" value="5">
+                </div>
+                <div class="input-group">
+                    <label class="picker">BG: </label><input id="bgPicker" type="color" value="#000000">
+                    <label class="picker">FG: </label><input id="fgPicker" type="color" value="#FFFFFF">
                 </div>
             </div>
 

@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"syscall/js"
 
 	"github.com/mxmgorin/ch8go/app"
@@ -24,7 +25,10 @@ type CanvasPainter struct {
 	ctx           js.Value
 	imageData     js.Value
 	screen        js.Value
+	canvas        js.Value
 	screenBgColor *app.Color
+	width         int
+	height        int
 }
 
 func (p *CanvasPainter) setScreenBg(color app.Color) {
@@ -36,21 +40,42 @@ func (p *CanvasPainter) setScreenBg(color app.Color) {
 }
 
 func (p *CanvasPainter) Init(w, h int) error {
-	scale := 5
+	p.width = w
+	p.height = h
 	doc := js.Global().Get("document")
-	canvas := doc.Call("getElementById", "chip8-canvas")
-	canvas.Set("width", w)
-	canvas.Set("height", h)
-	canvasStyle := canvas.Get("style")
-	canvasStyle.Set("transform", fmt.Sprintf("scale(%d)", scale))
+
+	p.canvas = doc.Call("getElementById", "chip8-canvas")
+	p.canvas.Set("width", w)
+	p.canvas.Set("height", h)
 
 	p.screen = doc.Call("getElementById", "chip8-screen")
-	p.screen.Set("width", w*scale)
-	p.screen.Set("height", h*scale)
 
-	p.ctx = canvas.Call("getContext", "2d")
+	scaleInput := doc.Call("getElementById", "scaleInput")
+	value := scaleInput.Get("value").String()
+	p.setScale(value)
+	scaleInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := scaleInput.Get("value").String()
+		p.setScale(value)
+		return nil
+	}))
+
+	p.ctx = p.canvas.Call("getContext", "2d")
 	p.imageData = p.ctx.Call("createImageData", w, h)
 	return nil
+}
+
+func (p *CanvasPainter) setScale(value string) {
+	scale, err := strconv.Atoi(value)
+	if err != nil {
+		fmt.Println("Invalid scale:", value)
+	}
+
+	canvasStyle := p.canvas.Get("style")
+	canvasStyle.Set("transform", fmt.Sprintf("scale(%d)", scale))
+
+	screenStyle := p.screen.Get("style")
+	screenStyle.Set("width", fmt.Sprintf("%dpx", p.width*scale))
+	screenStyle.Set("height", fmt.Sprintf("%dpx", p.height*scale))
 }
 
 func (p *CanvasPainter) Destroy() {}
