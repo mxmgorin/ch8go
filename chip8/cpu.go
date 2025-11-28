@@ -60,12 +60,15 @@ func (c *CPU) fetch(memory *Memory) uint16 {
 func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
 	switch op & 0xF000 {
 	case 0x0000:
-		switch op & 0x00FF {
-
-		case 0xC0: // 00CN
-			n := read_n(op)
+		// Special: 00CN (00C0 – 00CF)
+		switch op & 0x00F0 {
+		case 0x00C0: // 00CN
+			n := byte(op & 0x000F)
 			display.ScrollDown(n)
+			return
+		}
 
+		switch op & 0x00FF {
 		case 0xE0: // 00E0 - CLS
 			display.Clear()
 

@@ -27,7 +27,7 @@ func TestROMs(t *testing.T) {
 
 func TestQuirksChip8(t *testing.T) {
 	path := "../roms/test/timendus/5-quirks.ch8"
-	expectedHash := "2be1f04866934dedf5c751f331c46a34981526ef841b3218e528913ced0157f8"
+	expectedHash := "cfc94dc6acf6f832242372429c1a89f29dd715e19c8122efb83363a16f873146"
 
 	vm := loadVM(t, path)
 	vm.SetQuirks(chip8.QuirksOriginalChip8)
@@ -39,7 +39,7 @@ func TestQuirksChip8(t *testing.T) {
 
 func TestQuirksSuperChipModern(t *testing.T) {
 	path := "../roms/test/timendus/5-quirks.ch8"
-	expectedHash := "e8915ebba7fae65382357569c4103ecac423b6330b460fcffa4c13c8c84e19c4"
+	expectedHash := "064622ef39ecc953146f83e6ff7b8d954ede3dd3e21a551afca175cf2cda8f99"
 
 	vm := loadVM(t, path)
 	vm.SetQuirks(chip8.QuirksSuperChip11)
@@ -52,7 +52,7 @@ func TestQuirksSuperChipModern(t *testing.T) {
 
 func TestQuirksSuperChipLegacy(t *testing.T) {
 	path := "../roms/test/timendus/5-quirks.ch8"
-	expectedHash := "e8915ebba7fae65382357569c4103ecac423b6330b460fcffa4c13c8c84e19c4"
+	expectedHash := "a754278cf652b6018568766247915b6034412a00632a90e0e06770421f3a501a"
 
 	key := byte(0x2)
 	vm := loadVM(t, path)
@@ -64,14 +64,33 @@ func TestQuirksSuperChipLegacy(t *testing.T) {
 	assert(t, path, vm, expectedHash)
 }
 
+func TestScrollSuperChipHires(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "085d7d83b14b56618323684a700efeeb85ddc8e2f1184a1a7467e23675173019"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x1)
+	pressAndReleaseKey(vm, 0x2)
+
+	assert(t, path, vm, expectedHash)
+}
+
 func pressAndReleaseKey(vm *chip8.VM, key byte) {
+	frames := 6000
+	dt := 0.016
 	vm.Keypad.Press(key)
 
-	for range 10 {
-		vm.RunFrame(0.016)
+	for range frames {
+		vm.RunFrame(dt)
 	}
 
 	vm.Keypad.Release(key)
+
+	for range frames {
+		vm.RunFrame(dt)
+	}
 }
 
 func testROM(t *testing.T, path, expectedHash string) {
@@ -99,7 +118,7 @@ func loadVM(t *testing.T, path string) *chip8.VM {
 func assert(t *testing.T, path string, vm *chip8.VM, expected string) {
 	t.Helper()
 
-	for range 1_000 {
+	for range 600_000 {
 		vm.RunFrame(0.016)
 	}
 
