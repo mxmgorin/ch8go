@@ -14,7 +14,7 @@ type CPU struct {
 	stack  [256]uint16 // original is 16 but modern games require deeper stack
 	dt     byte
 	st     byte
-	rpl    [8]byte // schip extension
+	flags  [16]byte // xochip ext, schip has 8
 	quirks Quirks
 }
 
@@ -110,9 +110,18 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.skipNextIf(c.v[x] != nn)
 
 	case 0x5000:
-		x := read_x(op)
-		y := read_y(op)
-		c.skipNextIf(c.v[x] == c.v[y])
+		switch op & 0x000F {
+		case 0x0: // 5XY0
+			x := read_x(op)
+			y := read_y(op)
+			c.skipNextIf(c.v[x] == c.v[y])
+
+		case 0x2: // xochip
+			c.op5XY2(memory, op)
+
+		case 0x3: // xochip
+			c.op5XY3(memory, op)
+		}
 
 	case 0x6000: // LD Vx, byte
 		x := read_x(op)
@@ -124,7 +133,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.v[x] += nn
 
 	case 0x8000:
-		c.execute_8xyn(op)
+		c.op8XYN(op)
 
 	case 0x9000:
 		x := read_x(op)
@@ -182,14 +191,14 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		}
 
 	case 0xF000:
-		c.execute_fnnn(op, memory, keypad)
+		c.opFNNN(op, memory, keypad)
 
 	default:
 		// todo: handle others
 	}
 }
 
-func (c *CPU) execute_8xyn(op uint16) {
+func (c *CPU) op8XYN(op uint16) {
 	x := read_x(op)
 	y := read_y(op)
 
@@ -266,7 +275,19 @@ func (c *CPU) execute_8xyn(op uint16) {
 	}
 }
 
-func (c *CPU) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
+// XOCHIP. i := long NNNN (0xF000, 0xNNNN) load i with a 16-bit address.
+func (c *CPU) opF000(mem *Memory) {
+	// Read the next 16-bit word as the address
+	addr := c.fetch(mem)
+	c.i = addr
+}
+
+func (c *CPU) opFNNN(op uint16, memory *Memory, keypad *Keypad) {
+	if op == 0xF000 {
+		c.opF000(memory)
+		return
+	}
+
 	x := read_x(op)
 
 	switch op & 0x00FF {
@@ -313,18 +334,55 @@ func (c *CPU) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 		}
 		c.quirks.exec_mem(c, x)
 
-	case 0x75: // FX75 - store V0..VX into RPL flags
-		for i := byte(0); i <= byte(x) && i < 8; i++ {
-			c.rpl[i] = c.v[i]
-
+	case 0x75: // FX75 - store V0..VX into flags
+		for i := byte(0); i <= byte(x); i++ {
+			c.flags[i] = c.v[i]
 		}
 
-	case 0x85: // FX85 - load V0..VX from RPL flags
-		for i := byte(0); i <= byte(x) && i < 8; i++ {
-			c.v[i] = c.rpl[i]
+	case 0x85: // FX85 - load V0..VX from flags
+		for i := byte(0); i <= byte(x); i++ {
+			c.v[i] = c.flags[i]
 		}
 
 	default: // ignored
+	}
+}
+
+// Save Vx..Vy to memory at I
+func (c *CPU) op5XY2(mem *Memory, op uint16) {
+	ix := read_x(op)
+	iy := read_y(op)
+
+	if ix <= iy {
+		// forward: Vx, V(x+1), ..., Vy
+		for r := ix; r <= iy; r++ {
+			mem.bytes[c.i+uint16(r-ix)] = c.v[r]
+		}
+	} else {
+		// backward: Vx, V(x-1), ..., Vy
+		for r := ix; r >= iy; r-- {
+			offset := ix - r
+			mem.bytes[c.i+uint16(offset)] = c.v[r]
+		}
+	}
+}
+
+// 5XY3: Load Vx..Vy from memory at I
+func (c *CPU) op5XY3(mem *Memory, op uint16) {
+	ix := read_x(op)
+	iy := read_y(op)
+
+	if ix <= iy {
+		// forward range
+		for r := ix; r <= iy; r++ {
+			c.v[r] = mem.bytes[c.i+uint16(r-ix)]
+		}
+	} else {
+		// backward range
+		for r := ix; r >= iy; r-- {
+			offset := ix - r
+			c.v[r] = mem.bytes[c.i+uint16(offset)]
+		}
 	}
 }
 
