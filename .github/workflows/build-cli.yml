@@ -2,8 +2,10 @@ name: Build CLI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -25,40 +27,30 @@ jobs:
         shell: bash
         run: |
           mkdir -p build
-          OUT="build/ch8go-cli-${{ matrix.goos }}-${{ matrix.goarch }}"
+          OUT="ch8go-cli-${{ matrix.goos }}-${{ matrix.goarch }}"
 
-          # Windows needs .exe suffix
           if [ "${{ matrix.goos }}" = "windows" ]; then
             OUT="${OUT}.exe"
           fi
+
+          echo "OUT=$OUT" >> $GITHUB_ENV
 
           echo "Building $OUT"
 
           GOOS=${{ matrix.goos }} \
           GOARCH=${{ matrix.goarch }} \
           CGO_ENABLED=0 \
-            go build -o "$OUT" ./cmd/cli
+            go build -o "build/$OUT" ./cmd/cli
 
       - uses: actions/upload-artifact@v4
         with:
           name: cli-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: build/
+          path: build/${{ env.OUT }}
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-
-      - name: Display downloaded artifacts
-        run: ls -R artifacts/
-
-      - name: Publish GitHub Release
+      - name: Upload Linux binary to GitHub Release
+        if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*
+          files: build/${{ env.OUT }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
