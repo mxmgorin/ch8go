@@ -11,7 +11,7 @@ type CPU struct {
 	i      uint16
 	pc     uint16
 	sp     byte
-	stack  [16]uint16
+	stack  [64]uint16 // original is 16 but modern games require deeper stack
 	dt     byte
 	st     byte
 	rpl    [8]byte // schip extension
