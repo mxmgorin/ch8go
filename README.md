@@ -2,7 +2,7 @@
 
 # ch8go
 
-`ch8go` is a CHIP-8 and Super-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate CHIP-8 system with good ROM compatibility and support for Super-CHIP and XO-CHIP.
+`ch8go` is a CHIP-8 and SUPER-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate CHIP-8 system with good ROM compatibility and support for SUPER-CHIP and XO-CHIP.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
@@ -10,8 +10,8 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **Quirks Support**: Implements all common CHIP-8 / SCHIP / XO quirks, including shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank timings.
-- **CHIP-8 DB Integration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
+- **Quirks Support**: Implements all common CHIP-8, SCHIP, XO quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank waiting, half scrolling.
+- **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
@@ -75,8 +75,8 @@ Useful resources for CHIP-8 development:
 - [Chip-8 on the COSMAC VIP](https://www.laurencescotford.net/2020/07/25/chip-8-on-the-cosmac-vip-index)
 - [Opcode Table](https://chip8.gulrak.net)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
-- [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
 - [Mastering SuperChip](https://johnearnest.github.io/Octo/docs/SuperChip.html)
+- [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
 - [CHIP-8 Database](https://github.com/chip-8/chip-8-database)
 - [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)
 - [CHIP-8 Research Facility](https://chip-8.github.io/)
