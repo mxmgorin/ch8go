@@ -55,10 +55,10 @@ type App struct {
 	VM          *chip8.VM
 	DB          *db.DB
 	ROMHash     string
+	Palette     Palette
 	frameBuffer FrameBuffer
 	painter     Painter
 	lastTime    time.Time
-	palette     Palette
 }
 
 func NewApp(painter Painter) (*App, error) {
@@ -84,7 +84,7 @@ func NewApp(painter Painter) (*App, error) {
 		frameBuffer: newFrameBuffer(w, h, 4),
 		painter:     painter,
 		lastTime:    time.Now(),
-		palette:     DefaultPalette,
+		Palette:     DefaultPalette,
 	}, nil
 }
 
@@ -116,7 +116,7 @@ func (a *App) ReadROM(path string) (int, error) {
 }
 
 func (a *App) LoadROM(rom []byte) (int, error) {
-	a.palette = DefaultPalette
+	a.Palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
@@ -184,7 +184,7 @@ func (a *App) Paint() {
 	pixels := a.VM.Display.Pixels
 
 	for i := range pixels {
-		color := a.palette.Pixels[pixels[i]] // pixels[i] is 0 or 1
+		color := a.Palette.Pixels[pixels[i]] // pixels[i] is 0 or 1
 		idx := i * a.frameBuffer.BPP
 
 		a.frameBuffer.Pixels[idx] = color[0]
@@ -194,50 +194,57 @@ func (a *App) Paint() {
 	}
 
 	if a.VM.Buzzer() {
-		a.frameBuffer.SoundColor = a.palette.Buzzer
+		a.frameBuffer.SoundColor = a.Palette.Buzzer
 	} else {
 
-		a.frameBuffer.SoundColor = a.palette.Silence
+		a.frameBuffer.SoundColor = a.Palette.Silence
 	}
 
 	a.painter.Paint(&a.frameBuffer)
 }
 
-func (a *App) SetPalette(colors []string, buzzer, silence string) error {
-	for i := 0; i < 2 && i < len(colors); i++ {
-		color, err := parseHexColor(colors[i])
+func (a *App) SetColor(index int, hex string) error {
+	color, err := ParseHexColor(hex)
 
-		if err != nil {
-			return err
-		}
-
-		a.palette.Pixels[i] = color
+	if err != nil {
+		return err
 	}
 
-	if buzzer != "" {
-		color, err := parseHexColor(buzzer)
-
-		if err != nil {
-			return nil
-		}
-
-		a.palette.Buzzer = color
-	}
-
-	if silence != "" {
-		color, err := parseHexColor(silence)
-
-		if err != nil {
-			return nil
-		}
-
-		a.palette.Buzzer = color
-	}
+	a.Palette.Pixels[index] = color
 
 	return nil
 }
 
-func parseHexColor(s string) (Color, error) {
+func (a *App) SetPalette(colors []string, buzzer, silence string) error {
+	for i := 0; i < 2 && i < len(colors); i++ {
+		a.SetColor(i, colors[i])
+	}
+
+	if buzzer != "" {
+		color, err := ParseHexColor(buzzer)
+
+		if err != nil {
+			return nil
+		}
+
+		a.Palette.Buzzer = color
+	}
+
+	if silence != "" {
+		color, err := ParseHexColor(silence)
+
+		if err != nil {
+			return nil
+		}
+
+		a.Palette.Buzzer = color
+	}
+
+	fmt.Println("Palette:", colors, buzzer, silence)
+
+	return nil
+}
+func ParseHexColor(s string) (Color, error) {
 	s = strings.TrimPrefix(s, "#")
 
 	if len(s) != 6 {

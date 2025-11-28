@@ -61,12 +61,54 @@ func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
 	p.ctx.Call("putImageData", p.imageData, 0, 0)
 }
 
+type ColorPickers struct {
+	fg        js.Value
+	bg        js.Value
+	currentBG app.Color
+	currentFG app.Color
+}
+
+func newColorPickers(doc js.Value, app *app.App) ColorPickers {
+	bg := doc.Call("getElementById", "bgPicker")
+	fg := doc.Call("getElementById", "fgPicker")
+	bg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := bg.Get("value").String()
+		app.SetColor(0, color)
+		return nil
+	}))
+	fg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := fg.Get("value").String()
+		app.SetColor(1, color)
+		return nil
+	}))
+	return ColorPickers{bg: bg, fg: fg}
+}
+
+func (cp *ColorPickers) setColors(bg, fg app.Color) {
+	if cp.currentBG != bg {
+		cp.currentBG = bg
+		cp.bg.Set("value", bg.ToHex())
+	}
+
+	if cp.currentFG != fg {
+		cp.currentFG = fg
+		cp.fg.Set("value", fg.ToHex())
+	}
+}
+
 type WASM struct {
-	loopFunc js.Func
-	app      *app.App
+	loopFunc     js.Func
+	app          *app.App
+	colorPickers ColorPickers
 }
 
 func newWASM() WASM {
+	app, err := app.NewApp(&CanvasPainter{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Export ROM loader
 	js.Global().Set("chip8_loadROM", js.FuncOf(loadROM))
 
@@ -75,18 +117,17 @@ func newWASM() WASM {
 	win.Call("addEventListener", "keydown", js.FuncOf(onKeyDown))
 	win.Call("addEventListener", "keyup", js.FuncOf(onKeyUp))
 
+	// Palette
+	doc := js.Global().Get("document")
+	colorPickers := newColorPickers(doc, app)
+
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
 
-	app, err := app.NewApp(&CanvasPainter{})
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return WASM{
-		app:      app,
-		loopFunc: loopFunc,
+		app:          app,
+		loopFunc:     loopFunc,
+		colorPickers: colorPickers,
 	}
 }
 
@@ -128,6 +169,9 @@ func onKeyUp(this js.Value, args []js.Value) any {
 }
 
 func loop(this js.Value, args []js.Value) any {
+	bg := wasm.app.Palette.Pixels[0]
+	fg := wasm.app.Palette.Pixels[1]
+	wasm.colorPickers.setColors(bg, fg)
 	wasm.app.PaintFrame()
 
 	// Schedule next frame
