@@ -10,13 +10,31 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
     strategy:
-      matrix:
-        goos: [linux, windows, darwin]
-        goarch: [amd64, arm64]
       fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64  # Intel Mac
+
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64  # Apple Silicon
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
