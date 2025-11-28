@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"syscall/js"
 
 	"github.com/mxmgorin/ch8go/app"
@@ -20,9 +21,9 @@ var (
 )
 
 type CanvasPainter struct {
-	ctx         js.Value
-	imageData   js.Value
-	screen      js.Value
+	ctx           js.Value
+	imageData     js.Value
+	screen        js.Value
 	screenBgColor *app.Color
 }
 
@@ -73,16 +74,15 @@ func newWASM() WASM {
 	win := js.Global().Get("window")
 	win.Call("addEventListener", "keydown", js.FuncOf(onKeyDown))
 	win.Call("addEventListener", "keyup", js.FuncOf(onKeyUp))
-	// Html keyboard
-	js.Global().Set("triggerKeyDown", js.FuncOf(triggerKeyDown))
-	js.Global().Set("triggerKeyUp", js.FuncOf(triggerKeyUp))
 
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
-	js.Global().Call("requestAnimationFrame", loopFunc)
 
-	painter := &CanvasPainter{}
-	app, _ := app.NewApp(painter)
+	app, err := app.NewApp(&CanvasPainter{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return WASM{
 		app:      app,
@@ -91,6 +91,7 @@ func newWASM() WASM {
 }
 
 func (wasm *WASM) run() {
+	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
 	// Keep WASM alive
 	select {}
 }
@@ -127,27 +128,6 @@ func loop(this js.Value, args []js.Value) any {
 
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
-	return nil
-}
-
-func triggerKeyDown(this js.Value, args []js.Value) any {
-	key := args[0].String()
-	fmt.Println(key)
-
-	event := js.Global().Get("Object").New()
-	event.Set("key", key)
-
-	onKeyDown(js.Value{}, []js.Value{event})
-	return nil
-}
-
-func triggerKeyUp(this js.Value, args []js.Value) any {
-	key := args[0].String()
-
-	event := js.Global().Get("Object").New()
-	event.Set("key", key)
-
-	onKeyUp(js.Value{}, []js.Value{event})
 	return nil
 }
 
