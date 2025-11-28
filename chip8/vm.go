@@ -4,6 +4,8 @@ import "fmt"
 
 const defaultCPUHz = 700.0
 
+var defaultQuirks = QuirksSuperChip11
+
 type VM struct {
 	CPU        CPU
 	Memory     Memory
@@ -18,7 +20,7 @@ type VM struct {
 
 func NewVM() *VM {
 	return &VM{
-		CPU:     NewCpu(QuirksSuperChip11),
+		CPU:     NewCpu(defaultQuirks),
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
@@ -31,18 +33,22 @@ func (vm *VM) SetTickrate(tr int) { vm.cpuHz = float64(tr) * 60.0 }
 func (vm *VM) SetQuirks(q Quirks) { vm.CPU.quirks = q }
 
 func (vm *VM) LoadROM(bytes []byte) error {
-	err := vm.Memory.Load(bytes)
-	if err != nil {
+	vm.Reset()
+
+	if err := vm.Memory.Load(bytes); err != nil {
 		return fmt.Errorf("failed to load ROM: %w", err)
 	}
-	vm.Display.Clear()
-	vm.Keypad.Reset()
-	vm.CPU.Reset()
-	vm.RomSize = len(bytes)
-	vm.cpuHz = defaultCPUHz
-	vm.CPU.quirks = QuirksSuperChip11
 
 	return nil
+}
+
+func (vm *VM) Reset() {
+	vm.Memory.Reset()
+	vm.Display.Reset()
+	vm.Keypad.Reset()
+	vm.CPU.Reset()
+	vm.cpuHz = defaultCPUHz
+	vm.CPU.quirks = defaultQuirks
 }
 
 func (vm *VM) Step() {

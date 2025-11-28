@@ -73,6 +73,12 @@ func NewMemory() Memory {
 	return m
 }
 
+func (m *Memory) Reset() {
+	for i := range m.bytes {
+		m.bytes[i] = 0
+	}
+}
+
 func (m *Memory) Load(bytes []byte) error {
 	if len(bytes)+ProgramStart > MemorySize {
 		return fmt.Errorf("Size is too large")

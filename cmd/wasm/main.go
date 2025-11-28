@@ -100,8 +100,12 @@ func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	wasm.app.LoadROM(buf)
-	fmt.Println("ROM loaded")
+	len, err := wasm.app.LoadROM(buf)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("ROM loaded:", len, "bytes")
 	return nil
 }
 
