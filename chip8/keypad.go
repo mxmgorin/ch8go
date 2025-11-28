@@ -39,6 +39,7 @@ func (k *Keypad) IsPressed(key byte) bool {
 func (k *Keypad) Reset() {
 	for key := range k.keys {
 		k.keys[key] = false
+		k.prevKeys[key] = false
 	}
 }
 
@@ -51,6 +52,6 @@ func (k *Keypad) GetReleased() (key byte, ok bool) {
 	return 0, false
 }
 
-func (k *Keypad) Update() {
+func (k *Keypad) Latch() {
 	copy(k.prevKeys[:], k.keys[:])
 }

@@ -10,7 +10,7 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **Quirks Support**: Implements all common CHIP-8, SCHIP, XO quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank waiting, half scrolling.
+- **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
@@ -76,6 +76,7 @@ Useful resources for CHIP-8 development:
 - [Opcode Table](https://chip8.gulrak.net)
 - [Instruction Set](https://github.com/mattmikolay/chip-8/wiki/CHIP%E2%80%908-Instruction-Set)
 - [Mastering SuperChip](https://johnearnest.github.io/Octo/docs/SuperChip.html)
+- [XO-CHIP Specification](https://github.com/JohnEarnest/Octo/blob/gh-pages/docs/XO-ChipSpecification.md)
 - [Timendus' test ROMS](https://github.com/Timendus/chip8-test-suite)
 - [CHIP-8 Database](https://github.com/chip-8/chip-8-database)
 - [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)

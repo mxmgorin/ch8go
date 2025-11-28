@@ -30,7 +30,7 @@ func TestQuirksChip8(t *testing.T) {
 	expectedHash := "cfc94dc6acf6f832242372429c1a89f29dd715e19c8122efb83363a16f873146"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksOriginalChip8)
+	vm.SetQuirks(chip8.QuirksChip8)
 
 	pressAndReleaseKey(vm, 0x1)
 
@@ -42,7 +42,7 @@ func TestQuirksSuperChipModern(t *testing.T) {
 	expectedHash := "064622ef39ecc953146f83e6ff7b8d954ede3dd3e21a551afca175cf2cda8f99"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x2)
 	pressAndReleaseKey(vm, 0x1)
@@ -56,7 +56,7 @@ func TestQuirksSuperChipLegacy(t *testing.T) {
 
 	key := byte(0x2)
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChipLegacy)
+	vm.SetQuirks(chip8.QuirksSChip11)
 
 	pressAndReleaseKey(vm, key)
 	pressAndReleaseKey(vm, key)
@@ -69,7 +69,7 @@ func TestScrollSuperChipLowresLegacy(t *testing.T) {
 	expectedHash := "973e3f5234e6d1f666b1812178db9e79773ccf2630d72ca4ce053979b4916dc9"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChipLegacy)
+	vm.SetQuirks(chip8.QuirksSChip11)
 
 	pressAndReleaseKey(vm, 0x1)
 	pressAndReleaseKey(vm, 0x1)
@@ -83,7 +83,7 @@ func TestScrollSuperChipLowresModern(t *testing.T) {
 	expectedHash := "973e3f5234e6d1f666b1812178db9e79773ccf2630d72ca4ce053979b4916dc9"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x1)
 	pressAndReleaseKey(vm, 0x1)
@@ -97,7 +97,7 @@ func TestScrollSuperChipHires(t *testing.T) {
 	expectedHash := "085d7d83b14b56618323684a700efeeb85ddc8e2f1184a1a7467e23675173019"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x1)
 	pressAndReleaseKey(vm, 0x2)
@@ -110,7 +110,7 @@ func TestKeypadDown(t *testing.T) {
 	expectedHash := "9e66af829d008ef5aaee584ca7a7d4832722b2810826fded3d87687aa605a878"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x1)
 
@@ -126,7 +126,7 @@ func TestKeypadUp(t *testing.T) {
 	expectedHash := "9e66af829d008ef5aaee584ca7a7d4832722b2810826fded3d87687aa605a878"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x2)
 
@@ -142,7 +142,7 @@ func TestKeypadGetkey(t *testing.T) {
 	expectedHash := "62bb63fecc9071bc6b46b7bcbd1f86a5e90f01c42057b7f8877f1dfdaa6a1c8d"
 
 	vm := loadVM(t, path)
-	vm.SetQuirks(chip8.QuirksSuperChip11)
+	vm.SetQuirks(chip8.QuirksSChipModern)
 
 	pressAndReleaseKey(vm, 0x3)
 	pressAndReleaseKey(vm, 0x3)

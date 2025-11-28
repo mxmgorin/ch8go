@@ -4,7 +4,7 @@ import "fmt"
 
 const defaultCPUHz = 700.0
 
-var defaultQuirks = QuirksSuperChip11
+var defaultQuirks = QuirksSChipModern
 
 type VM struct {
 	CPU        CPU
@@ -73,7 +73,7 @@ func (vm *VM) RunFrame(dt float64) bool {
 		vm.CPU.tickTimers()
 	}
 
-	vm.Keypad.Update()
+	vm.Keypad.Latch()
 
 	return vm.Display.poll()
 }

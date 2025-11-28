@@ -123,7 +123,7 @@
       "jump": true,
       "vblank": false,
       "logic": false,
-      "scaleScroll": true
+      "scaleScroll": false
     }
   },
   {
