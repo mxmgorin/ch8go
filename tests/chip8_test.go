@@ -105,6 +105,51 @@ func TestScrollSuperChipHires(t *testing.T) {
 	assert(t, path, vm, expectedHash)
 }
 
+func TestKeypadDown(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "9e66af829d008ef5aaee584ca7a7d4832722b2810826fded3d87687aa605a878"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x1)
+
+	for i := range chip8.KEYS_COUNT {
+		vm.Keypad.Press(byte(i))
+	}
+
+	assert(t, path, vm, expectedHash)
+}
+
+func TestKeypadUp(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "9e66af829d008ef5aaee584ca7a7d4832722b2810826fded3d87687aa605a878"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x2)
+
+	for i := range chip8.KEYS_COUNT {
+		vm.Keypad.Release(byte(i))
+	}
+
+	assert(t, path, vm, expectedHash)
+}
+
+func TestKeypadGetkey(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "62bb63fecc9071bc6b46b7bcbd1f86a5e90f01c42057b7f8877f1dfdaa6a1c8d"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x3)
+	pressAndReleaseKey(vm, 0x3)
+
+	assert(t, path, vm, expectedHash)
+}
+
 func pressAndReleaseKey(vm *chip8.VM, key byte) {
 	frames := 6000
 	dt := 0.016

@@ -1,7 +1,5 @@
 package chip8
 
-import "fmt"
-
 const KEYS_COUNT = 16
 
 type Keypad struct {
@@ -47,14 +45,12 @@ func (k *Keypad) Reset() {
 func (k *Keypad) GetReleased() (key byte, ok bool) {
 	for i := range k.keys {
 		if k.prevKeys[i] && !k.keys[i] {
-			fmt.Println("released", key)
 			return byte(i), true
 		}
 	}
 	return 0, false
 }
 
-
 func (k *Keypad) Update() {
-    copy(k.prevKeys[:], k.keys[:])
+	copy(k.prevKeys[:], k.keys[:])
 }
