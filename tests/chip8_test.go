@@ -17,27 +17,97 @@ var roms = map[string]string{
 	"../roms/test/timendus/4-flags.ch8":      "7b6d24ec24c5cd2b7ed4b2176a6a28f8b3b6120d4d1503190674901063113556",
 }
 
-func TestRoms(t *testing.T) {
+func TestROMs(t *testing.T) {
 	for path, expectedHash := range roms {
 		t.Run(path, func(t *testing.T) {
-			data, err := os.ReadFile(path)
-			if err != nil {
-				t.Fatalf("failed to read ROM: %v", err)
-			}
-
-			vm := chip8.NewVM()
-			vm.LoadROM(data)
-
-			for range 1_000_000 {
-				vm.Step()
-			}
-
-			actualHash := hash(vm.Display.Pixels[:])
-
-			if actualHash != expectedHash {
-				t.Fatalf("hash mismatch:\nexpected: %s\nactual: %s", expectedHash, actualHash)
-			}
+			testROM(t, path, expectedHash)
 		})
+	}
+}
+
+func TestQuirksChip8(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "2be1f04866934dedf5c751f331c46a34981526ef841b3218e528913ced0157f8"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksOriginalChip8)
+
+	pressAndReleaseKey(vm, 0x1)
+
+	assert(t, path, vm, expectedHash)
+}
+
+func TestQuirksSuperChipModern(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "e8915ebba7fae65382357569c4103ecac423b6330b460fcffa4c13c8c84e19c4"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x2)
+	pressAndReleaseKey(vm, 0x1)
+
+	assert(t, path, vm, expectedHash)
+}
+
+func TestQuirksSuperChipLegacy(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "e8915ebba7fae65382357569c4103ecac423b6330b460fcffa4c13c8c84e19c4"
+
+	key := byte(0x2)
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChipLegacy)
+
+	pressAndReleaseKey(vm, key)
+	pressAndReleaseKey(vm, key)
+
+	assert(t, path, vm, expectedHash)
+}
+
+func pressAndReleaseKey(vm *chip8.VM, key byte) {
+	vm.Keypad.Press(key)
+
+	for range 10 {
+		vm.RunFrame(0.016)
+	}
+
+	vm.Keypad.Release(key)
+}
+
+func testROM(t *testing.T, path, expectedHash string) {
+	t.Helper() // marks this as a test helper
+
+	vm := loadVM(t, path)
+
+	assert(t, path, vm, expectedHash)
+}
+
+func loadVM(t *testing.T, path string) *chip8.VM {
+	t.Helper() // marks this as test helper
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("failed to read ROM %s: %v", path, err)
+	}
+
+	vm := chip8.NewVM()
+	vm.LoadROM(data)
+
+	return vm
+}
+
+func assert(t *testing.T, path string, vm *chip8.VM, expected string) {
+	t.Helper()
+
+	for range 1_000 {
+		vm.RunFrame(0.016)
+	}
+
+	actual := hash(vm.Display.Pixels[:])
+
+	if actual != expected {
+		t.Fatalf("hash mismatch for %s:\nexpected: %s\nactual: %s",
+			path, expected, actual)
 	}
 }
 

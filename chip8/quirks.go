@@ -23,8 +23,8 @@ var (
 		MemLeaveI:  false,
 		Wrap:       false,
 		Jump:       false,
-		VBlankWait: true,
-		VFReset:    true,
+		VBlankWait: false,
+		VFReset:    false,
 	}
 	// Superchip 1.1 is the platform that most \"superchip\" interpreters implement, because it is the latest version and also
 	// because the difference between Superchip version 1.0 and 1.1 is pretty small.
@@ -37,6 +37,15 @@ var (
 		Wrap:       false,
 		Jump:       true,
 		VBlankWait: false,
+		VFReset:    false,
+	}
+	QuirksSuperChipLegacy = Quirks{
+		Shift:      true,
+		MemIncIByX: false,
+		MemLeaveI:  true,
+		Wrap:       false,
+		Jump:       true,
+		VBlankWait: true,
 		VFReset:    false,
 	}
 )
