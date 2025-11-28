@@ -274,7 +274,7 @@ func (c *CPU) execute_fnnn(op uint16, memory *Memory, keypad *Keypad) {
 		c.v[x] = c.dt
 
 	case 0x0A: // LD Vx, K
-		key, pressed := keypad.GetPressed()
+		key, pressed := keypad.GetReleased()
 		if pressed {
 			c.v[x] = key
 		} else {

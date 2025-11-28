@@ -73,6 +73,8 @@ func (vm *VM) RunFrame(dt float64) bool {
 		vm.CPU.tickTimers()
 	}
 
+	vm.Keypad.Update()
+
 	return vm.Display.poll()
 }
 
