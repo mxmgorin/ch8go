@@ -156,30 +156,36 @@ func (d *Display) spriteFullyOffscreen(x, y, w, h int) bool {
 }
 
 // schip extension
-func (d *Display) ScrollDown(n byte) {
+func (d *Display) ScrollDown(in byte, scale bool) {
 	d.dirty = true
-	N := int(n)
+	n := int(in)
+	if scale && !d.hires {
+		n *= lowresScale
+	}
 	h := d.Height
 	w := d.Width
 
 	// Scroll from bottom upwards
-	for y := h - 1; y >= N; y-- {
-		copy(d.Pixels[y*w:y*w+w], d.Pixels[(y-N)*w:(y-N)*w+w])
+	for y := h - 1; y >= n; y-- {
+		copy(d.Pixels[y*w:y*w+w], d.Pixels[(y-n)*w:(y-n)*w+w])
 	}
 
 	// Clear new top rows
-	for y := range N {
+	for y := range n {
 		for x := range w {
 			d.Pixels[y*w+x] = 0
 		}
 	}
 }
 
-func (d *Display) ScrollRight4() {
+func (d *Display) ScrollRight4(scale bool) {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
 	n := 4
+	if scale && !d.hires {
+		n *= lowresScale
+	}
 
 	for y := range h {
 		row := y * w
@@ -195,11 +201,14 @@ func (d *Display) ScrollRight4() {
 	}
 }
 
-func (d *Display) ScrollLeft4() {
+func (d *Display) ScrollLeft4(scale bool) {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
 	n := 4
+	if scale && !d.hires {
+		n *= lowresScale
+	}
 
 	for y := range h {
 		row := y * w

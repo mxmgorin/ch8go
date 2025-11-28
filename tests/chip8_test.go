@@ -78,6 +78,20 @@ func TestScrollSuperChipLowresLegacy(t *testing.T) {
 	assert(t, path, vm, expectedHash)
 }
 
+func TestScrollSuperChipLowresModern(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "973e3f5234e6d1f666b1812178db9e79773ccf2630d72ca4ce053979b4916dc9"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChip11)
+
+	pressAndReleaseKey(vm, 0x1)
+	pressAndReleaseKey(vm, 0x1)
+	pressAndReleaseKey(vm, 0x1)
+
+	assert(t, path, vm, expectedHash)
+}
+
 func TestScrollSuperChipHires(t *testing.T) {
 	path := "../roms/test/timendus/8-scrolling.ch8"
 	expectedHash := "085d7d83b14b56618323684a700efeeb85ddc8e2f1184a1a7467e23675173019"

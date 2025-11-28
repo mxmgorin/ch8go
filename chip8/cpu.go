@@ -64,7 +64,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		switch op & 0x00F0 {
 		case 0x00C0: // 00CN
 			n := byte(op & 0x000F)
-			display.ScrollDown(n)
+			display.ScrollDown(n, c.quirks.ScaleScroll)
 			return
 		}
 
@@ -76,10 +76,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			c.ret()
 
 		case 0xFB:
-			display.ScrollRight4()
+			display.ScrollRight4(c.quirks.ScaleScroll)
 
 		case 0xFC:
-			display.ScrollLeft4()
+			display.ScrollLeft4(c.quirks.ScaleScroll)
 
 		case 0xFD:
 			c.Reset()

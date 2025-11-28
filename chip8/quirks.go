@@ -31,22 +31,24 @@ var (
 	// This version is faster than its predecessor and adds scroll instructions and a large numeric font.
 	// It does however introduces a new quirk by not incrementing the index register when reading or writing registers to memory.
 	QuirksSuperChip11 = Quirks{
-		Shift:      true,
-		MemIncIByX: false,
-		MemLeaveI:  true,
-		Wrap:       false,
-		Jump:       true,
-		VBlankWait: false,
-		VFReset:    false,
+		Shift:       true,
+		MemIncIByX:  false,
+		MemLeaveI:   true,
+		Wrap:        false,
+		Jump:        true,
+		VBlankWait:  false,
+		VFReset:     false,
+		ScaleScroll: true,
 	}
 	QuirksSuperChipLegacy = Quirks{
-		Shift:      true,
-		MemIncIByX: false,
-		MemLeaveI:  true,
-		Wrap:       false,
-		Jump:       true,
-		VBlankWait: true,
-		VFReset:    false,
+		Shift:       true,
+		MemIncIByX:  false,
+		MemLeaveI:   true,
+		Wrap:        false,
+		Jump:        true,
+		VBlankWait:  true,
+		VFReset:     false,
+		ScaleScroll: false,
 	}
 )
 
@@ -144,6 +146,8 @@ type Quirks struct {
 	//   - `8XY1`, `8XY2`, and `8XY3` will leave `vF` unchanged, unless `vF` is
 	//     the X register.
 	VFReset bool
+
+	ScaleScroll bool
 }
 
 func (q *Quirks) exec_mem(c *CPU, x uint16) {
