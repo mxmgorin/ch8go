@@ -9,6 +9,7 @@ type Display struct {
 	dirty         bool
 	hires         bool
 	pendingVBlank bool
+	activePlane   int
 }
 
 func NewDisplay() Display {

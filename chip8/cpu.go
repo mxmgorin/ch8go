@@ -191,7 +191,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		}
 
 	case 0xF000:
-		c.opFNNN(op, memory, keypad)
+		c.opFNNN(op, display, memory, keypad)
 
 	default:
 		// todo: handle others
@@ -282,7 +282,7 @@ func (c *CPU) opF000(mem *Memory) {
 	c.i = addr
 }
 
-func (c *CPU) opFNNN(op uint16, memory *Memory, keypad *Keypad) {
+func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad) {
 	if op == 0xF000 {
 		c.opF000(memory)
 		return
@@ -291,6 +291,9 @@ func (c *CPU) opFNNN(op uint16, memory *Memory, keypad *Keypad) {
 	x := read_x(op)
 
 	switch op & 0x00FF {
+	case 0x01:
+		display.activePlane = int(c.v[x] & 0x3) // keep only lowest 2 bits
+
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
 
