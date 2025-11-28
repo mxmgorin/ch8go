@@ -147,6 +147,7 @@ type Quirks struct {
 	//     the X register.
 	VFReset bool
 
+	// On the HP48 (SCHIP/SCHIPC) scrolling in lores mode only scrolls half the pixels
 	ScaleScroll bool
 }
 

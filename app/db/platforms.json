@@ -85,7 +85,8 @@
       "wrap": false,
       "jump": true,
       "vblank": false,
-      "logic": false
+      "logic": false,
+      "scaleScroll": false
     }
   },
   {
@@ -103,7 +104,8 @@
       "wrap": false,
       "jump": true,
       "vblank": false,
-      "logic": false
+      "logic": false,
+      "scaleScroll": false
     }
   },
   {
@@ -120,7 +122,8 @@
       "wrap": false,
       "jump": true,
       "vblank": false,
-      "logic": false
+      "logic": false,
+      "scaleScroll": true
     }
   },
   {
@@ -138,7 +141,8 @@
       "wrap": false,
       "jump": true,
       "vblank": false,
-      "logic": false
+      "logic": false,
+      "scaleScroll": true
     }
   },
   {
@@ -161,7 +165,8 @@
       "wrap": true,
       "jump": false,
       "vblank": false,
-      "logic": false
+      "logic": false,
+      "scaleScroll": true
     }
   }
 ]

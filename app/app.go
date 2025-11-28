@@ -127,18 +127,19 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 
 	for i := range romInfo.Platforms {
 		id := romInfo.Platforms[i]
-		if id != "xochip" && id != "megachip8" {
+		if id != "xochip" && id != "megachip8" { // not supported
 			platform := a.DB.FindPlatform(id)
 
 			if platform != nil {
 				quirks := chip8.Quirks{
-					Shift:      platform.Quirks.Shift,
-					MemIncIByX: platform.Quirks.MemoryIncrementByX,
-					MemLeaveI:  platform.Quirks.MemoryLeaveIUnchanged,
-					Wrap:       platform.Quirks.Wrap,
-					Jump:       platform.Quirks.Jump,
-					VBlankWait: platform.Quirks.VBlank,
-					VFReset:    platform.Quirks.Logic,
+					Shift:       platform.Quirks.Shift,
+					MemIncIByX:  platform.Quirks.MemoryIncrementByX,
+					MemLeaveI:   platform.Quirks.MemoryLeaveIUnchanged,
+					Wrap:        platform.Quirks.Wrap,
+					Jump:        platform.Quirks.Jump,
+					VBlankWait:  platform.Quirks.VBlank,
+					VFReset:     platform.Quirks.Logic,
+					ScaleScroll: platform.Quirks.ScaleScroll,
 				}
 				a.VM.SetQuirks(quirks)
 				fmt.Println("Quirks:", platform.ID)

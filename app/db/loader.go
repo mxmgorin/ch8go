@@ -73,4 +73,5 @@ type QuirksDto struct {
 	Jump                  bool `json:"jump"`
 	VBlank                bool `json:"vblank"`
 	Logic                 bool `json:"logic"`
+	ScaleScroll           bool `json:"scaleScroll"`
 }
