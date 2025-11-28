@@ -55,9 +55,9 @@ func (p *CanvasPainter) Init(w, h int) error {
 
 func (p *CanvasPainter) Destroy() {}
 
-func (p *CanvasPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
-	p.setScreenBg(sc)
-	js.CopyBytesToJS(p.imageData.Get("data"), rgbaBuf)
+func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
+	p.setScreenBg(fb.SoundColor)
+	js.CopyBytesToJS(p.imageData.Get("data"), fb.Pixels)
 	p.ctx.Call("putImageData", p.imageData, 0, 0)
 }
 

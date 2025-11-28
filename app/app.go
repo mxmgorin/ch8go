@@ -29,20 +29,36 @@ type Palette struct {
 	Silence Color
 }
 
-type App struct {
-	VM       *chip8.VM
-	DB       *db.DB
-	ROMHash  string
-	rgbaBuf  []byte
-	painter  Painter
-	lastTime time.Time
-	palette  Palette
+type FrameBuffer struct {
+	Pixels     []byte
+	SoundColor Color
+	Width      int
+	Height     int
+	BPP        int
+}
+
+func newFrameBuffer(w, h, bpp int) FrameBuffer {
+	return FrameBuffer{Pixels: make([]byte, w*h*bpp), Width: w, Height: h, BPP: bpp}
+}
+
+func (fb *FrameBuffer) Pitch() int {
+	return fb.Width * fb.BPP
 }
 
 type Painter interface {
 	Init(w, h int) error
-	Paint(rgbaBuf []byte, sc Color, w, h int)
+	Paint(fb *FrameBuffer)
 	Destroy()
+}
+
+type App struct {
+	VM          *chip8.VM
+	DB          *db.DB
+	ROMHash     string
+	frameBuffer FrameBuffer
+	painter     Painter
+	lastTime    time.Time
+	palette     Palette
 }
 
 func NewApp(painter Painter) (*App, error) {
@@ -62,7 +78,14 @@ func NewApp(painter Painter) (*App, error) {
 		}
 	}
 
-	return &App{DB: db, VM: vm, rgbaBuf: make([]byte, w*h*4), painter: painter, lastTime: time.Now(), palette: DefaultPalette}, nil
+	return &App{
+		DB:          db,
+		VM:          vm,
+		frameBuffer: newFrameBuffer(w, h, 4),
+		painter:     painter,
+		lastTime:    time.Now(),
+		palette:     DefaultPalette,
+	}, nil
 }
 
 func (a *App) Quit() {
@@ -133,7 +156,6 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 	}
 
 	colors := romInfo.Colors
-
 	if colors != nil && colors.Pixels != nil {
 		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
 			fmt.Println("Failed to set palette")
@@ -163,20 +185,22 @@ func (a *App) Paint() {
 
 	for i := range pixels {
 		color := a.palette.Pixels[pixels[i]] // pixels[i] is 0 or 1
-		idx := i * 4
+		idx := i * a.frameBuffer.BPP
 
-		a.rgbaBuf[idx] = color[0]
-		a.rgbaBuf[idx+1] = color[1]
-		a.rgbaBuf[idx+2] = color[2]
-		a.rgbaBuf[idx+3] = 255
+		a.frameBuffer.Pixels[idx] = color[0]
+		a.frameBuffer.Pixels[idx+1] = color[1]
+		a.frameBuffer.Pixels[idx+2] = color[2]
+		a.frameBuffer.Pixels[idx+3] = 255
 	}
-	sc := a.palette.Silence
 
 	if a.VM.Buzzer() {
-		sc = a.palette.Buzzer
+		a.frameBuffer.SoundColor = a.palette.Buzzer
+	} else {
+
+		a.frameBuffer.SoundColor = a.palette.Silence
 	}
 
-	a.painter.Paint(a.rgbaBuf, sc, a.VM.Display.Width, a.VM.Display.Height)
+	a.painter.Paint(&a.frameBuffer)
 }
 
 func (a *App) SetPalette(colors []string, buzzer, silence string) error {

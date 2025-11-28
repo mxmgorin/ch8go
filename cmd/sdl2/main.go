@@ -37,6 +37,57 @@ var keymap = map[sdl.Keycode]byte{
 	sdl.K_v: 0xF,
 }
 
+type Sdl2Painter struct {
+	window   *sdl.Window
+	texture  *sdl.Texture
+	renderer *sdl.Renderer
+	scale    int
+}
+
+func (p *Sdl2Painter) Init(width, height int) error {
+	window, err := sdl.CreateWindow("ch8go SDL2",
+		sdl.WINDOWPOS_CENTERED,
+		sdl.WINDOWPOS_CENTERED,
+		int32(width*p.scale),
+		int32(height*p.scale),
+		sdl.WINDOW_SHOWN)
+	if err != nil {
+		return err
+	}
+	p.window = window
+
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	if err != nil {
+		return err
+	}
+	p.renderer = renderer
+
+	texture, err := renderer.CreateTexture(
+		sdl.PIXELFORMAT_ABGR8888,
+		sdl.TEXTUREACCESS_STREAMING,
+		int32(width),
+		int32(height))
+	if err != nil {
+		return err
+	}
+	p.texture = texture
+
+	return nil
+}
+
+func (p *Sdl2Painter) Paint(fb *app.FrameBuffer) {
+	p.texture.Update(nil, unsafe.Pointer(&fb.Pixels[0]), fb.Pitch())
+	p.renderer.Clear()
+	p.renderer.Copy(p.texture, nil, nil)
+	p.renderer.Present()
+}
+
+func (p *Sdl2Painter) Destroy() {
+	p.texture.Destroy()
+	p.renderer.Destroy()
+	p.window.Destroy()
+}
+
 type Sdl2App struct {
 	app *app.App
 }
@@ -93,58 +144,6 @@ func (a *Sdl2App) Run(rom []byte) error {
 	}
 
 	return nil
-}
-
-type Sdl2Painter struct {
-	window   *sdl.Window
-	texture  *sdl.Texture
-	renderer *sdl.Renderer
-	scale    int
-}
-
-func (p *Sdl2Painter) Init(width, height int) error {
-	window, err := sdl.CreateWindow("ch8go SDL2",
-		sdl.WINDOWPOS_CENTERED,
-		sdl.WINDOWPOS_CENTERED,
-		int32(width*p.scale),
-		int32(height*p.scale),
-		sdl.WINDOW_SHOWN)
-	if err != nil {
-		return err
-	}
-	p.window = window
-
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
-	if err != nil {
-		return err
-	}
-	p.renderer = renderer
-
-	texture, err := renderer.CreateTexture(
-		sdl.PIXELFORMAT_ABGR8888,
-		sdl.TEXTUREACCESS_STREAMING,
-		int32(width),
-		int32(height))
-	if err != nil {
-		return err
-	}
-	p.texture = texture
-
-	return nil
-}
-
-func (p *Sdl2Painter) Paint(rgbaBuf []byte, sc app.Color, width, height int) {
-	pitch := width * 4
-	p.texture.Update(nil, unsafe.Pointer(&rgbaBuf[0]), pitch)
-	p.renderer.Clear()
-	p.renderer.Copy(p.texture, nil, nil)
-	p.renderer.Present()
-}
-
-func (p *Sdl2Painter) Destroy() {
-	p.texture.Destroy()
-	p.renderer.Destroy()
-	p.window.Destroy()
 }
 
 func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {

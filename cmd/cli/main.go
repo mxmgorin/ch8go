@@ -13,15 +13,6 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
-type CLI struct {
-	app *app.App
-}
-
-func newCLI() CLI {
-	a, _ := app.NewApp(&ASCIIPainter{})
-	return CLI{app: a}
-}
-
 type ASCIIPainter struct{}
 
 func (p *ASCIIPainter) Init(w, h int) error {
@@ -30,21 +21,23 @@ func (p *ASCIIPainter) Init(w, h int) error {
 
 func (p *ASCIIPainter) Destroy() {}
 
-func (p *ASCIIPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
+func (p *ASCIIPainter) Paint(fb *app.FrameBuffer) {
 	const (
 		on  = "██"
 		off = "░░"
 	)
 
+	h := fb.Height
+	w := fb.Width
 	out := strings.Builder{}
 	out.Grow(h * w * 2)
 
 	for y := range h {
 		for x := range w {
-			i := (y*w + x) * 4 // RGBA = 4 bytes per pixel
-			r := rgbaBuf[i]
-			g := rgbaBuf[i+1]
-			b := rgbaBuf[i+2]
+			i := (y*w + x) * fb.BPP
+			r := fb.Pixels[i]
+			g := fb.Pixels[i+1]
+			b := fb.Pixels[i+2]
 
 			if (r | g | b) != 0 {
 				out.WriteString(on)
@@ -58,6 +51,15 @@ func (p *ASCIIPainter) Paint(rgbaBuf []byte, sc app.Color, w, h int) {
 
 	ascii := out.String()
 	println(ascii)
+}
+
+type CLI struct {
+	app *app.App
+}
+
+func newCLI() CLI {
+	a, _ := app.NewApp(&ASCIIPainter{})
+	return CLI{app: a}
 }
 
 func (cli *CLI) run() {
