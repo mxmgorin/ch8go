@@ -53,6 +53,17 @@ var (
 		VFReset:     false,
 		ScaleScroll: true,
 	}
+
+	QuirksXOChip = Quirks{
+		Shift:       false,
+		MemIncIByX:  false,
+		MemLeaveI:   false,
+		Wrap:        true,
+		Jump:        false,
+		VBlankWait:  false,
+		VFReset:     false,
+		ScaleScroll: true,
+	}
 )
 
 type Quirks struct {

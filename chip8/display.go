@@ -178,6 +178,7 @@ func (d *Display) ScrollDown(in byte, scale bool) {
 	}
 }
 
+// schip
 func (d *Display) ScrollRight4(scale bool) {
 	d.dirty = true
 	w := d.Width
@@ -201,6 +202,7 @@ func (d *Display) ScrollRight4(scale bool) {
 	}
 }
 
+// schip
 func (d *Display) ScrollLeft4(scale bool) {
 	d.dirty = true
 	w := d.Width
@@ -222,5 +224,33 @@ func (d *Display) ScrollLeft4(scale bool) {
 		for x := w - n; x < w; x++ {
 			d.Pixels[row+x] = 0
 		}
+	}
+}
+
+// xochip
+func (d *Display) ScrollUp(n int) {
+	if n <= 0 {
+		return
+	}
+
+	if !d.hires {
+		n *= lowresScale
+	}
+
+	w := d.Width
+	h := d.Height
+	d.dirty = true
+
+	// Move rows upward
+	for y := 0; y < h-n; y++ {
+		src := (y + n) * w
+		dst := y * w
+		copy(d.Pixels[dst:dst+w], d.Pixels[src:src+w])
+	}
+
+	// Clear bottom n rows
+	start := (h - n) * w
+	for i := start; i < len(d.Pixels); i++ {
+		d.Pixels[i] = 0
 	}
 }

@@ -127,7 +127,7 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 
 	for i := range romInfo.Platforms {
 		id := romInfo.Platforms[i]
-		if id != "xochip" && id != "megachip8" { // not supported
+		if id != "megachip8" { // not supported
 			platform := a.DB.FindPlatform(id)
 
 			if platform != nil {

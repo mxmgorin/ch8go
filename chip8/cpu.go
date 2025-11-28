@@ -11,7 +11,7 @@ type CPU struct {
 	i      uint16
 	pc     uint16
 	sp     byte
-	stack  [64]uint16 // original is 16 but modern games require deeper stack
+	stack  [256]uint16 // original is 16 but modern games require deeper stack
 	dt     byte
 	st     byte
 	rpl    [8]byte // schip extension
@@ -60,14 +60,6 @@ func (c *CPU) fetch(memory *Memory) uint16 {
 func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
 	switch op & 0xF000 {
 	case 0x0000:
-		// Special: 00CN (00C0 – 00CF)
-		switch op & 0x00F0 {
-		case 0x00C0: // 00CN
-			n := byte(op & 0x000F)
-			display.ScrollDown(n, c.quirks.ScaleScroll)
-			return
-		}
-
 		switch op & 0x00FF {
 		case 0xE0: // 00E0 - CLS
 			display.Clear()
@@ -91,7 +83,15 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			display.setResolution(true)
 
 		default:
-			// 0NNN - SYS addr (ignored)
+			// Special: 00CN (00C0 – 00CF)
+			switch op & 0x00F0 {
+			case 0x00C0: // 00CN, schip
+				n := read_n(op)
+				display.ScrollDown(n, c.quirks.ScaleScroll)
+			case 0x00D0: // 00DN , xochip
+				n := read_n(op)
+				display.ScrollUp(int(n))
+			}
 		}
 	case 0x1000: // JP addr
 		c.jp(read_nnn(op))

@@ -105,6 +105,32 @@ func TestScrollSuperChipHires(t *testing.T) {
 	assert(t, path, vm, expectedHash)
 }
 
+func TestScrollXoChipLowres(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "f963ef85e0561bc62aa866c2efd9f4d921d290272c44aa8b4ed13d9d6a46c2ac"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksXOChip)
+
+	pressAndReleaseKey(vm, 0x2)
+	pressAndReleaseKey(vm, 0x1)
+
+	assert(t, path, vm, expectedHash)
+}
+
+func TestScrollXoChipHires(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "f4a7b95c43995c42722d57eff45cfb15bfa72b24906cc135cf25e93a1678a0ac"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksXOChip)
+
+	pressAndReleaseKey(vm, 0x2)
+	pressAndReleaseKey(vm, 0x2)
+
+	assert(t, path, vm, expectedHash)
+}
+
 func TestKeypadDown(t *testing.T) {
 	path := "../roms/test/timendus/6-keypad.ch8"
 	expectedHash := "9e66af829d008ef5aaee584ca7a7d4832722b2810826fded3d87687aa605a878"

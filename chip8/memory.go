@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const MemorySize = 4096
+const MemorySize =	65536 // xo-chip extension, the chip8 is 4096
 const ProgramStart = 0x200
 const FontStart = 0x000
 
