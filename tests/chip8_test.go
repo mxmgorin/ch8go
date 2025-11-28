@@ -64,6 +64,20 @@ func TestQuirksSuperChipLegacy(t *testing.T) {
 	assert(t, path, vm, expectedHash)
 }
 
+func TestScrollSuperChipLowresLegacy(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "973e3f5234e6d1f666b1812178db9e79773ccf2630d72ca4ce053979b4916dc9"
+
+	vm := loadVM(t, path)
+	vm.SetQuirks(chip8.QuirksSuperChipLegacy)
+
+	pressAndReleaseKey(vm, 0x1)
+	pressAndReleaseKey(vm, 0x1)
+	pressAndReleaseKey(vm, 0x2)
+
+	assert(t, path, vm, expectedHash)
+}
+
 func TestScrollSuperChipHires(t *testing.T) {
 	path := "../roms/test/timendus/8-scrolling.ch8"
 	expectedHash := "085d7d83b14b56618323684a700efeeb85ddc8e2f1184a1a7467e23675173019"
@@ -118,7 +132,7 @@ func loadVM(t *testing.T, path string) *chip8.VM {
 func assert(t *testing.T, path string, vm *chip8.VM, expected string) {
 	t.Helper()
 
-	for range 600_000 {
+	for range 1_200_000 {
 		vm.RunFrame(0.016)
 	}
 

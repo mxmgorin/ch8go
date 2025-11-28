@@ -1,5 +1,7 @@
 package chip8
 
+const lowresScale = 2
+
 type Display struct {
 	Pixels        []byte
 	Width         int
@@ -108,8 +110,8 @@ func (d *Display) togglePixelScaled(x, y int, wrap bool) (collision bool) {
 	}
 
 	// scale coordinates
-	x *= 2
-	y *= 2
+	x *= lowresScale
+	y *= lowresScale
 	// toggle a 2x2 block
 	collision = d.togglePixel(x, y, wrap) || collision
 	collision = d.togglePixel(x+1, y, wrap) || collision
@@ -142,8 +144,8 @@ func (d *Display) togglePixel(x, y int, wrap bool) bool {
 // A sprite fully offscreen should wrap around screen
 func (d *Display) spriteWrap(x, y, w, h int) bool {
 	if !d.hires {
-		x = x * 2
-		y = y * 2
+		x = x * lowresScale
+		y = y * lowresScale
 	}
 
 	return d.spriteFullyOffscreen(x, y, w, h)
@@ -177,16 +179,17 @@ func (d *Display) ScrollRight4() {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
+	n := 4
 
 	for y := range h {
 		row := y * w
 
 		// scroll right
-		for x := w - 1; x >= 4; x-- {
-			d.Pixels[row+x] = d.Pixels[row+(x-4)]
+		for x := w - 1; x >= n; x-- {
+			d.Pixels[row+x] = d.Pixels[row+(x-n)]
 		}
 
-		for x := range 4 {
+		for x := range n {
 			d.Pixels[row+x] = 0
 		}
 	}
@@ -196,17 +199,18 @@ func (d *Display) ScrollLeft4() {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
+	n := 4
 
 	for y := range h {
 		row := y * w
 
 		// shift left
-		for x := 0; x < w-4; x++ {
-			d.Pixels[row+x] = d.Pixels[row+(x+4)]
+		for x := 0; x < w-n; x++ {
+			d.Pixels[row+x] = d.Pixels[row+(x+n)]
 		}
 
 		// clear rightmost 4 pixels
-		for x := w - 4; x < w; x++ {
+		for x := w - n; x < w; x++ {
 			d.Pixels[row+x] = 0
 		}
 	}
