@@ -222,7 +222,7 @@ func (a *App) SetColor(index int, hex string) error {
 }
 
 func (a *App) SetPalette(colors []string, buzzer, silence string) error {
-	for i := 0; i < 2 && i < len(colors); i++ {
+	for i := 0; i < len(a.Palette.Pixels) && i < len(colors); i++ {
 		a.SetColor(i, colors[i])
 	}
 
