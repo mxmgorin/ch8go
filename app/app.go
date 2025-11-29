@@ -182,7 +182,7 @@ func (a *App) ROMInfo() *db.RomDto {
 }
 
 func (a *App) Paint() {
-	pixels := a.VM.Display.Pixels
+	pixels := a.VM.Display.Planes[0]
 
 	for i := range pixels {
 		color := a.Palette.Pixels[pixels[i]] // pixels[i] is 0 or 1

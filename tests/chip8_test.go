@@ -221,7 +221,7 @@ func assert(t *testing.T, path string, vm *chip8.VM, expected string) {
 		vm.RunFrame(0.016)
 	}
 
-	actual := hash(vm.Display.Pixels[:])
+	actual := hash(vm.Display.Planes[0][:])
 
 	if actual != expected {
 		t.Fatalf("hash mismatch for %s:\nexpected: %s\nactual: %s",

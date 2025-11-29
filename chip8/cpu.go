@@ -166,11 +166,11 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 
 		if n == 0 {
 			// SCHIP 16x16 sprite (32 bytes = 16 pixels, 2 bytes per row)
-			sprite := memory.ReadSprite(c.i, 32)
+			sprite := memory.ReadSprite(c.i, 32*uint16(display.planeMask))
 			collisions = display.DrawSprite16(vx, vy, sprite, c.quirks.Wrap)
 		} else {
 			// Classic CHIP-8 8×N sprite
-			sprite := memory.ReadSprite(c.i, uint16(n))
+			sprite := memory.ReadSprite(c.i, n*uint16(display.planeMask))
 			collisions = display.DrawSprite(vx, vy, sprite, c.quirks.Wrap)
 		}
 		if collisions > 0 {
@@ -292,7 +292,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 
 	switch op & 0x00FF {
 	case 0x01:
-		display.activePlane = int(c.v[x] & 0x3) // keep only lowest 2 bits
+		display.selectPlanes(c.v[x])
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt

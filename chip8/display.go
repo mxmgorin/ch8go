@@ -3,24 +3,31 @@ package chip8
 const lowresScale = 2
 
 type Display struct {
-	Pixels        []byte
+	Planes        [2][]byte
 	Width         int
 	Height        int
 	dirty         bool
 	hires         bool
 	pendingVBlank bool
-	activePlane   int
+	planeMask     int
 }
 
 func NewDisplay() Display {
 	d := Display{}
 	d.setResolution(false)
+	d.planeMask = 1
 	return d
 }
 
 func (d *Display) Clear() {
-	for i := range d.Pixels {
-		d.Pixels[i] = 0
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
+		}
+
+		for i := range d.Planes[plane] {
+			d.Planes[plane][i] = 0
+		}
 	}
 
 	d.dirty = true
@@ -30,6 +37,7 @@ func (d *Display) Reset() {
 	d.Clear()
 	d.setResolution(false)
 	d.pendingVBlank = false
+	d.planeMask = 1
 }
 
 func (d *Display) poll() bool {
@@ -40,35 +48,56 @@ func (d *Display) poll() bool {
 	return result
 }
 
+func (d *Display) selectPlanes(vx byte) {
+	d.planeMask = int(vx & 0x3) // keep only lowest 2 bits
+}
+
 func (d *Display) setResolution(hires bool) {
 	d.Width = 128
 	d.Height = 64
 	d.hires = hires
-	d.Pixels = make([]byte, d.Width*d.Height)
+	d.Planes[0] = make([]byte, d.Width*d.Height)
+	d.Planes[1] = make([]byte, d.Width*d.Height)
 }
 
 // Draws a 8xN sprite at (x,y).
 // Returns count of collisions occurred.
 func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions int) {
+	if d.planeMask == 0 {
+		return
+	}
+
 	d.pendingVBlank = true
 	w := 8
-	h := len(sprite)
+	h := len(sprite) / d.planeMask
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
 
-	for row, b := range sprite {
-		for col := range 8 {
-			if b&(0x80>>col) == 0 {
-				continue
-			}
+	for pi := range d.Planes {
+		if d.isPlaneDisabled(pi) {
+			continue
+		}
 
-			if d.togglePixelScaled(
-				int(x)+col,
-				int(y)+row,
-				wrap,
-			) {
-				collisions += 1
+		planeOffset := pi * h
+
+		for row := range h {
+			b := sprite[planeOffset+row]
+
+			for col := range 8 {
+				if b&(0x80>>col) == 0 {
+					continue
+				}
+
+				if d.togglePixelScaled(
+					pi,
+					int(x)+col,
+					int(y)+row,
+					wrap,
+				) {
+					collisions += 1
+				}
 			}
 		}
+
 	}
 
 	return collisions
@@ -82,16 +111,28 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions 
 	w := 16
 	h := 16
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
+	const bytesPerPlane = 32 // 16 rows × 2 bytes
 
-	for row := range 16 {
-		hi := sprite[row*2]   // high byte
-		lo := sprite[row*2+1] // low byte
-		rowBits := uint16(hi)<<8 | uint16(lo)
+	for pi := range d.Planes {
+		if d.isPlaneDisabled(pi) {
+			continue
+		}
 
-		for col := range 16 {
-			bit := (rowBits >> (15 - col)) & 1
-			if bit == 1 {
+		planeOffset := pi * bytesPerPlane
+
+		for row := range h {
+			hi := sprite[planeOffset+row*2]
+			lo := sprite[planeOffset+row*2+1]
+			rowBits := uint16(hi)<<8 | uint16(lo)
+
+			for col := range w {
+				bit := (rowBits >> (15 - col)) & 1
+				if bit != 1 {
+					continue
+				}
+
 				if d.togglePixelScaled(
+					pi,
 					int(x)+col,
 					int(y)+row,
 					wrap,
@@ -105,25 +146,25 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions 
 	return collisions
 }
 
-func (d *Display) togglePixelScaled(x, y int, wrap bool) (collision bool) {
+func (d *Display) togglePixelScaled(plane, x, y int, wrap bool) (collision bool) {
 	if d.hires {
-		return d.togglePixel(x, y, wrap)
+		return d.togglePixel(plane, x, y, wrap)
 	}
 
 	// scale coordinates
 	x *= lowresScale
 	y *= lowresScale
 	// toggle a 2x2 block
-	collision = d.togglePixel(x, y, wrap) || collision
-	collision = d.togglePixel(x+1, y, wrap) || collision
-	collision = d.togglePixel(x, y+1, wrap) || collision
-	collision = d.togglePixel(x+1, y+1, wrap) || collision
+	collision = d.togglePixel(plane, x, y, wrap) || collision
+	collision = d.togglePixel(plane, x+1, y, wrap) || collision
+	collision = d.togglePixel(plane, x, y+1, wrap) || collision
+	collision = d.togglePixel(plane, x+1, y+1, wrap) || collision
 	return collision
 }
 
 // XORs the pixel at (x, y).
 // Returns true if this operation turned a pixel off (collision).
-func (d *Display) togglePixel(x, y int, wrap bool) bool {
+func (d *Display) togglePixel(plane, x, y int, wrap bool) bool {
 	if wrap {
 		// wrap around screen
 		x = x % d.Width
@@ -135,8 +176,8 @@ func (d *Display) togglePixel(x, y int, wrap bool) bool {
 		}
 	}
 	i := y*d.Width + x
-	pixel := d.Pixels[i]
-	d.Pixels[i] ^= 1
+	pixel := d.Planes[plane][i]
+	d.Planes[plane][i] ^= 1
 	d.dirty = true
 
 	return pixel == 1
@@ -166,15 +207,21 @@ func (d *Display) ScrollDown(in byte, scale bool) {
 	h := d.Height
 	w := d.Width
 
-	// Scroll from bottom upwards
-	for y := h - 1; y >= n; y-- {
-		copy(d.Pixels[y*w:y*w+w], d.Pixels[(y-n)*w:(y-n)*w+w])
-	}
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
+		}
 
-	// Clear new top rows
-	for y := range n {
-		for x := range w {
-			d.Pixels[y*w+x] = 0
+		// Scroll from bottom upwards
+		for y := h - 1; y >= n; y-- {
+			copy(d.Planes[plane][y*w:y*w+w], d.Planes[plane][(y-n)*w:(y-n)*w+w])
+		}
+
+		// Clear new top rows
+		for y := range n {
+			for x := range w {
+				d.Planes[plane][y*w+x] = 0
+			}
 		}
 	}
 }
@@ -189,16 +236,23 @@ func (d *Display) ScrollRight4(scale bool) {
 		n *= lowresScale
 	}
 
-	for y := range h {
-		row := y * w
-
-		// scroll right
-		for x := w - 1; x >= n; x-- {
-			d.Pixels[row+x] = d.Pixels[row+(x-n)]
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
 		}
 
-		for x := range n {
-			d.Pixels[row+x] = 0
+		for y := range h {
+
+			row := y * w
+
+			// scroll right
+			for x := w - 1; x >= n; x-- {
+				d.Planes[plane][row+x] = d.Planes[plane][row+(x-n)]
+			}
+
+			for x := range n {
+				d.Planes[plane][row+x] = 0
+			}
 		}
 	}
 }
@@ -208,22 +262,31 @@ func (d *Display) ScrollLeft4(scale bool) {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
+
 	n := 4
 	if scale && !d.hires {
 		n *= lowresScale
 	}
 
-	for y := range h {
-		row := y * w
-
-		// shift left
-		for x := 0; x < w-n; x++ {
-			d.Pixels[row+x] = d.Pixels[row+(x+n)]
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
 		}
 
-		// clear rightmost 4 pixels
-		for x := w - n; x < w; x++ {
-			d.Pixels[row+x] = 0
+		pixels := d.Planes[plane]
+
+		for y := range h {
+			row := y * w
+
+			// shift left
+			for x := 0; x < w-n; x++ {
+				pixels[row+x] = pixels[row+(x+n)]
+			}
+
+			// clear rightmost n pixels
+			for x := w - n; x < w; x++ {
+				pixels[row+x] = 0
+			}
 		}
 	}
 }
@@ -242,16 +305,26 @@ func (d *Display) ScrollUp(n int) {
 	h := d.Height
 	d.dirty = true
 
-	// Move rows upward
-	for y := 0; y < h-n; y++ {
-		src := (y + n) * w
-		dst := y * w
-		copy(d.Pixels[dst:dst+w], d.Pixels[src:src+w])
-	}
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
+		}
 
-	// Clear bottom n rows
-	start := (h - n) * w
-	for i := start; i < len(d.Pixels); i++ {
-		d.Pixels[i] = 0
+		// Move rows upward
+		for y := 0; y < h-n; y++ {
+			src := (y + n) * w
+			dst := y * w
+			copy(d.Planes[plane][dst:dst+w], d.Planes[plane][src:src+w])
+		}
+
+		// Clear bottom n rows
+		start := (h - n) * w
+		for i := start; i < len(d.Planes[plane]); i++ {
+			d.Planes[plane][i] = 0
+		}
 	}
+}
+
+func (d *Display) isPlaneDisabled(plane int) bool {
+	return d.planeMask&(1<<plane) == 0
 }

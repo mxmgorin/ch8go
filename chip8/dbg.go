@@ -30,7 +30,7 @@ func RenderASCII(d *Display) string {
 
 	for y := range d.Height {
 		for x := range d.Width {
-			if d.Pixels[y*d.Width+x] != 0 {
+			if d.Planes[0][y*d.Width+x] != 0 {
 				out.WriteString(on)
 			} else {
 				out.WriteString(off)
