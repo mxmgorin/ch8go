@@ -1,5 +1,7 @@
 package chip8
 
+import "math/bits"
+
 const lowresScale = 2
 
 type Display struct {
@@ -67,17 +69,20 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions in
 		return
 	}
 
+	planesSelectedLen := d.planesSelectedLen()
 	d.pendingVBlank = true
 	w := 8
-	h := len(sprite) / d.planeMask
+	h := len(sprite) / planesSelectedLen
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
+	planeIdx := 0
 
 	for pi := range d.Planes {
 		if d.isPlaneDisabled(pi) {
 			continue
 		}
 
-		planeOffset := pi * h
+		planeOffset := planeIdx * h
+		planeIdx++
 
 		for row := range h {
 			b := sprite[planeOffset+row]
@@ -112,13 +117,15 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions 
 	h := 16
 	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
 	const bytesPerPlane = 32 // 16 rows × 2 bytes
+	planeIdx := 0
 
 	for pi := range d.Planes {
 		if d.isPlaneDisabled(pi) {
 			continue
 		}
 
-		planeOffset := pi * bytesPerPlane
+		planeOffset := planeIdx * bytesPerPlane
+		planeIdx++
 
 		for row := range h {
 			hi := sprite[planeOffset+row*2]
@@ -327,4 +334,8 @@ func (d *Display) ScrollUp(n int) {
 
 func (d *Display) isPlaneDisabled(plane int) bool {
 	return d.planeMask&(1<<plane) == 0
+}
+
+func (d *Display) planesSelectedLen() int {
+	return bits.OnesCount(uint(d.planeMask))
 }
