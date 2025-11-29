@@ -102,19 +102,19 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	case 0x3000: // SE Vx, byte
 		x := read_x(op)
 		nn := read_nn(op)
-		c.skipNextIf(c.v[x] == nn)
+		c.skipNextIf(memory, c.v[x] == nn)
 
 	case 0x4000: // SE Vx, byte
 		x := read_x(op)
 		nn := read_nn(op)
-		c.skipNextIf(c.v[x] != nn)
+		c.skipNextIf(memory, c.v[x] != nn)
 
 	case 0x5000:
 		switch op & 0x000F {
 		case 0x0: // 5XY0
 			x := read_x(op)
 			y := read_y(op)
-			c.skipNextIf(c.v[x] == c.v[y])
+			c.skipNextIf(memory, c.v[x] == c.v[y])
 
 		case 0x2: // xochip
 			c.op5XY2(memory, op)
@@ -138,7 +138,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	case 0x9000:
 		x := read_x(op)
 		y := read_y(op)
-		c.skipNextIf(c.v[x] != c.v[y])
+		c.skipNextIf(memory, c.v[x] != c.v[y])
 
 	case 0xA000: // LD I, addr
 		c.i = read_nnn(op)
@@ -186,10 +186,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	case 0xE000:
 		switch op & 0x00FF {
 		case 0x9E: // SKP Vx
-			c.skipNextIf(keypad.IsPressed(c.v[read_x(op)]))
+			c.skipNextIf(memory, keypad.IsPressed(c.v[read_x(op)]))
 
 		case 0xA1: // SKNP Vx
-			c.skipNextIf(!keypad.IsPressed(c.v[read_x(op)]))
+			c.skipNextIf(memory, !keypad.IsPressed(c.v[read_x(op)]))
 
 		default: // ignored
 		}
@@ -436,8 +436,10 @@ func (c *CPU) jp(addr uint16) {
 	c.pc = addr
 }
 
-func (c *CPU) skipNextIf(cond bool) {
+func (c *CPU) skipNextIf(mem *Memory, cond bool) {
 	if cond {
-		c.pc += 2
+		if c.fetch(mem) == 0xF000 { // 4 bytes opcode
+			c.pc += 2
+		}
 	}
 }
