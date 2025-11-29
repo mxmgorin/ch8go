@@ -166,12 +166,16 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 
 		if n == 0 {
 			// SCHIP 16x16 sprite (32 bytes = 16 pixels, 2 bytes per row)
-			sprite := memory.ReadSprite(c.i, 32*uint16(display.planesSelectedLen()))
-			collisions = display.DrawSprite16(vx, vy, sprite, c.quirks.Wrap)
+			const height = 16
+			const bytesPerRow = 2
+			endAddr := height * bytesPerRow * uint16(display.planesSelectedLen())
+			sprite := memory.ReadSprite(c.i, endAddr)
+			collisions = display.DrawSprite(vx, vy, sprite, 16, height, bytesPerRow, c.quirks.Wrap)
 		} else {
 			// Classic CHIP-8 8×N sprite
-			sprite := memory.ReadSprite(c.i, n*uint16(display.planesSelectedLen()))
-			collisions = display.DrawSprite(vx, vy, sprite, c.quirks.Wrap)
+			endAddr := n * uint16(display.planesSelectedLen())
+			sprite := memory.ReadSprite(c.i, endAddr)
+			collisions = display.DrawSprite(vx, vy, sprite, 8, int(n), 1, c.quirks.Wrap)
 		}
 		if collisions > 0 {
 			c.v[0xF] = 1

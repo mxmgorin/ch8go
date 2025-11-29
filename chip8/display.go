@@ -62,79 +62,50 @@ func (d *Display) setResolution(hires bool) {
 	d.Planes[1] = make([]byte, d.Width*d.Height)
 }
 
-// Draws a 8xN sprite at (x,y).
-// Returns count of collisions occurred.
-func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions int) {
+// DrawSpriteGeneric draws an N×H sprite where each row has `bytesPerRow` bytes.
+// For example:
+//   - Classic/SCHIP 8×H: bytesPerRow = 1
+//   - XO-CHIP/SCHIP-16: bytesPerRow = 2
+//
+// Sprite layout across planes is planar:
+//   plane 0 rows, plane 1 rows, etc.
+// Returns collision count.
+func (d *Display) DrawSprite(
+	x, y byte,
+	sprite []byte,
+	width, height, bytesPerRow int,
+	wrap bool,
+) (collisions int) {
 	if d.planeMask == 0 {
-		return
+		return 0
 	}
 
-	planesSelectedLen := d.planesSelectedLen()
 	d.pendingVBlank = true
-	w := 8
-	h := len(sprite) / planesSelectedLen
-	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
+	wrap = wrap || d.spriteWrap(int(x), int(y), width, height)
 	planeIdx := 0
+	planeStride := height * bytesPerRow
 
 	for pi := range d.Planes {
 		if d.isPlaneDisabled(pi) {
 			continue
 		}
 
-		planeOffset := planeIdx * h
+		rowBase := planeIdx * planeStride
 		planeIdx++
 
-		for row := range h {
-			b := sprite[planeOffset+row]
-
-			for col := range w {
-				if b&(0x80>>col) == 0 {
-					continue
-				}
-
-				if d.togglePixelScaled(
-					pi,
-					int(x)+col,
-					int(y)+row,
-					wrap,
-				) {
-					collisions += 1
-				}
+		for row := range height {
+			// Read row bits (supports 1 or 2 bytes per row)
+			var rowBits uint16
+			if bytesPerRow == 1 {
+				rowBits = uint16(sprite[rowBase+row]) << 8 // align to MSB
+			} else { // 2 bytes per row
+				hi := sprite[rowBase+row*2]
+				lo := sprite[rowBase+row*2+1]
+				rowBits = uint16(hi)<<8 | uint16(lo)
 			}
-		}
 
-	}
-
-	return collisions
-}
-
-// Draws a 16x16 Super-CHIP sprite.
-// sprite is 32 bytes: 2 bytes per row × 16 rows.
-// Returns count of collisions occurred.
-func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions int) {
-	d.pendingVBlank = true
-	w := 16
-	h := 16
-	wrap = wrap || d.spriteWrap(int(x), int(y), w, h)
-	const bytesPerPlane = 32 // 16 rows × 2 bytes
-	planeIdx := 0
-
-	for pi := range d.Planes {
-		if d.isPlaneDisabled(pi) {
-			continue
-		}
-
-		planeOffset := planeIdx * bytesPerPlane
-		planeIdx++
-
-		for row := range h {
-			hi := sprite[planeOffset+row*2]
-			lo := sprite[planeOffset+row*2+1]
-			rowBits := uint16(hi)<<8 | uint16(lo)
-
-			for col := range w {
-				bit := (rowBits >> (15 - col)) & 1
-				if bit != 1 {
+			for col := range width {
+				if ((rowBits >> (15 - col)) & 1) == 0 {
 					continue
 				}
 
@@ -144,7 +115,7 @@ func (d *Display) DrawSprite16(x, y byte, sprite []byte, wrap bool) (collisions 
 					int(y)+row,
 					wrap,
 				) {
-					collisions += 1
+					collisions++
 				}
 			}
 		}
