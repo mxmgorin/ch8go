@@ -1,6 +1,8 @@
 package chip8
 
-import "math/bits"
+import (
+	"math/bits"
+)
 
 const lowresScale = 2
 
@@ -50,8 +52,8 @@ func (d *Display) poll() bool {
 	return result
 }
 
-func (d *Display) selectPlanes(vx byte) {
-	d.planeMask = int(vx & 0x3) // keep only lowest 2 bits
+func (d *Display) selectPlanes(x uint16) {
+	d.planeMask = int(x & 0x3) // keep only lowest 2 bits
 }
 
 func (d *Display) setResolution(hires bool) {
@@ -62,13 +64,15 @@ func (d *Display) setResolution(hires bool) {
 	d.Planes[1] = make([]byte, d.Width*d.Height)
 }
 
-// DrawSpriteGeneric draws an N×H sprite where each row has `bytesPerRow` bytes.
+// Draws an N×H sprite where each row has `bytesPerRow` bytes.
 // For example:
 //   - Classic/SCHIP 8×H: bytesPerRow = 1
 //   - XO-CHIP/SCHIP-16: bytesPerRow = 2
 //
 // Sprite layout across planes is planar:
-//   plane 0 rows, plane 1 rows, etc.
+//
+//	plane 0 rows, plane 1 rows, etc.
+//
 // Returns collision count.
 func (d *Display) DrawSprite(
 	x, y byte,

@@ -296,7 +296,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 
 	switch op & 0x00FF {
 	case 0x01:
-		display.selectPlanes(c.v[x])
+		display.selectPlanes(read_x(op))
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
