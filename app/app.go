@@ -12,7 +12,12 @@ import (
 )
 
 var DefaultPalette = Palette{
-	Pixels:  [2]Color{{0, 0, 0}, {255, 255, 255}},
+	Pixels: [4]Color{
+		{0, 0, 0},
+		{255, 255, 255},
+		{64, 64, 64},    // dark gray
+		{192, 192, 192}, // light gray
+	},
 	Buzzer:  Color{255, 255, 255},
 	Silence: Color{0, 0, 0},
 }
@@ -24,7 +29,7 @@ func (c Color) ToHex() string {
 }
 
 type Palette struct {
-	Pixels  [2]Color
+	Pixels  [4]Color
 	Buzzer  Color
 	Silence Color
 }
@@ -182,12 +187,13 @@ func (a *App) ROMInfo() *db.RomDto {
 }
 
 func (a *App) Paint() {
-	pixels := a.VM.Display.Planes[0]
+	for i := range a.VM.Display.Height * a.VM.Display.Width {
+		p0 := a.VM.Display.Planes[0][i]
+		p1 := a.VM.Display.Planes[1][i]
+		colorIdx := (p1 << 1) | p0
+		color := a.Palette.Pixels[colorIdx]
 
-	for i := range pixels {
-		color := a.Palette.Pixels[pixels[i]] // pixels[i] is 0 or 1
 		idx := i * a.frameBuffer.BPP
-
 		a.frameBuffer.Pixels[idx] = color[0]
 		a.frameBuffer.Pixels[idx+1] = color[1]
 		a.frameBuffer.Pixels[idx+2] = color[2]
@@ -197,7 +203,6 @@ func (a *App) Paint() {
 	if a.VM.Buzzer() {
 		a.frameBuffer.SoundColor = a.Palette.Buzzer
 	} else {
-
 		a.frameBuffer.SoundColor = a.Palette.Silence
 	}
 

@@ -82,7 +82,7 @@ func (d *Display) DrawSprite(x, y byte, sprite []byte, wrap bool) (collisions in
 		for row := range h {
 			b := sprite[planeOffset+row]
 
-			for col := range 8 {
+			for col := range w {
 				if b&(0x80>>col) == 0 {
 					continue
 				}
