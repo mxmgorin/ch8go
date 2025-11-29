@@ -319,9 +319,13 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 	case 0x1E: // ADD I, Vx
 		c.i += uint16(c.v[x])
 
-	case 0x30: // FX30 - point I to 8x10 big digit sprite
+	case 0x29: // Fx29 - small (4x5) digit
 		digit := c.v[x] & 0x0F
-		c.i = uint16(BigFontStart) + uint16(digit)*16
+		c.i = fontAddr + uint16(digit)*5
+
+	case 0x30: // Fx30 - big (8x10) digit
+		digit := c.v[x] & 0x0F
+		c.i = bigFontAddr + uint16(digit)*10
 
 	case 0x33:
 		val := c.v[x]
@@ -351,7 +355,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 			c.v[i] = c.flags[i]
 		}
 
-	default: // ignored
+	default:
 	}
 }
 

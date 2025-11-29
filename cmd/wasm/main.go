@@ -89,27 +89,46 @@ func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
 type ColorPickers struct {
 	fg        js.Value
 	bg        js.Value
+	c3        js.Value
+	c4        js.Value
 	currentBG app.Color
 	currentFG app.Color
+	currentC3 app.Color
+	currentC4 app.Color
 }
 
 func newColorPickers(doc js.Value, app *app.App) ColorPickers {
-	bg := doc.Call("getElementById", "bgPicker")
-	fg := doc.Call("getElementById", "fgPicker")
-	bg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := bg.Get("value").String()
+	pickers := ColorPickers{}
+	pickers.bg = doc.Call("getElementById", "bgPicker")
+	pickers.fg = doc.Call("getElementById", "fgPicker")
+	pickers.c3 = doc.Call("getElementById", "c3Picker")
+	pickers.c4 = doc.Call("getElementById", "c4Picker")
+
+	pickers.bg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := pickers.bg.Get("value").String()
 		app.SetColor(0, color)
 		return nil
 	}))
-	fg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := fg.Get("value").String()
+	pickers.fg.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := pickers.fg.Get("value").String()
 		app.SetColor(1, color)
 		return nil
 	}))
-	return ColorPickers{bg: bg, fg: fg}
+	pickers.c3.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := pickers.c3.Get("value").String()
+		app.SetColor(2, color)
+		return nil
+	}))
+	pickers.c4.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		color := pickers.c4.Get("value").String()
+		app.SetColor(3, color)
+		return nil
+	}))
+
+	return pickers
 }
 
-func (cp *ColorPickers) setColors(bg, fg app.Color) {
+func (cp *ColorPickers) setColors(bg, fg, c3, c4 app.Color) {
 	if cp.currentBG != bg {
 		cp.currentBG = bg
 		cp.bg.Set("value", bg.ToHex())
@@ -118,6 +137,16 @@ func (cp *ColorPickers) setColors(bg, fg app.Color) {
 	if cp.currentFG != fg {
 		cp.currentFG = fg
 		cp.fg.Set("value", fg.ToHex())
+	}
+
+	if cp.currentC3 != c3 {
+		cp.currentC3 = c3
+		cp.c3.Set("value", c3.ToHex())
+	}
+
+	if cp.currentC4 != c4 {
+		cp.currentC4 = c4
+		cp.c4.Set("value", c4.ToHex())
 	}
 }
 
@@ -196,7 +225,9 @@ func onKeyUp(this js.Value, args []js.Value) any {
 func loop(this js.Value, args []js.Value) any {
 	bg := wasm.app.Palette.Pixels[0]
 	fg := wasm.app.Palette.Pixels[1]
-	wasm.colorPickers.setColors(bg, fg)
+	c3 := wasm.app.Palette.Pixels[2]
+	c4 := wasm.app.Palette.Pixels[3]
+	wasm.colorPickers.setColors(bg, fg, c3, c4)
 	wasm.app.PaintFrame()
 
 	// Schedule next frame

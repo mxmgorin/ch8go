@@ -11,12 +11,14 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
+var cyanColor = Color{25, 200, 255}
+var redColor = Color{255, 64, 64}
 var DefaultPalette = Palette{
 	Pixels: [4]Color{
 		{0, 0, 0},
 		{255, 255, 255},
-		{64, 64, 64},    // dark gray
-		{192, 192, 192}, // light gray
+		cyanColor,
+		redColor,
 	},
 	Buzzer:  Color{255, 255, 255},
 	Silence: Color{0, 0, 0},
@@ -123,6 +125,8 @@ func (a *App) ReadROM(path string) (int, error) {
 func (a *App) LoadROM(rom []byte) (int, error) {
 	a.Palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
+	fmt.Println("ROM hash:", a.ROMHash)
+
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
 	}
