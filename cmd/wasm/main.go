@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"syscall/js"
+	"unsafe"
 
 	"github.com/mxmgorin/ch8go/app"
 )
@@ -150,6 +151,8 @@ func newWASM() WASM {
 	doc := js.Global().Get("document")
 	colorPickers := newColorPickers(doc, app)
 
+	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
+
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
 
@@ -198,6 +201,26 @@ func onKeyUp(this js.Value, args []js.Value) any {
 		args[0].Call("preventDefault")
 	}
 	return nil
+}
+
+func fillAudio(this js.Value, args []js.Value) any {
+	n := args[0].Int()
+
+	// produce float32 audio
+	buf := make([]float32, n)
+	wasm.app.VM.OutputAudio(buf, 44100.0)
+
+	// Create Float32Array
+	float32Array := js.Global().Get("Float32Array").New(n)
+
+	// Get the underlying Uint8Array buffer
+	byteArray := js.Global().Get("Uint8Array").New(float32Array.Get("buffer"))
+
+	// Copy float32 bytes → JS buffer
+	src := unsafe.Slice((*byte)(unsafe.Pointer(&buf[0])), n*4)
+	js.CopyBytesToJS(byteArray, src)
+
+	return float32Array
 }
 
 func loop(this js.Value, args []js.Value) any {

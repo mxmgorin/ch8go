@@ -6,12 +6,7 @@ async function init() {
   const result = await WebAssembly.instantiate(bytes, go.importObject);
 
   go.run(result.instance);
-
-  function setBorderColor(color) {
-    document
-      .querySelector(".screen")
-      .style.setProperty("--border-color", color);
-  }
+  console.log("WASM started");
 
   document.getElementById("romInput").onchange = async (e) => {
     const file = e.target.files[0];
@@ -73,5 +68,20 @@ function setupKeyboard() {
     });
   });
 }
+
+let audioCtx;
+document.getElementById("audio").onclick = async () => {
+    audioCtx = new AudioContext();
+    await audioCtx.resume();
+
+    const node = audioCtx.createScriptProcessor(512, 0, 1);
+    node.onaudioprocess = e => {
+        const out = e.outputBuffer.getChannelData(0);
+        const samples = window.fillAudio(out.length);
+        out.set(samples);
+    };
+
+    node.connect(audioCtx.destination);
+};
 
 init();
