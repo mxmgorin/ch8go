@@ -18,7 +18,7 @@ async function init() {
     if (!file) return;
 
     const data = new Uint8Array(await file.arrayBuffer());
-    chip8_loadROM(data);
+    chip8_loadROM(data, file.name);
   };
 
   const input = document.getElementById("romInput");
@@ -45,7 +45,7 @@ async function init() {
 async function loadRomFromUrl(url) {
   const resp = await fetch(url);
   const buf = new Uint8Array(await resp.arrayBuffer());
-  chip8_loadROM(buf);
+  chip8_loadROM(buf, url);
 }
 
 function setupKeyboard() {

@@ -168,9 +168,10 @@ func (wasm *WASM) run() {
 
 func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
+	name := args[1].String()
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	len, err := wasm.app.LoadROM(buf)
+	len, err := wasm.app.LoadROM(buf, app.PlaformFromPath(name))
 	if err != nil {
 		fmt.Println(err)
 	}

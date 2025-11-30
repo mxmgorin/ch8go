@@ -110,8 +110,8 @@ func (a *Sdl2App) Quit() {
 	sdl.Quit()
 }
 
-func (a *Sdl2App) Run(rom []byte) error {
-	if _, err := a.app.LoadROM(rom); err != nil {
+func (a *Sdl2App) Run(rom []byte, platform chip8.Platform) error {
+	if _, err := a.app.LoadROM(rom, platform); err != nil {
 		return err
 	}
 	frameDelay := time.Second / 60 // target 60 FPS
@@ -166,16 +166,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app, err := NewSdl2App(*scale)
+	sdlApp, err := NewSdl2App(*scale)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer app.Quit()
+	defer sdlApp.Quit()
 
 	fmt.Println("ch8go SDL2")
 	fmt.Printf("ROM: %s\n", *romPath)
 
-	if err := app.Run(rom); err != nil {
+	if err := sdlApp.Run(rom, app.PlaformFromPath(*romPath)); err != nil {
 		log.Fatal(err)
 	}
 }

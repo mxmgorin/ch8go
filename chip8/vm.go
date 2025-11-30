@@ -2,9 +2,7 @@ package chip8
 
 import "fmt"
 
-const defaultCPUHz = 700.0
-
-var defaultQuirks = QuirksSChipModern
+var defaultPlatform = Platforms[PlatformSChip11]
 
 type VM struct {
 	CPU        CPU
@@ -20,12 +18,12 @@ type VM struct {
 
 func NewVM() *VM {
 	return &VM{
-		CPU:     NewCpu(defaultQuirks),
+		CPU:     NewCpu(defaultPlatform.Quirks),
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
 		timerHz: 60.0,
-		cpuHz:   defaultCPUHz,
+		cpuHz:   defaultPlatform.CPUHz(),
 	}
 }
 
@@ -47,8 +45,8 @@ func (vm *VM) Reset() {
 	vm.Display.Reset()
 	vm.Keypad.Reset()
 	vm.CPU.Reset()
-	vm.cpuHz = defaultCPUHz
-	vm.CPU.quirks = defaultQuirks
+	vm.cpuHz = defaultPlatform.CPUHz()
+	vm.CPU.quirks = defaultPlatform.Quirks
 }
 
 func (vm *VM) Step() {

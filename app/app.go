@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -118,19 +119,40 @@ func (a *App) ReadROM(path string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
-	return a.LoadROM(rom)
+	return a.LoadROM(rom, PlaformFromPath(path))
 }
 
-func (a *App) LoadROM(rom []byte) (int, error) {
+func (a *App) LoadROM(rom []byte, platform chip8.Platform) (int, error) {
 	a.Palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
 	fmt.Println("ROM hash:", a.ROMHash)
+	fmt.Println("ROM platform:", platform)
 
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
 	}
 
+	config, ok := chip8.Platforms[platform]
+	if ok {
+		a.VM.SetQuirks(config.Quirks)
+		a.VM.SetTickrate(config.TickRate)
+	}
+	a.applyROMconfig()
+
+	return len(rom), nil
+}
+
+func (a *App) ROMInfo() *db.RomDto {
+	program := a.DB.FindProgram(a.ROMHash)
+	if program == nil {
+		return nil // Unknown ROM
+	}
+	rom := program.ROMs[a.ROMHash]
+
+	return &rom
+}
+
+func (a *App) applyROMconfig() {
 	romInfo := a.ROMInfo()
 	tickrate := 0
 
@@ -176,18 +198,6 @@ func (a *App) LoadROM(rom []byte) (int, error) {
 		a.VM.SetTickrate(tickrate)
 		fmt.Println("Tickrate:", tickrate)
 	}
-
-	return len(rom), nil
-}
-
-func (a *App) ROMInfo() *db.RomDto {
-	program := a.DB.FindProgram(a.ROMHash)
-	if program == nil {
-		return nil // Unknown ROM
-	}
-	rom := program.ROMs[a.ROMHash]
-
-	return &rom
 }
 
 func (a *App) Paint() {
@@ -256,6 +266,7 @@ func (a *App) SetPalette(colors []string, buzzer, silence string) error {
 
 	return nil
 }
+
 func ParseHexColor(s string) (Color, error) {
 	s = strings.TrimPrefix(s, "#")
 
@@ -279,4 +290,9 @@ func ParseHexColor(s string) (Color, error) {
 	}
 
 	return Color{byte(ri), byte(gi), byte(bi)}, nil
+}
+
+func PlaformFromPath(path string) chip8.Platform {
+	ext := strings.TrimPrefix(filepath.Ext(path), ".")
+	return chip8.Platform(ext)
 }

@@ -8,7 +8,7 @@ canvas {
 }
 body {
     font-family: "VT323", monospace;
-    font-size: 20px;
+    font-size: 18px;
     line-height: 22px;
     color: var(--terminal-color);
     background-color: black;

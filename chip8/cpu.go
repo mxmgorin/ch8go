@@ -337,13 +337,13 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		for r := uint16(0); r <= uint16(x); r++ {
 			memory.Write(c.i+r, c.v[r])
 		}
-		c.quirks.exec_mem(c, x)
+		c.quirks.opMem(c, x)
 
 	case 0x65:
 		for r := uint16(0); r <= uint16(x); r++ {
 			c.v[r] = memory.Read(c.i + r)
 		}
-		c.quirks.exec_mem(c, x)
+		c.quirks.opMem(c, x)
 
 	case 0x75: // FX75 - store V0..VX into flags
 		for i := byte(0); i <= byte(x); i++ {
