@@ -192,11 +192,13 @@ func (a *App) ROMInfo() *db.RomDto {
 
 func (a *App) Paint() {
 	for i := range a.VM.Display.Height * a.VM.Display.Width {
-		p0 := a.VM.Display.Planes[0][i]
-		p1 := a.VM.Display.Planes[1][i]
-		colorIdx := (p1 << 1) | p0
-		color := a.Palette.Pixels[colorIdx]
+		colorIdx := 0
+		for plane := range a.VM.Display.Planes {
+			pixel := a.VM.Display.Planes[plane][i]
+			colorIdx |= int(pixel) << plane
+		}
 
+		color := a.Palette.Pixels[colorIdx]
 		idx := i * a.frameBuffer.BPP
 		a.frameBuffer.Pixels[idx] = color[0]
 		a.frameBuffer.Pixels[idx+1] = color[1]
