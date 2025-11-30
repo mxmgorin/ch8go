@@ -57,7 +57,7 @@ func (c *CPU) fetch(memory *Memory) uint16 {
 	return opcode
 }
 
-func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad) {
+func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad, audio *Audio) {
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
@@ -195,7 +195,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		}
 
 	case 0xF000:
-		c.opFNNN(op, display, memory, keypad)
+		c.opFNNN(op, display, memory, keypad, audio)
 
 	default:
 		// todo: handle others
@@ -286,7 +286,7 @@ func (c *CPU) opF000(mem *Memory) {
 	c.i = addr
 }
 
-func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad) {
+func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad, audio *Audio) {
 	if op == 0xF000 {
 		c.opF000(memory)
 		return
@@ -297,6 +297,11 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 	switch op & 0x00FF {
 	case 0x01:
 		display.selectPlanes(read_x(op))
+
+	case 0x02: // audio
+		for i := range audio.pattern {
+			audio.pattern[i] = memory.Read(c.i + uint16(i))
+		}
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
@@ -332,6 +337,10 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		memory.Write(c.i+0, val/100)     // hundreds
 		memory.Write(c.i+1, (val/10)%10) // tens
 		memory.Write(c.i+2, val%10)      // ones
+
+	case 0x3A: // pitch
+		vx := c.v[x]
+		audio.pitch = vx
 
 	case 0x55:
 		for r := uint16(0); r <= uint16(x); r++ {

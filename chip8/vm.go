@@ -9,6 +9,7 @@ type VM struct {
 	Memory     Memory
 	Display    Display
 	Keypad     Keypad
+	Audio      Audio
 	RomSize    int
 	cpuHz      float64
 	timerHz    float64
@@ -22,6 +23,7 @@ func NewVM() *VM {
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
+		Audio:   NewAudio(),
 		timerHz: 60.0,
 		cpuHz:   defaultPlatform.CPUHz(),
 	}
@@ -45,6 +47,7 @@ func (vm *VM) Reset() {
 	vm.Display.Reset()
 	vm.Keypad.Reset()
 	vm.CPU.Reset()
+	vm.Audio.Reset()
 	vm.cpuHz = defaultPlatform.CPUHz()
 	vm.CPU.quirks = defaultPlatform.Quirks
 }
@@ -52,7 +55,7 @@ func (vm *VM) Reset() {
 func (vm *VM) Step() {
 	if !vm.Display.pendingVBlank || !vm.CPU.quirks.VBlankWait {
 		opcode := vm.CPU.fetch(&vm.Memory)
-		vm.CPU.execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad)
+		vm.CPU.execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad, &vm.Audio)
 	}
 }
 
@@ -78,6 +81,12 @@ func (vm *VM) RunFrame(dt float64) bool {
 
 func (vm *VM) Buzzer() bool {
 	return vm.CPU.st > 0
+}
+
+func (vm *VM) OutputAudio(out []float32, freq float64) {
+	if vm.Buzzer() {
+		vm.Audio.Output(out, freq)
+	}
 }
 
 func (vm *VM) PeekNext() DisasmInfo {
