@@ -294,9 +294,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		display.selectPlanes(read_x(op))
 
 	case 0x02: // audio
-		for i := range audio.pattern {
-			audio.pattern[i] = memory.Read(c.i + uint16(i))
-		}
+		audio.LoadPattern(memory, c.i)
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
@@ -334,8 +332,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		memory.Write(c.i+2, val%10)      // ones
 
 	case 0x3A: // pitch
-		vx := c.v[x]
-		audio.pitch = vx
+		audio.SetPitch(c.v[x])
 
 	case 0x55:
 		for r := uint16(0); r <= uint16(x); r++ {

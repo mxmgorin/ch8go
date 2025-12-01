@@ -72,7 +72,7 @@ func (vm *VM) RunFrame(dt float64) bool {
 	for vm.timerAccum >= 1 {
 		vm.timerAccum -= 1
 		vm.CPU.tickTimer()
-		vm.Audio.tickTimer()
+		vm.Audio.TickTimer()
 	}
 
 	vm.Keypad.Latch()

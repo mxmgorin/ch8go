@@ -209,7 +209,7 @@ func onKeyUp(this js.Value, args []js.Value) any {
 
 func fillAudio(this js.Value, args []js.Value) any {
 	out := args[0] // JS Float32Array
-	wasm.app.VM.Audio.Output(audioBuf, 44100.0)
+	wasm.app.VM.Audio.Output(audioBuf)
 
 	outBuffer := js.Global().Get("Uint8Array").New(out.Get("buffer"))
 	bufPointer := unsafe.Pointer(&audioBuf[0])
