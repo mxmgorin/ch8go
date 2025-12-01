@@ -29,10 +29,13 @@ func (a *Audio) Reset() {
 	a.stepSize = BeepFreq / OutputFreq
 }
 
-func (a *Audio) TickTimer() {
+func (a *Audio) TickTimer() bool {
 	if a.st > 0 {
 		a.st--
+		return true
 	}
+
+	return false
 }
 
 func (a *Audio) SetPitch(xv byte) {
