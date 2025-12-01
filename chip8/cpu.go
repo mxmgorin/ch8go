@@ -13,7 +13,6 @@ type CPU struct {
 	sp     byte
 	stack  [256]uint16 // original is 16 but modern games require deeper stack
 	dt     byte
-	st     byte
 	flags  [16]byte // xochip ext, schip has 8
 	quirks Quirks
 }
@@ -34,19 +33,15 @@ func (c *CPU) Reset() {
 	c.pc = 0x200
 	c.sp = 0
 	c.dt = 0
-	c.st = 0
 
 	for i := range c.stack {
 		c.stack[i] = 0
 	}
 }
 
-func (c *CPU) tickTimers() {
+func (c *CPU) tickTimer() {
 	if c.dt > 0 {
 		c.dt--
-	}
-	if c.st > 0 {
-		c.st--
 	}
 }
 
@@ -299,9 +294,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		display.selectPlanes(read_x(op))
 
 	case 0x02: // audio
-		for i := range audio.pattern {
-			audio.pattern[i] = memory.Read(c.i + uint16(i))
-		}
+		audio.LoadPattern(memory, c.i)
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
@@ -319,7 +312,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		c.dt = c.v[x]
 
 	case 0x18: // LD ST, Vx
-		c.st = c.v[x]
+		audio.st = c.v[x]
 
 	case 0x1E: // ADD I, Vx
 		c.i += uint16(c.v[x])
@@ -339,8 +332,7 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		memory.Write(c.i+2, val%10)      // ones
 
 	case 0x3A: // pitch
-		vx := c.v[x]
-		audio.pitch = vx
+		audio.SetPitch(c.v[x])
 
 	case 0x55:
 		for r := uint16(0); r <= uint16(x); r++ {

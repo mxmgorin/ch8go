@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 	"syscall/js"
+	"unsafe"
 
 	"github.com/mxmgorin/ch8go/app"
 )
@@ -20,6 +21,10 @@ var (
 		"z": 0xA, "x": 0x0, "c": 0xB, "v": 0xF,
 	}
 )
+
+const BlockSize = 512
+
+var audioBuf = make([]float32, BlockSize)
 
 type CanvasPainter struct {
 	ctx           js.Value
@@ -150,6 +155,8 @@ func newWASM() WASM {
 	doc := js.Global().Get("document")
 	colorPickers := newColorPickers(doc, app)
 
+	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
+
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
 
@@ -197,6 +204,18 @@ func onKeyUp(this js.Value, args []js.Value) any {
 		wasm.app.VM.Keypad.Release(k)
 		args[0].Call("preventDefault")
 	}
+	return nil
+}
+
+func fillAudio(this js.Value, args []js.Value) any {
+	out := args[0] // JS Float32Array
+	wasm.app.VM.Audio.Output(audioBuf)
+
+	outBuffer := js.Global().Get("Uint8Array").New(out.Get("buffer"))
+	bufPointer := unsafe.Pointer(&audioBuf[0])
+	byteBuf := unsafe.Slice((*byte)(bufPointer), BlockSize*4)
+	js.CopyBytesToJS(outBuffer, byteBuf)
+
 	return nil
 }
 

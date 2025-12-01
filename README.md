@@ -10,7 +10,7 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Adds extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **XO-CHIP Support**: Adds extended opcodes, multi-plane graphics, and extended graphics features.
+- **XO-CHIP Support**: Adds extended opcodes, multi-plane graphics, and audio features.
 - **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.

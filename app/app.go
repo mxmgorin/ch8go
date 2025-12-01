@@ -105,12 +105,12 @@ func (a *App) HasROM() bool {
 }
 
 func (a *App) PaintFrame() {
-	now := time.Now()
-	dt := now.Sub(a.lastTime).Seconds()
-	a.lastTime = now
-
-	if a.VM.RunFrame(dt) && a.HasROM() {
-		a.Paint()
+	if a.HasROM() {
+		now := time.Now()
+		dt := now.Sub(a.lastTime).Seconds()
+		a.lastTime = now
+		state := a.VM.RunFrame(dt)
+		a.Paint(state)
 	}
 }
 
@@ -200,23 +200,25 @@ func (a *App) applyROMconfig() {
 	}
 }
 
-func (a *App) Paint() {
-	for i := range a.VM.Display.Height * a.VM.Display.Width {
-		colorIdx := 0
-		for plane := range a.VM.Display.Planes {
-			pixel := a.VM.Display.Planes[plane][i]
-			colorIdx |= int(pixel) << plane
-		}
+func (a *App) Paint(frameState chip8.FrameState) {
+	if frameState.Dirty {
+		for i := range a.VM.Display.Height * a.VM.Display.Width {
+			colorIdx := 0
+			for plane := range a.VM.Display.Planes {
+				pixel := a.VM.Display.Planes[plane][i]
+				colorIdx |= int(pixel) << plane
+			}
 
-		color := a.Palette.Pixels[colorIdx]
-		idx := i * a.frameBuffer.BPP
-		a.frameBuffer.Pixels[idx] = color[0]
-		a.frameBuffer.Pixels[idx+1] = color[1]
-		a.frameBuffer.Pixels[idx+2] = color[2]
-		a.frameBuffer.Pixels[idx+3] = 255
+			color := a.Palette.Pixels[colorIdx]
+			idx := i * a.frameBuffer.BPP
+			a.frameBuffer.Pixels[idx] = color[0]
+			a.frameBuffer.Pixels[idx+1] = color[1]
+			a.frameBuffer.Pixels[idx+2] = color[2]
+			a.frameBuffer.Pixels[idx+3] = 255
+		}
 	}
 
-	if a.VM.Buzzer() {
+	if frameState.Beep {
 		a.frameBuffer.SoundColor = a.Palette.Buzzer
 	} else {
 		a.frameBuffer.SoundColor = a.Palette.Silence

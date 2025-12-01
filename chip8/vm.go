@@ -4,6 +4,11 @@ import "fmt"
 
 var defaultPlatform = Platforms[PlatformSChip11]
 
+type FrameState struct {
+	Dirty bool
+	Beep  bool
+}
+
 type VM struct {
 	CPU        CPU
 	Memory     Memory
@@ -59,7 +64,8 @@ func (vm *VM) Step() {
 	}
 }
 
-func (vm *VM) RunFrame(dt float64) bool {
+func (vm *VM) RunFrame(dt float64) FrameState {
+	state := FrameState{}
 	vm.cycleAccum += vm.cpuHz * dt
 
 	for vm.cycleAccum >= 1 {
@@ -71,22 +77,14 @@ func (vm *VM) RunFrame(dt float64) bool {
 
 	for vm.timerAccum >= 1 {
 		vm.timerAccum -= 1
-		vm.CPU.tickTimers()
+		vm.CPU.tickTimer()
+		state.Beep = vm.Audio.TickTimer()
 	}
 
 	vm.Keypad.Latch()
+	state.Dirty = vm.Display.poll()
 
-	return vm.Display.poll()
-}
-
-func (vm *VM) Buzzer() bool {
-	return vm.CPU.st > 0
-}
-
-func (vm *VM) OutputAudio(out []float32, freq float64) {
-	if vm.Buzzer() {
-		vm.Audio.Output(out, freq)
-	}
+	return state
 }
 
 func (vm *VM) PeekNext() DisasmInfo {
