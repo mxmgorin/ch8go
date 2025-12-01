@@ -119,27 +119,32 @@ func (a *App) ReadROM(path string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return a.LoadROM(rom, PlaformFromPath(path))
+
+	return a.LoadROM(rom, filepath.Ext(path))
 }
 
-func (a *App) LoadROM(rom []byte, platform chip8.Platform) (int, error) {
+func (a *App) LoadROM(rom []byte, ext string) (int, error) {
 	a.Palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
+	len := len(rom)
+	fmt.Println("ROM size:", len)
 	fmt.Println("ROM hash:", a.ROMHash)
-	fmt.Println("ROM platform:", platform)
+	fmt.Println("ROM ext:", ext)
 
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
 	}
 
-	config, ok := chip8.Platforms[platform]
+	platform, ok := chip8.PlatformByExt[ext]
 	if ok {
-		a.VM.SetQuirks(config.Quirks)
-		a.VM.SetTickrate(config.TickRate)
+		conf, ok := chip8.ConfByPlatform[platform]
+		if ok {
+			a.VM.ApplyConf(conf)
+		}
 	}
-	a.applyROMconfig()
+	a.applyROMconf()
 
-	return len(rom), nil
+	return len, nil
 }
 
 func (a *App) ROMInfo() *db.RomDto {
@@ -152,7 +157,7 @@ func (a *App) ROMInfo() *db.RomDto {
 	return &rom
 }
 
-func (a *App) applyROMconfig() {
+func (a *App) applyROMconf() {
 	romInfo := a.ROMInfo()
 	tickrate := 0
 
@@ -292,9 +297,4 @@ func ParseHexColor(s string) (Color, error) {
 	}
 
 	return Color{byte(ri), byte(gi), byte(bi)}, nil
-}
-
-func PlaformFromPath(path string) chip8.Platform {
-	ext := strings.TrimPrefix(filepath.Ext(path), ".")
-	return chip8.Platform(ext)
 }

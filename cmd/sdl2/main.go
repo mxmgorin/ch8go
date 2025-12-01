@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 	"unsafe"
 
@@ -110,8 +111,8 @@ func (a *Sdl2App) Quit() {
 	sdl.Quit()
 }
 
-func (a *Sdl2App) Run(rom []byte, platform chip8.Platform) error {
-	if _, err := a.app.LoadROM(rom, platform); err != nil {
+func (a *Sdl2App) Run(rom []byte, ext string) error {
+	if _, err := a.app.LoadROM(rom, ext); err != nil {
 		return err
 	}
 	frameDelay := time.Second / 60 // target 60 FPS
@@ -175,7 +176,7 @@ func main() {
 	fmt.Println("ch8go SDL2")
 	fmt.Printf("ROM: %s\n", *romPath)
 
-	if err := sdlApp.Run(rom, app.PlaformFromPath(*romPath)); err != nil {
+	if err := sdlApp.Run(rom, filepath.Ext(*romPath)); err != nil {
 		log.Fatal(err)
 	}
 }

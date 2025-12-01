@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 	"strconv"
 	"syscall/js"
 	"unsafe"
@@ -178,14 +179,13 @@ func loadROM(this js.Value, args []js.Value) any {
 	name := args[1].String()
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	len, err := wasm.app.LoadROM(buf, app.PlaformFromPath(name))
+	_, err := wasm.app.LoadROM(buf, filepath.Ext(name))
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	wasm.colorPickers.setColors(wasm.app.Palette.Pixels)
 
-	fmt.Println("ROM loaded:", len, "bytes")
 	return nil
 }
 

@@ -1,16 +1,5 @@
 package chip8
 
-const (
-	PlatformChip8   Platform = "ch8"
-	PlatformSChip11 Platform = "sc8"
-	PlatformXOChip  Platform = "xo8"
-)
-
-var Platforms = map[Platform]PlatformConfig{
-	PlatformChip8:   PlatformConfig{Quirks: QuirksChip8, TickRate: 15},
-	PlatformSChip11: PlatformConfig{Quirks: QuirksSChip11, TickRate: 30},
-	PlatformXOChip:  PlatformConfig{Quirks: QuirksXOChip, TickRate: 100},
-}
 var (
 	// CHIP-8 was first designed by Joseph Weisbecker for the Cosmac VIP hobbyist DIY computer in 1977.
 	// After publishing about the virtual instruction set in the december 1978 issue of Byte magazine it took off on more hobbyist computers.
@@ -76,17 +65,6 @@ var (
 		ScaleScroll: true,
 	}
 )
-
-type Platform string
-
-type PlatformConfig struct {
-	Quirks   Quirks
-	TickRate int
-}
-
-func (c *PlatformConfig) CPUHz() float64 {
-	return float64(c.TickRate) * 60.0
-}
 
 type Quirks struct {
 	// Shift controls how the shift opcodes interpret their input and output

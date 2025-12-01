@@ -2,7 +2,7 @@ package chip8
 
 import "fmt"
 
-var defaultPlatform = Platforms[PlatformSChip11]
+var defaultPlatform = ConfByPlatform[PlatformSChip11]
 
 type FrameState struct {
 	Dirty bool
@@ -32,6 +32,12 @@ func NewVM() *VM {
 		timerHz: 60.0,
 		cpuHz:   defaultPlatform.CPUHz(),
 	}
+}
+
+func (vm *VM) ApplyConf(conf PlatformConf) {
+	vm.SetQuirks(conf.Quirks)
+	vm.SetTickrate(conf.TickRate)
+	vm.Audio.SetMode(conf.AudioMode)
 }
 
 func (vm *VM) SetTickrate(tr int) { vm.cpuHz = float64(tr) * 60.0 }

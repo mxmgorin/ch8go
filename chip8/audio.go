@@ -7,12 +7,20 @@ import (
 const BeepFreq = 440.0 // or 400.0
 const OutputFreq = 44100.0
 
+type AudioMode int
+
+const (
+	AudioChip8  AudioMode = iota // normal square wave (CHIP-8 default)
+	AudioXOChip                  // XO-Chip 16-byte pattern
+)
+
 type Audio struct {
 	pattern  [16]byte // 128 bits
 	pitch    byte     // default in xochip is 64 meaning 4000 Hz
 	st       byte
 	phase    float64 // position inside pattern
 	stepSize float64
+	mode     AudioMode
 }
 
 func NewAudio() Audio {
@@ -26,7 +34,8 @@ func (a *Audio) Reset() {
 	a.pitch = 0
 	a.phase = 0
 	a.st = 0
-	a.stepSize = BeepFreq / OutputFreq
+	a.stepSize = 0
+	a.SetMode(AudioChip8)
 }
 
 func (a *Audio) TickTimer() bool {
@@ -38,15 +47,26 @@ func (a *Audio) TickTimer() bool {
 	return false
 }
 
-func (a *Audio) SetPitch(xv byte) {
-	a.pitch = xv
-	a.stepSize = a.playbackRate() / OutputFreq
+func (a *Audio) SetMode(mode AudioMode) {
+	a.mode = mode
+	switch mode {
+	case AudioXOChip:
+		if a.pitch == 0 { // set default pitch for xochip
+			a.OpPitch(64)
+		}
+	case AudioChip8:
+		a.stepSize = BeepFreq / OutputFreq
+		a.pitch = 0
+	}
 }
 
-func (a *Audio) LoadPattern(mem *Memory, addr uint16) {
-	if a.pitch == 0 { // set default pitch for xochip
-		a.pitch = 64
-	}
+func (a *Audio) OpPitch(xv byte) {
+	a.pitch = xv
+	a.stepSize = calcPlaybackRate(float64(xv)) / OutputFreq
+}
+
+func (a *Audio) OpPattern(mem *Memory, addr uint16) {
+	a.SetMode(AudioXOChip)
 
 	for i := range a.pattern {
 		a.pattern[i] = mem.Read(addr + uint16(i))
@@ -63,17 +83,12 @@ func (a *Audio) Output(out []float32) {
 		return
 	}
 
-	if a.patternIsEmpty() { // assume it is chip8 when pattern not used
-		a.outputBeep(out)
-	} else {
+	switch a.mode {
+	case AudioXOChip:
 		a.outputPattern(out)
+	case AudioChip8:
+		a.outputBeep(out)
 	}
-}
-
-// 4000*2^((vx-64)/48)
-func (a *Audio) playbackRate() float64 {
-	pitch := float64(a.pitch)
-	return 4000.0 * math.Pow(2.0, (pitch-64.0)/48.0)
 }
 
 func (a *Audio) sample(pos int) float32 {
@@ -129,4 +144,9 @@ func outputSilence(out []float32) {
 	for i := range out {
 		out[i] = 0
 	}
+}
+
+// XOCHIP pattern formula: 4000*2^((vx-64)/48)
+func calcPlaybackRate(pitch float64) float64 {
+	return 4000.0 * math.Pow(2.0, (pitch-64.0)/48.0)
 }
