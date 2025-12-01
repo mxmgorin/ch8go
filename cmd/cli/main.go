@@ -15,12 +15,6 @@ import (
 
 type ASCIIPainter struct{}
 
-func (p *ASCIIPainter) Init(w, h int) error {
-	return nil
-}
-
-func (p *ASCIIPainter) Destroy() {}
-
 func (p *ASCIIPainter) Paint(fb *app.FrameBuffer) {
 	const (
 		on  = "██"
@@ -54,12 +48,13 @@ func (p *ASCIIPainter) Paint(fb *app.FrameBuffer) {
 }
 
 type CLI struct {
-	app *app.App
+	app     *app.App
+	painter ASCIIPainter
 }
 
 func newCLI() CLI {
-	a, _ := app.NewApp(&ASCIIPainter{})
-	return CLI{app: a}
+	a, _ := app.NewApp()
+	return CLI{app: a, painter: ASCIIPainter{}}
 }
 
 func (cli *CLI) run() {
@@ -169,7 +164,7 @@ func (cli *CLI) draw() {
 		return
 	}
 
-	// cli.app.Paint()
+	//cli.painter.Paint()
 	println(chip8.RenderASCII(&cli.app.VM.Display))
 	fmt.Println()
 }

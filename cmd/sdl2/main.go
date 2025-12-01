@@ -45,21 +45,22 @@ type Sdl2Painter struct {
 	scale    int
 }
 
-func (p *Sdl2Painter) Init(width, height int) error {
+func newPainter(width, height, scale int) (*Sdl2Painter, error) {
 	window, err := sdl.CreateWindow("ch8go SDL2",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
-		int32(width*p.scale),
-		int32(height*p.scale),
+		int32(width*scale),
+		int32(height*scale),
 		sdl.WINDOW_SHOWN)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	p := Sdl2Painter{}
 	p.window = window
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	p.renderer = renderer
 
@@ -69,11 +70,11 @@ func (p *Sdl2Painter) Init(width, height int) error {
 		int32(width),
 		int32(height))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	p.texture = texture
 
-	return nil
+	return &p, nil
 }
 
 func (p *Sdl2Painter) Paint(fb *app.FrameBuffer) {
@@ -90,7 +91,8 @@ func (p *Sdl2Painter) Destroy() {
 }
 
 type Sdl2App struct {
-	app *app.App
+	app     *app.App
+	painter *Sdl2Painter
 }
 
 func NewSdl2App(scale int) (*Sdl2App, error) {
@@ -98,16 +100,21 @@ func NewSdl2App(scale int) (*Sdl2App, error) {
 		return nil, err
 	}
 
-	app, err := app.NewApp(&Sdl2Painter{scale: 10})
+	app, err := app.NewApp()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Sdl2App{app: app}, nil
+	painter, err := newPainter(app.VM.Display.Width, app.VM.Display.Height, 10)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Sdl2App{app: app, painter: painter}, nil
 }
 
 func (a *Sdl2App) Quit() {
-	a.app.Quit()
+	a.painter.Destroy()
 	sdl.Quit()
 }
 
@@ -136,7 +143,8 @@ func (a *Sdl2App) Run(rom []byte, ext string) error {
 			}
 		}
 
-		a.app.PaintFrame()
+		fb := a.app.RunFrame()
+		a.painter.Paint(fb)
 
 		elapsed := time.Since(frameStart)
 		if elapsed < frameDelay {

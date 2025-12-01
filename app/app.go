@@ -53,23 +53,16 @@ func (fb *FrameBuffer) Pitch() int {
 	return fb.Width * fb.BPP
 }
 
-type Painter interface {
-	Init(w, h int) error
-	Paint(fb *FrameBuffer)
-	Destroy()
-}
-
 type App struct {
 	VM          *chip8.VM
 	DB          *db.DB
 	ROMHash     string
 	Palette     Palette
 	frameBuffer FrameBuffer
-	painter     Painter
 	lastTime    time.Time
 }
 
-func NewApp(painter Painter) (*App, error) {
+func NewApp() (*App, error) {
 	db, err := db.NewDB()
 
 	if err != nil {
@@ -80,38 +73,29 @@ func NewApp(painter Painter) (*App, error) {
 	w := vm.Display.Width
 	h := vm.Display.Height
 
-	if painter != nil {
-		if err := painter.Init(w, h); err != nil {
-			return nil, err
-		}
-	}
-
 	return &App{
 		DB:          db,
 		VM:          vm,
 		frameBuffer: newFrameBuffer(w, h, 4),
-		painter:     painter,
 		lastTime:    time.Now(),
 		Palette:     DefaultPalette,
 	}, nil
-}
-
-func (a *App) Quit() {
-	a.painter.Destroy()
 }
 
 func (a *App) HasROM() bool {
 	return a.ROMHash != ""
 }
 
-func (a *App) PaintFrame() {
+func (a *App) RunFrame() *FrameBuffer {
 	if a.HasROM() {
 		now := time.Now()
 		dt := now.Sub(a.lastTime).Seconds()
 		a.lastTime = now
 		state := a.VM.RunFrame(dt)
-		a.Paint(state)
+		a.updateFrameBuffer(state)
 	}
+
+	return &a.frameBuffer
 }
 
 func (a *App) ReadROM(path string) (int, error) {
@@ -205,7 +189,7 @@ func (a *App) applyROMconf() {
 	}
 }
 
-func (a *App) Paint(frameState chip8.FrameState) {
+func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 	if frameState.Dirty {
 		for i := range a.VM.Display.Height * a.VM.Display.Width {
 			colorIdx := 0
@@ -228,8 +212,6 @@ func (a *App) Paint(frameState chip8.FrameState) {
 	} else {
 		a.frameBuffer.SoundColor = a.Palette.Silence
 	}
-
-	a.painter.Paint(&a.frameBuffer)
 }
 
 func (a *App) SetColor(index int, hex string) error {

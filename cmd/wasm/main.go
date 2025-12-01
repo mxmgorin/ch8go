@@ -45,7 +45,8 @@ func (p *CanvasPainter) setScreenBg(color app.Color) {
 	}
 }
 
-func (p *CanvasPainter) Init(w, h int) error {
+func newPainter(w, h int) (CanvasPainter, error) {
+	p := CanvasPainter{}
 	p.width = w
 	p.height = h
 	doc := js.Global().Get("document")
@@ -67,7 +68,7 @@ func (p *CanvasPainter) Init(w, h int) error {
 
 	p.ctx = p.canvas.Call("getContext", "2d")
 	p.imageData = p.ctx.Call("createImageData", w, h)
-	return nil
+	return p, nil
 }
 
 func (p *CanvasPainter) setScale(value string) {
@@ -83,8 +84,6 @@ func (p *CanvasPainter) setScale(value string) {
 	screenStyle.Set("width", fmt.Sprintf("%dpx", p.width*scale))
 	screenStyle.Set("height", fmt.Sprintf("%dpx", p.height*scale))
 }
-
-func (p *CanvasPainter) Destroy() {}
 
 func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
 	p.setScreenBg(fb.SoundColor)
@@ -135,10 +134,17 @@ type WASM struct {
 	loopFunc     js.Func
 	app          *app.App
 	colorPickers ColorPickers
+	painter      CanvasPainter
 }
 
 func newWASM() WASM {
-	app, err := app.NewApp(&CanvasPainter{})
+	app, err := app.NewApp()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	painter, err := newPainter(app.VM.Display.Width, app.VM.Display.Height)
 
 	if err != nil {
 		log.Fatal(err)
@@ -165,6 +171,7 @@ func newWASM() WASM {
 		app:          app,
 		loopFunc:     loopFunc,
 		colorPickers: colorPickers,
+		painter:      painter,
 	}
 }
 
@@ -220,8 +227,8 @@ func fillAudio(this js.Value, args []js.Value) any {
 }
 
 func loop(this js.Value, args []js.Value) any {
-	wasm.app.PaintFrame()
-
+	fb := wasm.app.RunFrame()
+	wasm.painter.Paint(fb)
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
 	return nil
