@@ -44,7 +44,7 @@ async function loadRomFromUrl(url) {
 }
 
 function setupKeyboard() {
-  const cells = document.querySelectorAll("#keyboard td, #keyboard th");
+  const cells = document.querySelectorAll("#ti-keys .key");
 
   cells.forEach((cell) => {
     const key = cell.textContent.trim().toLowerCase();

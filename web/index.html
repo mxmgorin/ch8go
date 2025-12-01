@@ -47,8 +47,8 @@
         <div class="ti84">
             <div class="page">
                 <p class="subtitle">
-                    <span class="brand">ch8go</span> — CHIP-8/SCHIP/XO-CHIP in your browser powered by Go
-                    and WASM
+                    <span class="brand">ch8go</span> — CHIP-8/SCHIP/XO-CHIP in
+                    your browser powered by Go and WASM
                     <br />
                     <span class="credit">PROGRAMMED BY MXMGORIN</span>
                 </p>
@@ -135,7 +135,7 @@
                     </div>
 
                     <div class="inputs">
-                        <button id="audio" class="key sound">Sound</button>
+                        <button id="audio" class="key key-small sound">Sound</button>
                         <div class="input-group">
                             <label>Scale:</label>
                             <input
@@ -143,7 +143,7 @@
                                 type="range"
                                 min="1"
                                 max="15"
-                                value="6"
+                                value="5"
                             />
                         </div>
                         <div class="input-group">
@@ -175,37 +175,28 @@
                         </div>
                     </div>
                 </div>
-                <div id="keyboard">
-                    <table class="tg keyboard-element">
-                        <thead>
-                            <tr>
-                                <th class="tg-il3a">1</th>
-                                <th class="tg-il3a">2</th>
-                                <th class="tg-il3a">3</th>
-                                <th class="tg-il3a">4</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="tg-il3a">Q</td>
-                                <td class="tg-il3a">W</td>
-                                <td class="tg-il3a">E</td>
-                                <td class="tg-il3a">R</td>
-                            </tr>
-                            <tr>
-                                <td class="tg-il3a">A</td>
-                                <td class="tg-il3a">S</td>
-                                <td class="tg-il3a">D</td>
-                                <td class="tg-il3a">F</td>
-                            </tr>
-                            <tr>
-                                <td class="tg-il3a">Z</td>
-                                <td class="tg-il3a">X</td>
-                                <td class="tg-il3a">C</td>
-                                <td class="tg-il3a">V</td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <div class="ti-keys">
+                    <!-- Row 1 (numbers, CHIP-8 mapping) -->
+                    <button class="key">1</button>
+                    <button class="key">2</button>
+                    <button class="key">3</button>
+                    <button class="key">A</button>
+
+                    <button class="key">4</button>
+                    <button class="key">5</button>
+                    <button class="key">6</button>
+                    <button class="key">B</button>
+
+                    <button class="key">7</button>
+                    <button class="key">8</button>
+                    <button class="key">9</button>
+                    <button class="key">C</button>
+
+                    <button class="key">0</button>
+                    <button class="key">F</button>
+                    <button class="key">E</button>
+                    <button class="key">D</button>
                 </div>
                 <div class="footer"></div>
             </div>
