@@ -216,7 +216,7 @@ func (a *App) Paint() {
 		a.frameBuffer.Pixels[idx+3] = 255
 	}
 
-	if a.VM.Buzzer() {
+	if a.VM.Audio.Beep() {
 		a.frameBuffer.SoundColor = a.Palette.Buzzer
 	} else {
 		a.frameBuffer.SoundColor = a.Palette.Silence

@@ -22,6 +22,10 @@ var (
 	}
 )
 
+const BlockSize = 512
+
+var audioBuf = make([]float32, BlockSize)
+
 type CanvasPainter struct {
 	ctx           js.Value
 	imageData     js.Value
@@ -204,23 +208,15 @@ func onKeyUp(this js.Value, args []js.Value) any {
 }
 
 func fillAudio(this js.Value, args []js.Value) any {
-	n := args[0].Int()
+	out := args[0] // JS Float32Array
+	wasm.app.VM.Audio.Output(audioBuf, 44100.0)
 
-	// produce float32 audio
-	buf := make([]float32, n)
-	wasm.app.VM.OutputAudio(buf, 44100.0)
+	outBuffer := js.Global().Get("Uint8Array").New(out.Get("buffer"))
+	bufPointer := unsafe.Pointer(&audioBuf[0])
+	byteBuf := unsafe.Slice((*byte)(bufPointer), BlockSize*4)
+	js.CopyBytesToJS(outBuffer, byteBuf)
 
-	// Create Float32Array
-	float32Array := js.Global().Get("Float32Array").New(n)
-
-	// Get the underlying Uint8Array buffer
-	byteArray := js.Global().Get("Uint8Array").New(float32Array.Get("buffer"))
-
-	// Copy float32 bytes → JS buffer
-	src := unsafe.Slice((*byte)(unsafe.Pointer(&buf[0])), n*4)
-	js.CopyBytesToJS(byteArray, src)
-
-	return float32Array
+	return nil
 }
 
 func loop(this js.Value, args []js.Value) any {

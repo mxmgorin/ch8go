@@ -71,22 +71,13 @@ func (vm *VM) RunFrame(dt float64) bool {
 
 	for vm.timerAccum >= 1 {
 		vm.timerAccum -= 1
-		vm.CPU.tickTimers()
+		vm.CPU.tickTimer()
+		vm.Audio.tickTimer()
 	}
 
 	vm.Keypad.Latch()
 
 	return vm.Display.poll()
-}
-
-func (vm *VM) Buzzer() bool {
-	return vm.CPU.st > 0
-}
-
-func (vm *VM) OutputAudio(out []float32, freq float64) {
-	if vm.Buzzer() {
-		vm.Audio.Output(out, freq)
-	}
 }
 
 func (vm *VM) PeekNext() DisasmInfo {

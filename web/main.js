@@ -71,17 +71,18 @@ function setupKeyboard() {
 
 let audioCtx;
 document.getElementById("audio").onclick = async () => {
+  if (audioCtx == null) {
     audioCtx = new AudioContext();
     await audioCtx.resume();
 
     const node = audioCtx.createScriptProcessor(512, 0, 1);
-    node.onaudioprocess = e => {
-        const out = e.outputBuffer.getChannelData(0);
-        const samples = window.fillAudio(out.length);
-        out.set(samples);
+    node.onaudioprocess = (e) => {
+      const out = e.outputBuffer.getChannelData(0);
+      window.fillAudio(out);
     };
 
     node.connect(audioCtx.destination);
+  }
 };
 
 init();
