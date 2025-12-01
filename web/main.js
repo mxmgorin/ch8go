@@ -72,6 +72,7 @@ function setupKeyboard() {
 let audioCtx;
 document.getElementById("audio").onclick = async () => {
   if (audioCtx == null) {
+    console.log("Audio started");
     audioCtx = new AudioContext();
     await audioCtx.resume();
 

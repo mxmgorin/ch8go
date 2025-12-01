@@ -40,7 +40,7 @@ func (a *Audio) TickTimer() bool {
 
 func (a *Audio) SetPitch(xv byte) {
 	a.pitch = xv
-	a.stepSize = a.playbackRate()
+	a.stepSize = a.playbackRate() / OutputFreq
 }
 
 func (a *Audio) LoadPattern(mem *Memory, addr uint16) {
