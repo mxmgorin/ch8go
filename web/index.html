@@ -44,156 +44,170 @@
     </head>
 
     <body>
-        <div class="page">
-            <h1 class="title">ch8go</h1>
-            <p class="subtitle">
-                CHIP-8/SCHIP/XO-CHIP in your browser — classic system powered by
-                Go and WASM.
-                <br />
-                <span class="credit">PROGRAMMED BY MXMGORIN</span>
-            </p>
-            <div class="inputs">
-                <div class="input-group">
-                    <label for="roms" class="label">Select ROM:</label>
-                    <select id="roms">
-                        <option value="roms/xo/superneatboy.ch8">
-                            Super Neat Boy
-                        </option>
-                        <option value="roms/xo/garlicscape.ch8">
-                            Garlic Scape
-                        </option>
-                        <option value="roms/xo/t8nks.ch8">T8nks</option>
-                        <option value="roms/xo/civiliz8n.ch8">Civiliz8n</option>
-                        <option value="roms/danm8ku.ch8">Danm8ku</option>
-                        <option value="roms/octogon.ch8">Octogon</option>
-                        <option value="roms/supersquare.ch8">
-                            Super Square
-                        </option>
-                        <option value="roms/down8.ch8">Down8</option>
-                        <option value="roms/slipperyslope.ch8">
-                            Slippery Slope
-                        </option>
-                        <option value="roms/rockto.ch8">Rockto</option>
-                        <option value="roms/sub8.ch8">Sub8</option>
-                        <option value="roms/DVN8.ch8">DVN8</option>
-                        <option value="roms/xo/chickenScratch.ch8">
-                            Chicken Scratch
-                        </option>
-                        <option value="roms/flightrunner.ch8">
-                            Flight Runner
-                        </option>
-                        <option value="roms/glitchGhost.ch8">
-                            Glitch Ghost
-                        </option>
-                        <option value="roms/turnover77.ch8">
-                            Turn Over 77
-                        </option>
-                        <option value="roms/blackrainbow.ch8">
-                            Black Rainbow
-                        </option>
-                        <option value="roms/binding.ch8">Binding</option>
-                        <option value="roms/br8kout.ch8">Br8kout</option>
-                        <option value="roms/INVADERS">Invaders</option>
-                        <option value="roms/TETRIS">Tetris</option>
-                        <option value="roms/snake.ch8">Snake</option>
-                        <option value="roms/TANK">Tank</option>
-                    </select>
+        <div class="ti84">
+            <div class="page">
+                <p class="subtitle">
+                    <span class="brand">ch8go</span> — CHIP-8/SCHIP/XO-CHIP in your browser powered by Go
+                    and WASM
+                    <br />
+                    <span class="credit">PROGRAMMED BY MXMGORIN</span>
+                </p>
+                <div class="bezel">
+                    <div class="inputs">
+                        <div class="input-group">
+                            <label for="roms" class="label">Select ROM:</label>
+                            <select id="roms">
+                                <option value="roms/xo/superneatboy.ch8">
+                                    Super Neat Boy
+                                </option>
+                                <option value="roms/xo/garlicscape.ch8">
+                                    Garlic Scape
+                                </option>
+                                <option value="roms/xo/t8nks.ch8">T8nks</option>
+                                <option value="roms/xo/civiliz8n.ch8">
+                                    Civiliz8n
+                                </option>
+                                <option value="roms/danm8ku.ch8">
+                                    Danm8ku
+                                </option>
+                                <option value="roms/octogon.ch8">
+                                    Octogon
+                                </option>
+                                <option value="roms/supersquare.ch8">
+                                    Super Square
+                                </option>
+                                <option value="roms/down8.ch8">Down8</option>
+                                <option value="roms/slipperyslope.ch8">
+                                    Slippery Slope
+                                </option>
+                                <option value="roms/rockto.ch8">Rockto</option>
+                                <option value="roms/sub8.ch8">Sub8</option>
+                                <option value="roms/DVN8.ch8">DVN8</option>
+                                <option value="roms/xo/chickenScratch.ch8">
+                                    Chicken Scratch
+                                </option>
+                                <option value="roms/flightrunner.ch8">
+                                    Flight Runner
+                                </option>
+                                <option value="roms/glitchGhost.ch8">
+                                    Glitch Ghost
+                                </option>
+                                <option value="roms/turnover77.ch8">
+                                    Turn Over 77
+                                </option>
+                                <option value="roms/blackrainbow.ch8">
+                                    Black Rainbow
+                                </option>
+                                <option value="roms/binding.ch8">
+                                    Binding
+                                </option>
+                                <option value="roms/br8kout.ch8">
+                                    Br8kout
+                                </option>
+                                <option value="roms/INVADERS">Invaders</option>
+                                <option value="roms/TETRIS">Tetris</option>
+                                <option value="roms/snake.ch8">Snake</option>
+                                <option value="roms/TANK">Tank</option>
+                            </select>
+                        </div>
+
+                        <div class="separator">OR</div>
+
+                        <div class="input-group">
+                            <input
+                                type="file"
+                                id="romInput"
+                                accept=".ch8, .sc8, .xo8"
+                                hidden
+                            />
+                            <label for="romInput" class="file-btn"
+                                >Upload ROM
+                            </label>
+                            <span id="fileName" class="file-name">No file</span>
+                        </div>
+                    </div>
+
+                    <div class="screen" id="chip8-screen">
+                        <canvas
+                            id="chip8-canvas"
+                            style="transform-origin: top left"
+                        ></canvas>
+                    </div>
+
+                    <div class="inputs">
+                        <button id="audio" class="key sound">Sound</button>
+                        <div class="input-group">
+                            <label>Scale:</label>
+                            <input
+                                id="scaleInput"
+                                type="range"
+                                min="1"
+                                max="15"
+                                value="6"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <label class="picker">Palette:</label>
+                            <input
+                                class="color-picker"
+                                id="bgPicker"
+                                type="color"
+                                value="#000000"
+                            />
+                            <input
+                                class="color-picker"
+                                id="fgPicker"
+                                type="color"
+                                value="#FFFFFF"
+                            />
+                            <input
+                                class="color-picker"
+                                id="c3Picker"
+                                type="color"
+                                value="#000000"
+                            />
+                            <input
+                                class="color-picker"
+                                id="c4Picker"
+                                type="color"
+                                value="#FFFFFF"
+                            />
+                        </div>
+                    </div>
                 </div>
-
-                <div class="separator">OR</div>
-
-                <div class="input-group">
-                    <input
-                        type="file"
-                        id="romInput"
-                        accept=".ch8, .sc8, .xo8"
-                        hidden
-                    />
-                    <label for="romInput" class="file-btn">Upload ROM </label>
-                    <span id="fileName" class="file-name">No file</span>
+                <div id="keyboard">
+                    <table class="tg keyboard-element">
+                        <thead>
+                            <tr>
+                                <th class="tg-il3a">1</th>
+                                <th class="tg-il3a">2</th>
+                                <th class="tg-il3a">3</th>
+                                <th class="tg-il3a">4</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="tg-il3a">Q</td>
+                                <td class="tg-il3a">W</td>
+                                <td class="tg-il3a">E</td>
+                                <td class="tg-il3a">R</td>
+                            </tr>
+                            <tr>
+                                <td class="tg-il3a">A</td>
+                                <td class="tg-il3a">S</td>
+                                <td class="tg-il3a">D</td>
+                                <td class="tg-il3a">F</td>
+                            </tr>
+                            <tr>
+                                <td class="tg-il3a">Z</td>
+                                <td class="tg-il3a">X</td>
+                                <td class="tg-il3a">C</td>
+                                <td class="tg-il3a">V</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <div class="screen" id="chip8-screen">
-                <canvas
-                    id="chip8-canvas"
-                    style="transform-origin: top left"
-                ></canvas>
-            </div>
-
-            <div class="inputs">
-                <button id="audio">Unmute</button>
-                <div class="input-group">
-                    <label>Scale:</label>
-                    <input
-                        id="scaleInput"
-                        type="range"
-                        min="1"
-                        max="15"
-                        value="6"
-                    />
-                </div>
-                <div class="input-group">
-                    <label class="picker">Palette:</label>
-                    <input
-                        class="color-picker"
-                        id="bgPicker"
-                        type="color"
-                        value="#000000"
-                    />
-                    <input
-                        class="color-picker"
-                        id="fgPicker"
-                        type="color"
-                        value="#FFFFFF"
-                    />
-                    <input
-                        class="color-picker"
-                        id="c3Picker"
-                        type="color"
-                        value="#000000"
-                    />
-                    <input
-                        class="color-picker"
-                        id="c4Picker"
-                        type="color"
-                        value="#FFFFFF"
-                    />
-                </div>
-            </div>
-        </div>
-
-        <div id="keyboard">
-            <table class="tg keyboard-element">
-                <thead>
-                    <tr>
-                        <th class="tg-il3a">1</th>
-                        <th class="tg-il3a">2</th>
-                        <th class="tg-il3a">3</th>
-                        <th class="tg-il3a">4</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="tg-il3a">Q</td>
-                        <td class="tg-il3a">W</td>
-                        <td class="tg-il3a">E</td>
-                        <td class="tg-il3a">R</td>
-                    </tr>
-                    <tr>
-                        <td class="tg-il3a">A</td>
-                        <td class="tg-il3a">S</td>
-                        <td class="tg-il3a">D</td>
-                        <td class="tg-il3a">F</td>
-                    </tr>
-                    <tr>
-                        <td class="tg-il3a">Z</td>
-                        <td class="tg-il3a">X</td>
-                        <td class="tg-il3a">C</td>
-                        <td class="tg-il3a">V</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
 
         <script src="wasm_exec.js"></script>
