@@ -19,6 +19,7 @@ var PlatformByExt = map[string]Platform{
 	".sc8": PlatformSChip11,
 	".xo":  PlatformXOChip,
 	".xo8": PlatformXOChip,
+	".8o": PlatformXOChip,
 }
 
 type PlatformConf struct {

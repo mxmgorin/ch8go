@@ -75,7 +75,7 @@ let audioNode = null;
 let audioEnabled = false;
 let audioFreq = 0.0;
 let audioBufSize = 0;
-const audioApi = 0;
+const audioApi = 1;
 
 const iconOn = `
   <svg width="27" height="27" viewBox="0 0 9 9" shape-rendering="crispEdges">

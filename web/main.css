@@ -72,10 +72,11 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     gap: 14px;
     padding: 10px;
+    align-self: stretch;
 }
 
 .input-group {
@@ -83,8 +84,8 @@ body {
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
-    width: 240px;
-    height: 35px;
+    width: 200px;
+    height: 38px;
     gap: 8px;
     padding: 4px 8px;
     border: 1px solid #8993aead;          /* TI-80 dark-gray */
@@ -96,7 +97,6 @@ body {
     background: #c1c4cc !important;
     border-radius: 2px;
 }
-
 
 .separator {
     font-weight: bold;
@@ -123,7 +123,7 @@ body {
     background: #c1c4cc !important;
     color: #333;
     border: 1px solid #aaa;
-    padding: 8px 14px;
+    padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
     line-height: 1;
@@ -145,7 +145,7 @@ body {
 
 #roms {
     padding: 8px 12px;
-    border: 1px solid #777;
+    border: 1px solid #aaa;
     border-radius: 6px;
     background: #fff;
     font-size: 14px;
@@ -154,8 +154,8 @@ body {
 }
 
 .color-picker {
-    max-width: 30px;
-    max-height: 30px;
+    max-width: 25px;
+    max-height: 25px;
 }
 
 .ti84 {
@@ -290,6 +290,7 @@ body {
     padding: 6px 10px;
     border: 1px solid #aaa;
     border-radius: 6px;
+    background: #c1c4cc;
 }
 
 .scale-btn {
@@ -297,9 +298,12 @@ body {
     height: 20px;
     border: 1px solid #aaa;
     cursor: pointer;
+    background: #c1c4cc;
 }
 
-#scaleValue {
-    min-width: 20px;
+#scaleInput {
+    width: 15px;
+    height: 15px;
     text-align: center;
+    background: #c1c4cc;
 }

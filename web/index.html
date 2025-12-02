@@ -55,7 +55,7 @@
                 <div class="bezel">
                     <div class="inputs">
                         <div class="input-group">
-                            <label for="roms" class="label">Select ROM:</label>
+                            <label for="roms" class="label">Select:</label>
                             <select id="roms">
                                 <option value="roms/xo/superneatboy.ch8">
                                     Super Neat Boy
@@ -111,17 +111,16 @@
                             </select>
                         </div>
 
-                        <div class="separator">OR</div>
 
                         <div class="input-group">
                             <input
                                 type="file"
                                 id="romInput"
-                                accept=".ch8, .sc8, .xo8, .xo, .sc"
+                                accept=".ch8, .sc8, .xo8, .xo, .sc, .8o"
                                 hidden
                             />
                             <label for="romInput" class="file-btn"
-                                >Upload ROM
+                                >Upload
                             </label>
                             <span id="fileName" class="file-name">No file</span>
                         </div>
@@ -142,15 +141,7 @@
                                 <button id="scaleMinus" class="scale-btn">
                                     −
                                 </button>
-                                <input
-                                    id="scaleInput"
-                                    value="5"
-                                    style="
-                                        width: 15px;
-                                        height: 15px;
-                                        text-align: center;
-                                    "
-                                />
+                                <input id="scaleInput" value="5" />
                                 <button id="scalePlus" class="scale-btn">
                                     +
                                 </button>
