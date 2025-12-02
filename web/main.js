@@ -193,4 +193,24 @@ function toggleAudio() {
   }
 }
 
+const scaleInput = document.getElementById("scaleInput");
+const scaleMinus = document.getElementById("scaleMinus");
+const scalePlus = document.getElementById("scalePlus");
+
+scaleMinus.onclick = () => {
+  let v = parseInt(scaleInput.value);
+  if (v > 1) {
+    scaleInput.value = v - 1;
+    scaleInput.dispatchEvent(new Event("input"));
+  }
+};
+
+scalePlus.onclick = () => {
+  let v = parseInt(scaleInput.value);
+  if (v < 15) {
+    scaleInput.value = v + 1;
+    scaleInput.dispatchEvent(new Event("input"));
+  }
+};
+
 init();

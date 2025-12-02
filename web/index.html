@@ -138,13 +138,23 @@
                         <button id="audio" class="key key-small sound"></button>
                         <div class="input-group">
                             <label>Scale:</label>
-                            <input
-                                id="scaleInput"
-                                type="range"
-                                min="1"
-                                max="15"
-                                value="5"
-                            />
+                            <div class="scale-control">
+                                <button id="scaleMinus" class="scale-btn">
+                                    −
+                                </button>
+                                <input
+                                    id="scaleInput"
+                                    value="5"
+                                    style="
+                                        width: 15px;
+                                        height: 15px;
+                                        text-align: center;
+                                    "
+                                />
+                                <button id="scalePlus" class="scale-btn">
+                                    +
+                                </button>
+                            </div>
                         </div>
                         <div class="input-group">
                             <label class="picker">Palette:</label>
