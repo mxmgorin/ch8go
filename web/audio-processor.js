@@ -7,7 +7,12 @@ class SimpleProcessor extends AudioWorkletProcessor {
 
   process(_, outputs) {
     const out = outputs[0][0];
-    out.set(this.buf || out.fill(0));
+
+    if (this.buf)
+      out.set(this.buf);
+    else
+      out.fill(0);
+
     this.port.postMessage("need");
     return true;
   }

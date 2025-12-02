@@ -23,9 +23,7 @@ var (
 	}
 )
 
-const BlockSize = 128
-
-var audioBuf = make([]float32, BlockSize)
+var audioBuf = make([]float32, 0)
 
 type CanvasPainter struct {
 	ctx           js.Value
@@ -163,6 +161,7 @@ func newWASM() WASM {
 	colorPickers := newColorPickers(doc, app)
 
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
+	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
 	// Animation loop (must persist function or GC will kill it)
 	loopFunc := js.FuncOf(loop)
@@ -214,14 +213,24 @@ func onKeyUp(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func startAudio(this js.Value, args []js.Value) any {
+	size := args[0].Int()
+	audioBuf = make([]float32, size)
+	return nil
+}
+
 func fillAudio(this js.Value, args []js.Value) any {
 	out := args[0] // JS Float32Array
 	freq := args[1].Float()
 	wasm.app.VM.Audio.Output(audioBuf, freq)
 
-	outBuffer := js.Global().Get("Uint8Array").New(out.Get("buffer"))
+	outBuffer := js.Global().Get("Uint8Array").New(
+		out.Get("buffer"),
+		out.Get("byteOffset"),
+		out.Get("byteLength"),
+	)
 	bufPointer := unsafe.Pointer(&audioBuf[0])
-	byteBuf := unsafe.Slice((*byte)(bufPointer), BlockSize*4)
+	byteBuf := unsafe.Slice((*byte)(bufPointer), len(audioBuf)*4)
 	js.CopyBytesToJS(outBuffer, byteBuf)
 
 	return nil

@@ -68,39 +68,107 @@ function setupKeyboard() {
     });
   });
 }
-const dot = document.getElementById("audio-dot");
-let ctx = null;
-let node = null;
-let on = false;
-let sampleRate = 48000.0
 
-document.getElementById("audio").onclick = async () => {
-  if (!ctx) {
-    ctx = new AudioContext();
-    sampleRate = ctx.sampleRate;
-    console.log("Audio sample rate:", ctx.sampleRate);
-    await ctx.audioWorklet.addModule("audio-processor.js");
-    node = new AudioWorkletNode(ctx, "simple-processor");
+const audioDot = document.getElementById("audio-dot");
+let audioCtx = null;
+let audioNode = null;
+let audioEnabled = false;
+let audioFreq = 0.0;
+let audioBufSize = 0;
+const audioApi = 0;
 
-    // Worklet requests audio → fill buffer via Go/WASM
-    node.port.onmessage = () => {
-      const buf = new Float32Array(128);
-      window.fillAudio(buf, sampleRate);
-      node.port.postMessage(buf);
-    };
+const iconOn = `
+  <svg width="28" height="28" viewBox="0 0 8 8" shape-rendering="crispEdges">
+    <!-- body -->
+    <rect x="0" y="3" width="2" height="3" fill="black" />
+    <rect x="2" y="2" width="1" height="5" fill="black" />
+    <!-- inner wave -->
+    <rect x="4" y="4" width="1" height="1" fill="black" />
+    <!-- center wave -->
+    <rect x="5" y="3" width="1" height="1" fill="black" />
+    <rect x="5" y="5" width="1" height="1" fill="black" />
+    <!-- outer wave -->
+    <rect x="6" y="2" width="1" height="1" fill="black" />
+    <rect x="6" y="4" width="1" height="1" fill="black" />
+    <rect x="6" y="6" width="1" height="1" fill="black" />
+  </svg>
+`;
+const iconOff = `
+  <svg width="28" height="28" viewBox="0 0 8 8" shape-rendering="crispEdges">
+    <!-- body -->
+    <rect x="0" y="3" width="2" height="3" fill="black" />
+    <rect x="2" y="2" width="1" height="5" fill="black" />
+    <!-- cross 3×3 -->
+    <!-- up -->
+    <rect x="4" y="3" width="1" height="1" fill="red" />
+    <rect x="6" y="3" width="1" height="1" fill="red" />
+    <!-- center -->
+    <rect x="5" y="4" width="1" height="1" fill="red" />
+    <!-- bottom -->
+    <rect x="4" y="5" width="1" height="1" fill="red" />
+    <rect x="6" y="5" width="1" height="1" fill="red" />
+  </svg>
+`;
+const audioBtn = document.getElementById("audio");
+audioBtn.innerHTML = iconOff;
+audioBtn.onclick = async () => {
+  if (!audioCtx) {
+    if (audioApi === 0) {
+      await startAudioScriptProcessor();
+    } else if (audioApi === 1) {
+      await startAudioWorklet();
+    }
   }
 
-  if (on) {
-    node.disconnect();
-    on = false;
-    dot.classList.remove("on");
-    console.log("Audio OFF");
-  } else {
-    node.connect(ctx.destination);
-    on = true;
-    dot.classList.add("on");
-    console.log("Audio ON");
-  }
+  toggleAudio();
 };
+
+async function startAudioScriptProcessor() {
+  audioBufSize = 512;
+  window.startAudio(audioBufSize);
+
+  audioCtx = new AudioContext();
+  audioFreq = audioCtx.sampleRate;
+  console.log("Audio sample rate:", audioFreq);
+  await audioCtx.resume();
+
+  audioNode = audioCtx.createScriptProcessor(audioBufSize, 0, 1);
+  audioNode.onaudioprocess = (e) => {
+    const out = e.outputBuffer.getChannelData(0);
+    window.fillAudio(out, audioFreq);
+  };
+}
+
+async function startAudioWorklet() {
+  audioBufSize = 128;
+  window.startAudio(audioBufSize);
+
+  audioCtx = new AudioContext();
+  audioFreq = audioCtx.sampleRate;
+  console.log("Audio sample rate:", audioFreq);
+
+  await audioCtx.audioWorklet.addModule("audio-processor.js");
+  audioNode = new AudioWorkletNode(audioCtx, "simple-processor");
+
+  audioNode.port.onmessage = () => {
+    const buf = new Float32Array(audioBufSize);
+    window.fillAudio(buf, audioFreq);
+    audioNode.port.postMessage(buf);
+  };
+}
+
+function toggleAudio() {
+  if (audioEnabled) {
+    console.log("Audio OFF");
+    audioNode.disconnect();
+    audioEnabled = false;
+    audioBtn.innerHTML = iconOff;
+  } else {
+    console.log("Audio ON");
+    audioNode.connect(audioCtx.destination);
+    audioEnabled = true;
+    audioBtn.innerHTML = iconOn;
+  }
+}
 
 init();
