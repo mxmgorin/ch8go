@@ -68,21 +68,38 @@ function setupKeyboard() {
     });
   });
 }
+const dot = document.getElementById("audio-dot");
+let ctx = null;
+let node = null;
+let on = false;
+let sampleRate = 48000.0
 
-let audioCtx;
 document.getElementById("audio").onclick = async () => {
-  if (audioCtx == null) {
-    console.log("Audio started");
-    audioCtx = new AudioContext();
-    await audioCtx.resume();
+  if (!ctx) {
+    ctx = new AudioContext();
+    sampleRate = ctx.sampleRate;
+    console.log("Audio sample rate:", ctx.sampleRate);
+    await ctx.audioWorklet.addModule("audio-processor.js");
+    node = new AudioWorkletNode(ctx, "simple-processor");
 
-    const node = audioCtx.createScriptProcessor(512, 0, 1);
-    node.onaudioprocess = (e) => {
-      const out = e.outputBuffer.getChannelData(0);
-      window.fillAudio(out);
+    // Worklet requests audio → fill buffer via Go/WASM
+    node.port.onmessage = () => {
+      const buf = new Float32Array(128);
+      window.fillAudio(buf, sampleRate);
+      node.port.postMessage(buf);
     };
+  }
 
-    node.connect(audioCtx.destination);
+  if (on) {
+    node.disconnect();
+    on = false;
+    dot.classList.remove("on");
+    console.log("Audio OFF");
+  } else {
+    node.connect(ctx.destination);
+    on = true;
+    dot.classList.add("on");
+    console.log("Audio ON");
   }
 };
 

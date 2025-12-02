@@ -5,7 +5,6 @@ import (
 )
 
 const BeepFreq = 440.0 // or 400.0
-const OutputFreq = 44100.0
 
 type AudioMode int
 
@@ -15,12 +14,11 @@ const (
 )
 
 type Audio struct {
-	pattern  [16]byte // 128 bits
-	pitch    byte     // default in xochip is 64 meaning 4000 Hz
-	st       byte
-	phase    float64 // position inside pattern
-	stepSize float64
-	mode     AudioMode
+	pattern [16]byte // 128 bits
+	pitch   byte     // default in xochip is 64 meaning 4000 Hz
+	st      byte
+	phase   float64 // position inside pattern
+	mode    AudioMode
 }
 
 func NewAudio() Audio {
@@ -34,7 +32,6 @@ func (a *Audio) Reset() {
 	a.pitch = 0
 	a.phase = 0
 	a.st = 0
-	a.stepSize = 0
 	a.SetMode(AudioChip8)
 }
 
@@ -52,17 +49,16 @@ func (a *Audio) SetMode(mode AudioMode) {
 	switch mode {
 	case AudioXOChip:
 		if a.pitch == 0 { // set default pitch for xochip
-			a.OpPitch(64)
+			a.pitch = 64
 		}
 	case AudioChip8:
-		a.stepSize = BeepFreq / OutputFreq
 		a.pitch = 0
 	}
 }
 
 func (a *Audio) OpPitch(xv byte) {
 	a.pitch = xv
-	a.stepSize = calcPlaybackRate(float64(xv)) / OutputFreq
+	a.SetMode(AudioXOChip)
 }
 
 func (a *Audio) OpPattern(mem *Memory, addr uint16) {
@@ -77,7 +73,7 @@ func (a *Audio) Beep() bool {
 	return a.st > 0
 }
 
-func (a *Audio) Output(out []float32) {
+func (a *Audio) Output(out []float32, freq float64) {
 	if !a.Beep() {
 		outputSilence(out)
 		return
@@ -85,13 +81,13 @@ func (a *Audio) Output(out []float32) {
 
 	switch a.mode {
 	case AudioXOChip:
-		a.outputPattern(out)
+		a.outputPattern(out, freq)
 	case AudioChip8:
-		a.outputBeep(out)
+		a.outputBeep(out, freq)
 	}
 }
 
-func (a *Audio) sample(pos int) float32 {
+func (a *Audio) samplePattern(pos int) float32 {
 	pos &= 127 // wrap around 0..127
 
 	byteIndex := pos >> 3 // div on 8
@@ -104,11 +100,12 @@ func (a *Audio) sample(pos int) float32 {
 }
 
 // XO-HIP
-func (a *Audio) outputPattern(out []float32) {
+func (a *Audio) outputPattern(out []float32, freq float64) {
 	for i := range out {
 		pos := int(a.phase) % 128
-		out[i] = a.sample(pos)
-		a.phase += a.stepSize
+		out[i] = a.samplePattern(pos)
+		stepSize := calcPlaybackRate(float64(a.pitch)) / freq
+		a.phase += stepSize
 		if a.phase >= 128 {
 			a.phase -= 128
 		}
@@ -116,7 +113,7 @@ func (a *Audio) outputPattern(out []float32) {
 }
 
 // Chip8
-func (a *Audio) outputBeep(out []float32) {
+func (a *Audio) outputBeep(out []float32, freq float64) {
 	for i := range out {
 		if int(a.phase)&1 == 0 {
 			out[i] = 1
@@ -124,7 +121,8 @@ func (a *Audio) outputBeep(out []float32) {
 			out[i] = -1
 		}
 
-		a.phase += a.stepSize
+		stepSize := BeepFreq / freq
+		a.phase += stepSize
 		if a.phase >= 2 { // square wave period = 2
 			a.phase -= 2
 		}

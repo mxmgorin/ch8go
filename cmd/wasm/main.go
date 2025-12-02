@@ -23,7 +23,7 @@ var (
 	}
 )
 
-const BlockSize = 512
+const BlockSize = 128
 
 var audioBuf = make([]float32, BlockSize)
 
@@ -216,7 +216,8 @@ func onKeyUp(this js.Value, args []js.Value) any {
 
 func fillAudio(this js.Value, args []js.Value) any {
 	out := args[0] // JS Float32Array
-	wasm.app.VM.Audio.Output(audioBuf)
+	freq := args[1].Float()
+	wasm.app.VM.Audio.Output(audioBuf, freq)
 
 	outBuffer := js.Global().Get("Uint8Array").New(out.Get("buffer"))
 	bufPointer := unsafe.Pointer(&audioBuf[0])
