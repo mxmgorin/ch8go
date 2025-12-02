@@ -78,35 +78,57 @@ let audioBufSize = 0;
 const audioApi = 0;
 
 const iconOn = `
-  <svg width="28" height="28" viewBox="0 0 8 8" shape-rendering="crispEdges">
+  <svg width="27" height="27" viewBox="0 0 9 9" shape-rendering="crispEdges">
     <!-- body -->
-    <rect x="0" y="3" width="2" height="3" fill="black" />
-    <rect x="2" y="2" width="1" height="5" fill="black" />
-    <!-- inner wave -->
-    <rect x="4" y="4" width="1" height="1" fill="black" />
-    <!-- center wave -->
-    <rect x="5" y="3" width="1" height="1" fill="black" />
-    <rect x="5" y="5" width="1" height="1" fill="black" />
-    <!-- outer wave -->
+    <rect x="0" y="3" width="1" height="3" fill="black" />
+    <rect x="1" y="3" width="1" height="1" fill="black" />
+    <rect x="1" y="5" width="1" height="1" fill="black" />
+    <rect x="1" y="5" width="1" height="1" fill="black" />
+
+    <rect x="2" y="2" width="1" height="1" fill="black" />
+    <rect x="2" y="6" width="1" height="1" fill="black" />
+
+    <rect x="3" y="1" width="1" height="1" fill="black" />
+    <rect x="3" y="7" width="1" height="1" fill="black" />
+
+    <rect x="4" y="1" width="1" height="7" fill="black" />
+
+    <!-- waves --->
+    <!-- up -->
+    <rect x="7" y="1" width="1" height="1" fill="black" />
     <rect x="6" y="2" width="1" height="1" fill="black" />
-    <rect x="6" y="4" width="1" height="1" fill="black" />
+    <!-- center -->
+    <rect x="6" y="4" width="2" height="1" fill="black" />
+    <!-- bottom -->
+    <rect x="7" y="7" width="1" height="1" fill="black" />
     <rect x="6" y="6" width="1" height="1" fill="black" />
   </svg>
 `;
 const iconOff = `
-  <svg width="28" height="28" viewBox="0 0 8 8" shape-rendering="crispEdges">
-    <!-- body -->
-    <rect x="0" y="3" width="2" height="3" fill="black" />
-    <rect x="2" y="2" width="1" height="5" fill="black" />
-    <!-- cross 3×3 -->
-    <!-- up -->
-    <rect x="4" y="3" width="1" height="1" fill="red" />
-    <rect x="6" y="3" width="1" height="1" fill="red" />
-    <!-- center -->
-    <rect x="5" y="4" width="1" height="1" fill="red" />
-    <!-- bottom -->
-    <rect x="4" y="5" width="1" height="1" fill="red" />
-    <rect x="6" y="5" width="1" height="1" fill="red" />
+  <svg width="27" height="27" viewBox="0 0 9 9" shape-rendering="crispEdges">
+      <!-- body -->
+      <rect x="0" y="3" width="1" height="3" fill="black" />
+      <rect x="1" y="3" width="1" height="1" fill="black" />
+      <rect x="1" y="5" width="1" height="1" fill="black" />
+      <rect x="1" y="5" width="1" height="1" fill="black" />
+
+      <rect x="2" y="2" width="1" height="1" fill="black" />
+      <rect x="2" y="6" width="1" height="1" fill="black" />
+
+      <rect x="3" y="1" width="1" height="1" fill="black" />
+      <rect x="3" y="7" width="1" height="1" fill="black" />
+
+      <rect x="4" y="1" width="1" height="7" fill="black" />
+
+      <!-- cross 3×3 -->
+      <!-- up -->
+      <rect x="6" y="3" width="1" height="1" fill="red" />
+      <rect x="8" y="3" width="1" height="1" fill="red" />
+      <!-- center -->
+      <rect x="7" y="4" width="1" height="1" fill="red" />
+      <!-- bottom -->
+      <rect x="6" y="5" width="1" height="1" fill="red" />
+      <rect x="8" y="5" width="1" height="1" fill="red" />
   </svg>
 `;
 const audioBtn = document.getElementById("audio");
