@@ -154,29 +154,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.v[x] = byte(rand.Intn(256)) & nn
 
 	case 0xD000: // DRW Vx, Vy, nibble
-		vx := c.v[read_x(op)]
-		vy := c.v[read_y(op)]
-		n := uint16(read_n(op))
-		var collisions int
-
-		if n == 0 {
-			// SCHIP 16x16 sprite (32 bytes = 16 pixels, 2 bytes per row)
-			const height = 16
-			const bytesPerRow = 2
-			endAddr := height * bytesPerRow * uint16(display.planesSelectedLen())
-			sprite := memory.ReadSprite(c.i, endAddr)
-			collisions = display.DrawSprite(vx, vy, sprite, 16, height, bytesPerRow, c.quirks.Wrap)
-		} else {
-			// Classic CHIP-8 8×N sprite
-			endAddr := n * uint16(display.planesSelectedLen())
-			sprite := memory.ReadSprite(c.i, endAddr)
-			collisions = display.DrawSprite(vx, vy, sprite, 8, int(n), 1, c.quirks.Wrap)
-		}
-		if collisions > 0 {
-			c.v[0xF] = 1
-		} else {
-			c.v[0xF] = 0
-		}
+		c.opDRAW(op, memory, display)
 
 	case 0xE000:
 		switch op & 0x00FF {
@@ -194,6 +172,32 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 
 	default:
 		// todo: handle others
+	}
+}
+
+func (c *CPU) opDRAW(op uint16, memory *Memory, display *Display) {
+	vx := c.v[read_x(op)]
+	vy := c.v[read_y(op)]
+	n := uint16(read_n(op))
+	var collisions int
+
+	if n == 0 {
+		// SCHIP 16x16 sprite (32 bytes = 16 pixels, 2 bytes per row)
+		const height = 16
+		const bytesPerRow = 2
+		endAddr := height * bytesPerRow * uint16(display.planesLen())
+		sprite := memory.ReadSprite(c.i, endAddr)
+		collisions = display.DrawSprite(vx, vy, sprite, 16, height, bytesPerRow, c.quirks.Wrap)
+	} else {
+		// Classic CHIP-8 8×N sprite
+		endAddr := n * uint16(display.planesLen())
+		sprite := memory.ReadSprite(c.i, endAddr)
+		collisions = display.DrawSprite(vx, vy, sprite, 8, int(n), 1, c.quirks.Wrap)
+	}
+	if collisions > 0 {
+		c.v[0xF] = 1
+	} else {
+		c.v[0xF] = 0
 	}
 }
 
@@ -291,22 +295,16 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 
 	switch op & 0x00FF {
 	case 0x01:
-		display.selectPlanes(read_x(op))
+		display.opPlane(read_x(op))
 
 	case 0x02: // audio
-		audio.OpPattern(memory, c.i)
+		audio.opPattern(memory, c.i)
 
 	case 0x07: // LD Vx, DT
 		c.v[x] = c.dt
 
 	case 0x0A: // LD Vx, K
-		key, pressed := keypad.GetReleased()
-		if pressed {
-			c.v[x] = key
-		} else {
-			// Don't advance PC → repeat this opcode next cycle
-			c.pc -= 2
-		}
+		c.opF0A(x, keypad)
 
 	case 0x15: // LD DT, Vx
 		c.dt = c.v[x]
@@ -326,13 +324,10 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		c.i = bigFontAddr + uint16(digit)*10
 
 	case 0x33:
-		val := c.v[x]
-		memory.Write(c.i+0, val/100)     // hundreds
-		memory.Write(c.i+1, (val/10)%10) // tens
-		memory.Write(c.i+2, val%10)      // ones
+		c.opF33(x, memory)
 
 	case 0x3A: // pitch
-		audio.OpPitch(c.v[x])
+		audio.opPitch(c.v[x])
 
 	case 0x55:
 		for r := uint16(0); r <= uint16(x); r++ {
@@ -358,6 +353,22 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 
 	default:
 	}
+}
+
+func (c *CPU) opF0A(x uint16, keypad *Keypad) {
+	key, pressed := keypad.GetReleased()
+	if pressed {
+		c.v[x] = key
+	} else {
+		c.pc -= 2 // repeat instruction
+	}
+}
+
+func (c *CPU) opF33(x uint16, memory *Memory) {
+	val := c.v[x]
+	memory.Write(c.i+0, val/100)
+	memory.Write(c.i+1, (val/10)%10)
+	memory.Write(c.i+2, val%10)
 }
 
 // Save Vx..Vy to memory at I

@@ -52,7 +52,7 @@ func (d *Display) poll() bool {
 	return result
 }
 
-func (d *Display) selectPlanes(x uint16) {
+func (d *Display) opPlane(x uint16) {
 	d.planeMask = int(x & 0x3) // keep only lowest 2 bits
 }
 
@@ -311,6 +311,6 @@ func (d *Display) isPlaneDisabled(plane int) bool {
 	return d.planeMask&(1<<plane) == 0
 }
 
-func (d *Display) planesSelectedLen() int {
+func (d *Display) planesLen() int {
 	return bits.OnesCount(uint(d.planeMask))
 }

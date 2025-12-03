@@ -56,12 +56,12 @@ func (a *Audio) SetMode(mode AudioMode) {
 	}
 }
 
-func (a *Audio) OpPitch(xv byte) {
+func (a *Audio) opPitch(xv byte) {
 	a.pitch = xv
 	a.SetMode(AudioXOChip)
 }
 
-func (a *Audio) OpPattern(mem *Memory, addr uint16) {
+func (a *Audio) opPattern(mem *Memory, addr uint16) {
 	a.SetMode(AudioXOChip)
 
 	for i := range a.pattern {
