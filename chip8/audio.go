@@ -129,15 +129,6 @@ func (a *Audio) outputBeep(out []float32, freq float64) {
 	}
 }
 
-func (a *Audio) patternIsEmpty() bool {
-	for _, b := range a.pattern {
-		if b != 0 {
-			return false
-		}
-	}
-	return true
-}
-
 func outputSilence(out []float32) {
 	for i := range out {
 		out[i] = 0
