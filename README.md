@@ -1,4 +1,5 @@
 [![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mxmgorin/ch8go)](https://goreportcard.com/report/github.com/mxmgorin/ch8go) 
 
 # ch8go
 
