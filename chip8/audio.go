@@ -102,7 +102,7 @@ func (a *Audio) samplePattern(pos int) float32 {
 // XO-HIP
 func (a *Audio) outputPattern(out []float32, freq float64) {
 	for i := range out {
-		pos := int(a.phase) % 128
+		pos := int(a.phase) & 128
 		out[i] = a.samplePattern(pos)
 		stepSize := calcPlaybackRate(float64(a.pitch)) / freq
 		a.phase += stepSize
@@ -115,7 +115,7 @@ func (a *Audio) outputPattern(out []float32, freq float64) {
 // Chip8
 func (a *Audio) outputBeep(out []float32, freq float64) {
 	for i := range out {
-		if int(a.phase)&1 == 0 {
+		if a.phase < 1.0 {
 			out[i] = 1
 		} else {
 			out[i] = -1
