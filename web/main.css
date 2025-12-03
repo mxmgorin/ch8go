@@ -46,7 +46,7 @@ body {
 }
 
 .subtitle .brand {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 1.5em;
     letter-spacing: 1px;
 }
@@ -88,8 +88,8 @@ body {
     height: 38px;
     gap: 8px;
     padding: 4px 8px;
-    border: 1px solid #8993aead;          /* TI-80 dark-gray */
-    border-radius: 3px;                 /* sharper */
+    border: 1px solid #8993aead; /* TI-80 dark-gray */
+    border-radius: 3px; /* sharper */
     box-shadow: inset 0 0 3px #0004;
 }
 
@@ -115,13 +115,12 @@ body {
 .credit {
     font-family: monospace;
     font-size: 0.5rem;
-    opacity: 0.8;
+    opacity: 0.9;
     letter-spacing: 1px;
 }
 
 .file-btn {
     background: #c1c4cc !important;
-    color: #333;
     border: 1px solid #aaa;
     padding: 8px 12px;
     border-radius: 6px;
@@ -149,7 +148,7 @@ body {
     border-radius: 6px;
     background: #fff;
     font-size: 14px;
-    color: #333;
+    color: white;
     cursor: pointer;
     width: 125px;
 }
@@ -219,11 +218,11 @@ body {
 
 .sound {
     background: #ffac418c !important;
-    padding: 6px!important;
-    border-radius: 10px!important;
-    width: 80px!important;
-    height: 40px!important;
-    box-shadow: 0 4px 0 #5d3603 !important;
+    padding: 6px !important;
+    border-radius: 10px !important;
+    width: 80px !important;
+    height: 40px !important;
+    box-shadow: 0 3px 0 #5d3603 !important;
 }
 
 .ti-keys {
@@ -232,6 +231,7 @@ body {
     gap: 14px;
     width: 90%;
     justify-items: center;
+    margin-top: 25px;
 }
 
 /* Base button style */
@@ -248,6 +248,8 @@ body {
     cursor: pointer;
     width: 150px;
     height: 70px;
+    user-select: none;
+    touch-action: manipulation;
 }
 
 /* Button press animation */
@@ -255,6 +257,11 @@ body {
     transform: translateY(3px);
     box-shadow: 0 1px 0 #202b4a;
 }
+.key.pressed {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #202b4a;
+}
+
 .sound:active {
     box-shadow: 0 1px 0 #995907bd !important;
 }
@@ -298,8 +305,13 @@ body {
     width: 20px;
     height: 20px;
     border: 1px solid #aaa;
+    border-radius: 4px;
     cursor: pointer;
     background: #c1c4cc;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #scaleInput {
@@ -307,4 +319,6 @@ body {
     height: 15px;
     text-align: center;
     background: #c1c4cc;
+    color: white;
+    border: none;
 }

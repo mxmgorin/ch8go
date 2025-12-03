@@ -52,22 +52,29 @@ function setupKeyboard() {
     // PRESS
     cell.addEventListener("pointerdown", (e) => {
       e.preventDefault();
+
+      cell.classList.add("pressed"); // <-- add animation class
       window.dispatchEvent(new KeyboardEvent("keydown", { key }));
     });
 
     // RELEASE
     cell.addEventListener("pointerup", (e) => {
       e.preventDefault();
+
+      cell.classList.remove("pressed"); // <-- remove animation class
       window.dispatchEvent(new KeyboardEvent("keyup", { key }));
     });
 
-    // Safety: handle pointer leaving the key while still pressed
+    // Safety: pointer leaves key
     cell.addEventListener("pointerleave", (e) => {
       e.preventDefault();
+
+      cell.classList.remove("pressed"); // <-- also remove here
       window.dispatchEvent(new KeyboardEvent("keyup", { key }));
     });
   });
 }
+
 
 const audioDot = document.getElementById("audio-dot");
 let audioCtx = null;
@@ -76,63 +83,10 @@ let audioEnabled = false;
 let audioFreq = 0.0;
 let audioBufSize = 0;
 const audioApi = 1;
-
-const iconOn = `
-  <svg width="27" height="27" viewBox="0 0 9 9" shape-rendering="crispEdges">
-    <!-- body -->
-    <rect x="0" y="3" width="1" height="3" fill="black" />
-    <rect x="1" y="3" width="1" height="1" fill="black" />
-    <rect x="1" y="5" width="1" height="1" fill="black" />
-    <rect x="1" y="5" width="1" height="1" fill="black" />
-
-    <rect x="2" y="2" width="1" height="1" fill="black" />
-    <rect x="2" y="6" width="1" height="1" fill="black" />
-
-    <rect x="3" y="1" width="1" height="1" fill="black" />
-    <rect x="3" y="7" width="1" height="1" fill="black" />
-
-    <rect x="4" y="1" width="1" height="7" fill="black" />
-
-    <!-- waves --->
-    <!-- up -->
-    <rect x="7" y="1" width="1" height="1" fill="black" />
-    <rect x="6" y="2" width="1" height="1" fill="black" />
-    <!-- center -->
-    <rect x="6" y="4" width="2" height="1" fill="black" />
-    <!-- bottom -->
-    <rect x="7" y="7" width="1" height="1" fill="black" />
-    <rect x="6" y="6" width="1" height="1" fill="black" />
-  </svg>
-`;
-const iconOff = `
-  <svg width="27" height="27" viewBox="0 0 9 9" shape-rendering="crispEdges">
-      <!-- body -->
-      <rect x="0" y="3" width="1" height="3" fill="black" />
-      <rect x="1" y="3" width="1" height="1" fill="black" />
-      <rect x="1" y="5" width="1" height="1" fill="black" />
-      <rect x="1" y="5" width="1" height="1" fill="black" />
-
-      <rect x="2" y="2" width="1" height="1" fill="black" />
-      <rect x="2" y="6" width="1" height="1" fill="black" />
-
-      <rect x="3" y="1" width="1" height="1" fill="black" />
-      <rect x="3" y="7" width="1" height="1" fill="black" />
-
-      <rect x="4" y="1" width="1" height="7" fill="black" />
-
-      <!-- cross 3×3 -->
-      <!-- up -->
-      <rect x="6" y="3" width="1" height="1" fill="red" />
-      <rect x="8" y="3" width="1" height="1" fill="red" />
-      <!-- center -->
-      <rect x="7" y="4" width="1" height="1" fill="red" />
-      <!-- bottom -->
-      <rect x="6" y="5" width="1" height="1" fill="red" />
-      <rect x="8" y="5" width="1" height="1" fill="red" />
-  </svg>
-`;
+const audioIconOn = document.getElementById("icon-audio-on");
+const audioIconOff = document.getElementById("icon-audio-off");
 const audioBtn = document.getElementById("audio");
-audioBtn.innerHTML = iconOff;
+
 audioBtn.onclick = async () => {
   if (!audioCtx) {
     if (audioApi === 0) {
@@ -184,12 +138,14 @@ function toggleAudio() {
     console.log("Audio OFF");
     audioNode.disconnect();
     audioEnabled = false;
-    audioBtn.innerHTML = iconOff;
+    audioIconOn.style.display = "none";
+    audioIconOff.style.display = "inline";
   } else {
     console.log("Audio ON");
     audioNode.connect(audioCtx.destination);
     audioEnabled = true;
-    audioBtn.innerHTML = iconOn;
+    audioIconOn.style.display = "inline";
+    audioIconOff.style.display = "none";
   }
 }
 
