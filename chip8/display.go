@@ -18,7 +18,7 @@ type Display struct {
 
 func NewDisplay() Display {
 	d := Display{}
-	d.setResolution(false)
+	d.setRes(false)
 	d.planeMask = 1
 	return d
 }
@@ -39,7 +39,7 @@ func (d *Display) Clear() {
 
 func (d *Display) Reset() {
 	d.Clear()
-	d.setResolution(false)
+	d.setRes(false)
 	d.pendingVBlank = false
 	d.planeMask = 1
 }
@@ -56,7 +56,7 @@ func (d *Display) opPlane(x uint16) {
 	d.planeMask = int(x & 0x3) // keep only lowest 2 bits
 }
 
-func (d *Display) setResolution(hires bool) {
+func (d *Display) setRes(hires bool) {
 	d.Width = 128
 	d.Height = 64
 	d.hires = hires

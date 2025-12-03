@@ -72,10 +72,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			c.Reset()
 
 		case 0xFE: // 00FE - lowres schip
-			display.setResolution(false)
+			display.setRes(false)
 
 		case 0xFF: // 00FF - hires schip
-			display.setResolution(true)
+			display.setRes(true)
 
 		default:
 			// Special: 00CN (00C0 – 00CF)
@@ -123,9 +123,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.v[x] = read_nn(op)
 
 	case 0x7000: // ADD Vx, byte
-		x := read_x(op)
-		nn := read_nn(op)
-		c.v[x] += nn
+		c.opADD(op)
 
 	case 0x8000:
 		c.op8XYN(op)
@@ -139,19 +137,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.i = read_nnn(op)
 
 	case 0xB000: // JP V0, addr
-		var v byte
-		if c.quirks.Jump {
-			x := read_x(op)
-			v = c.v[x]
-		} else {
-			v = c.v[0]
-		}
-		c.jp(read_nnn(op) + uint16(v))
+		c.opJP(op)
 
 	case 0xC000: // RND Vx, byte
-		x := read_x(op)
-		nn := read_nn(op)
-		c.v[x] = byte(rand.Intn(256)) & nn
+		c.opRND(op)
 
 	case 0xD000: // DRW Vx, Vy, nibble
 		c.opDRAW(op, memory, display)
@@ -171,8 +160,30 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 		c.opFNNN(op, display, memory, keypad, audio)
 
 	default:
-		// todo: handle others
 	}
+}
+
+func (c *CPU) opJP(op uint16) {
+	var v byte
+	if c.quirks.Jump {
+		x := read_x(op)
+		v = c.v[x]
+	} else {
+		v = c.v[0]
+	}
+	c.jp(read_nnn(op) + uint16(v))
+}
+
+func (c *CPU) opADD(op uint16) {
+	x := read_x(op)
+	nn := read_nn(op)
+	c.v[x] += nn
+}
+
+func (c *CPU) opRND(op uint16) {
+	x := read_x(op)
+	nn := read_nn(op)
+	c.v[x] = byte(rand.Intn(256)) & nn
 }
 
 func (c *CPU) opDRAW(op uint16, memory *Memory, display *Display) {
@@ -234,48 +245,63 @@ func (c *CPU) op8XYN(op uint16) {
 		c.v[0xF] = carry
 
 	case 0x5: // SUB Vx, Vy (Vx = Vx - Vy)
-		vy := c.v[y]
-		vx := c.v[x]
-		borrow := byte(0)
-		if vx >= vy {
-			borrow = 1
-		}
-
-		c.v[x] = vx - vy // store result FIRST
-		c.v[0xF] = borrow
+		c.opSUB(x, y)
 
 	case 0x6: // SHR Vx {, Vy} – shifts Vx right by 1
-		in := y
-		if c.quirks.Shift {
-			in = x
-		}
-		v := c.v[in]
-		c.v[x] = v >> 1
-		c.v[0xF] = v & 0x1 // LSB
+		c.opSHR(x, y)
 
 	case 0x7: // SUBN Vx, Vy (Vx = Vy - Vx)
-		vy := c.v[y]
-		vx := c.v[x]
-		borrow := byte(0)
-		if vy >= vx {
-			borrow = 1
-		}
-
-		c.v[x] = vy - vx // store result FIRST
-		c.v[0xF] = borrow
+		c.opSUBN(x, y)
 
 	case 0xE: // SHL Vx, Vy
-		in := y
-		if c.quirks.Shift {
-			in = x
-		}
-		v := c.v[in]
-		c.v[x] = v << 1
-		c.v[0xF] = (v >> 7) & 0x1 // MSB
+		c.opSHL(x, y)
 
 	default:
-		// Unknown 8XY* instruction
 	}
+}
+
+func (c *CPU) opSUB(x, y uint16) {
+	vy := c.v[y]
+	vx := c.v[x]
+	borrow := byte(0)
+	if vx >= vy {
+		borrow = 1
+	}
+
+	c.v[x] = vx - vy // store result FIRST
+	c.v[0xF] = borrow
+}
+
+func (c *CPU) opSHR(x, y uint16) {
+	in := y
+	if c.quirks.Shift {
+		in = x
+	}
+	v := c.v[in]
+	c.v[x] = v >> 1
+	c.v[0xF] = v & 0x1 // LSB
+}
+
+func (c *CPU) opSUBN(x, y uint16) {
+	vy := c.v[y]
+	vx := c.v[x]
+	borrow := byte(0)
+	if vy >= vx {
+		borrow = 1
+	}
+
+	c.v[x] = vy - vx // store result FIRST
+	c.v[0xF] = borrow
+}
+
+func (c *CPU) opSHL(x, y uint16) {
+	in := y
+	if c.quirks.Shift {
+		in = x
+	}
+	v := c.v[in]
+	c.v[x] = v << 1
+	c.v[0xF] = (v >> 7) & 0x1 // MSB
 }
 
 // XOCHIP. i := long NNNN (0xF000, 0xNNNN) load i with a 16-bit address.
