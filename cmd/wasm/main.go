@@ -130,11 +130,17 @@ func (cp *ColorPickers) setColors(colors [4]app.Color) {
 	}
 }
 
+type KeyEvent struct {
+	Key     byte
+	Pressed bool
+}
+
 type WASM struct {
 	frameFunc    js.Func
 	app          *app.App
 	colorPickers ColorPickers
 	painter      CanvasPainter
+	KeyChan      chan KeyEvent
 }
 
 func newWASM() WASM {
@@ -174,6 +180,7 @@ func newWASM() WASM {
 		frameFunc:    frameFunc,
 		colorPickers: colorPickers,
 		painter:      painter,
+		KeyChan:      make(chan KeyEvent, 32),
 	}
 }
 
@@ -201,7 +208,7 @@ func loadROM(this js.Value, args []js.Value) any {
 func onKeyDown(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.app.UpdateKey(k, true)
+		wasm.KeyChan <- KeyEvent{Key: k, Pressed: true}
 		args[0].Call("preventDefault")
 	}
 	return nil
@@ -210,7 +217,7 @@ func onKeyDown(this js.Value, args []js.Value) any {
 func onKeyUp(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.app.UpdateKey(k, false)
+		wasm.KeyChan <- KeyEvent{Key: k, Pressed: false}
 		args[0].Call("preventDefault")
 	}
 	return nil
@@ -240,11 +247,31 @@ func fillAudio(this js.Value, args []js.Value) any {
 }
 
 func frame(this js.Value, args []js.Value) any {
+	drainChan(wasm.KeyChan, handleKey)
 	fb := wasm.app.RunFrame()
 	wasm.painter.Paint(fb)
 	// Schedule next frame
 	js.Global().Call("requestAnimationFrame", wasm.frameFunc)
 	return nil
+}
+
+func handleKey(evt KeyEvent) {
+	if evt.Pressed {
+		wasm.app.VM.Keypad.Press(evt.Key)
+	} else {
+		wasm.app.VM.Keypad.Release(evt.Key)
+	}
+}
+
+func drainChan[T any](ch <-chan T, fn func(T)) {
+	for {
+		select {
+		case v := <-ch:
+			fn(v)
+		default:
+			return
+		}
+	}
 }
 
 func main() {
