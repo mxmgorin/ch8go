@@ -53,6 +53,11 @@ func (fb *FrameBuffer) Pitch() int {
 	return fb.Width * fb.BPP
 }
 
+type KeyEvent struct {
+	Key     byte
+	Pressed bool
+}
+
 type App struct {
 	VM          *chip8.VM
 	DB          *db.DB
@@ -60,6 +65,7 @@ type App struct {
 	Palette     Palette
 	frameBuffer FrameBuffer
 	lastTime    time.Time
+	KeyChan     chan KeyEvent
 }
 
 func NewApp() (*App, error) {
@@ -79,7 +85,12 @@ func NewApp() (*App, error) {
 		frameBuffer: newFrameBuffer(w, h, 4),
 		lastTime:    time.Now(),
 		Palette:     DefaultPalette,
+		KeyChan:     make(chan KeyEvent, 32),
 	}, nil
+}
+
+func (a *App) UpdateKey(key byte, pressed bool) {
+	a.KeyChan <- KeyEvent{key, pressed}
 }
 
 func (a *App) HasROM() bool {
@@ -91,6 +102,8 @@ func (a *App) RunFrame() *FrameBuffer {
 		now := time.Now()
 		dt := now.Sub(a.lastTime).Seconds()
 		a.lastTime = now
+
+		drainChan(a.KeyChan, a.handleKey)
 		state := a.VM.RunFrame(dt)
 		a.updateFrameBuffer(state)
 	}
@@ -189,6 +202,14 @@ func (a *App) applyROMconf() {
 	}
 }
 
+func (a *App) handleKey(evt KeyEvent) {
+	if evt.Pressed {
+		a.VM.Keypad.Press(evt.Key)
+	} else {
+		a.VM.Keypad.Release(evt.Key)
+	}
+}
+
 func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 	if frameState.Dirty {
 		for i := range a.VM.Display.Height * a.VM.Display.Width {
@@ -279,4 +300,15 @@ func ParseHexColor(s string) (Color, error) {
 	}
 
 	return Color{byte(ri), byte(gi), byte(bi)}, nil
+}
+
+func drainChan[T any](ch <-chan T, fn func(T)) {
+	for {
+		select {
+		case v := <-ch:
+			fn(v)
+		default:
+			return
+		}
+	}
 }

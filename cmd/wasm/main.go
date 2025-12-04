@@ -200,7 +200,7 @@ func loadROM(this js.Value, args []js.Value) any {
 func onKeyDown(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.app.VM.Keypad.Press(k)
+		wasm.app.UpdateKey(k, true)
 		args[0].Call("preventDefault")
 	}
 	return nil
@@ -209,7 +209,7 @@ func onKeyDown(this js.Value, args []js.Value) any {
 func onKeyUp(this js.Value, args []js.Value) any {
 	key := args[0].Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.app.VM.Keypad.Release(k)
+		wasm.app.UpdateKey(k, false)
 		args[0].Call("preventDefault")
 	}
 	return nil
