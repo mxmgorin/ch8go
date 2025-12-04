@@ -3772,7 +3772,31 @@
     "roms": {
       "24ef21009527ee674de44ccb37e37081654883f9": {
         "file": "Alien-Inv8sion.xo8",
-        "platforms": ["xochip"]
+        "platforms": ["xochip"],
+        "tickRate": 200000,
+        "colors": {
+          "pixels":
+          [
+            "#000000",
+            "#FFFFFF",
+            "#AAAAAA",
+            "#555555",
+            "#FF0000",
+            "#00FF00",
+            "#0000FF",
+            "#FFFF00",
+            "#880000",
+            "#008800",
+            "#000088",
+            "#888800",
+            "#FF00FF",
+            "#00FFFF",
+            "#880088",
+            "#008888"
+          ],
+          "buzzer": "#0c0c0c",
+          "silence": "#0c0c0c"
+        }
       }
     }
   },

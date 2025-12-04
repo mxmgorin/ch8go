@@ -162,6 +162,7 @@ body {
     cursor: pointer;
     width: 125px;
     padding: 5px;
+    text-overflow: ellipsis;
 }
 
 .color-picker {

@@ -12,14 +12,24 @@ import (
 	"github.com/mxmgorin/ch8go/chip8"
 )
 
-var cyanColor = Color{25, 200, 255}
-var redColor = Color{255, 64, 64}
 var DefaultPalette = Palette{
-	Pixels: [4]Color{
-		{0, 0, 0},
-		{255, 255, 255},
-		cyanColor,
-		redColor,
+	Pixels: [16]Color{
+		{0, 0, 0},       // #000000
+		{255, 255, 255}, // #FFFFFF
+		{170, 170, 170}, // #AAAAAA
+		{85, 85, 85},    // #555555
+		{255, 0, 0},     // #FF0000
+		{0, 255, 0},     // #00FF00
+		{0, 0, 255},     // #0000FF
+		{255, 255, 0},   // #FFFF00
+		{136, 0, 0},     // #880000
+		{0, 136, 0},     // #008800
+		{0, 0, 136},     // #000088
+		{136, 136, 0},   // #888800
+		{255, 0, 255},   // #FF00FF
+		{0, 255, 255},   // #00FFFF
+		{136, 0, 136},   // #880088
+		{0, 136, 136},   // #008888
 	},
 	Buzzer:  Color{255, 255, 255},
 	Silence: Color{0, 0, 0},
@@ -32,7 +42,7 @@ func (c Color) ToHex() string {
 }
 
 type Palette struct {
-	Pixels  [4]Color
+	Pixels  [16]Color
 	Buzzer  Color
 	Silence Color
 }

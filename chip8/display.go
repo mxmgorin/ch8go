@@ -7,7 +7,7 @@ import (
 const lowresScale = 2
 
 type Display struct {
-	Planes        [2][]byte
+	Planes        [4][]byte
 	Width         int
 	Height        int
 	dirty         bool
@@ -53,15 +53,16 @@ func (d *Display) poll() bool {
 }
 
 func (d *Display) opPlane(x uint16) {
-	d.planeMask = int(x & 0x3) // keep only lowest 2 bits
+	d.planeMask = int(x) // keep only lowest 2 bits
 }
 
 func (d *Display) setRes(hires bool) {
 	d.Width = 128
 	d.Height = 64
 	d.hires = hires
-	d.Planes[0] = make([]byte, d.Width*d.Height)
-	d.Planes[1] = make([]byte, d.Width*d.Height)
+	for i := range d.Planes {
+		d.Planes[i] = make([]byte, d.Width*d.Height)
+	}
 }
 
 // Draws an N×H sprite where each row has `bytesPerRow` bytes.

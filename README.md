@@ -3,7 +3,7 @@
 [![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mxmgorin/ch8go)](https://goreportcard.com/report/github.com/mxmgorin/ch8go)
 
-<img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/super-neat-boy.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/t8nks.gif" width="30%">
+<img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/super-neat-boy.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/t8nks.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/alien-in8sion.gif" width="30%">
 
 `ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with good ROM compatibility.
 
@@ -13,7 +13,7 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Adds extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **XO-CHIP Support**: Adds extended opcodes, multi-plane graphics, and audio features.
+- **XO-CHIP Support**: Adds extended opcodes, four-plane graphics with 16 colors, and audio features.
 - **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, and VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.

@@ -124,8 +124,8 @@ func newColorPickers(doc js.Value, app *app.App) ColorPickers {
 	return pickers
 }
 
-func (cp *ColorPickers) setColors(colors [4]app.Color) {
-	for i := range colors {
+func (cp *ColorPickers) setColors(colors *[16]app.Color) {
+	for i := range cp {
 		cp[i].Set("value", colors[i].ToHex())
 	}
 }
@@ -200,7 +200,7 @@ func loadROM(this js.Value, args []js.Value) any {
 		fmt.Println(err)
 	}
 
-	wasm.colorPickers.setColors(wasm.app.Palette.Pixels)
+	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
 
 	return nil
 }
