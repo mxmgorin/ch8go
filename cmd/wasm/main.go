@@ -131,7 +131,7 @@ func (cp *ColorPickers) setColors(colors [4]app.Color) {
 }
 
 type WASM struct {
-	loopFunc     js.Func
+	frameFunc    js.Func
 	app          *app.App
 	colorPickers ColorPickers
 	painter      CanvasPainter
@@ -162,22 +162,23 @@ func newWASM() WASM {
 	doc := js.Global().Get("document")
 	colorPickers := newColorPickers(doc, app)
 
+	// Audio
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
 	// Animation loop (must persist function or GC will kill it)
-	loopFunc := js.FuncOf(loop)
+	frameFunc := js.FuncOf(frame)
 
 	return WASM{
 		app:          app,
-		loopFunc:     loopFunc,
+		frameFunc:    frameFunc,
 		colorPickers: colorPickers,
 		painter:      painter,
 	}
 }
 
 func (wasm *WASM) run() {
-	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
+	js.Global().Call("requestAnimationFrame", wasm.frameFunc)
 	// Keep WASM alive
 	select {}
 }
@@ -238,11 +239,11 @@ func fillAudio(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func loop(this js.Value, args []js.Value) any {
+func frame(this js.Value, args []js.Value) any {
 	fb := wasm.app.RunFrame()
 	wasm.painter.Paint(fb)
 	// Schedule next frame
-	js.Global().Call("requestAnimationFrame", wasm.loopFunc)
+	js.Global().Call("requestAnimationFrame", wasm.frameFunc)
 	return nil
 }
 
