@@ -4351,7 +4351,13 @@
     "roms": {
       "89929eb46c0682caad909d30561a934f28941963": {
         "file": "Clostro (jibbl)(2020).ch8",
-        "platforms": ["originalChip8"]
+        "platforms": ["originalChip8"],
+        "tickRate": 100,
+        "colors": {
+          "pixels": ["#0000AA", "#0086FE"],
+          "buzzer": "#0c0c0c",
+          "silence": "#0c0c0c"
+        }
       }
     }
   },
@@ -4459,7 +4465,12 @@
     "roms": {
       "8198311054b6cd440dde42d6efed0eda1b1e461d": {
         "file": "D8GN (SystemLogoff)(2020).xo8",
-        "platforms": ["xochip"]
+        "platforms": ["xochip"],
+        "colors": {
+          "pixels": ["#e2f3e4", "#332c50", "#bf4646", "#73c7d3"],
+          "buzzer": "#0c0c0c",
+          "silence": "#0c0c0c"
+        }
       }
     }
   },
@@ -6469,7 +6480,13 @@
     "roms": {
       "7d9abc18f187fafeb6f799f42882ff6007d340ac": {
         "file": "Sneak Surround (TomSwan)(2020).ch8",
-        "platforms": ["originalChip8"]
+        "platforms": ["originalChip8"],
+        "tickRate": 200,
+        "colors": {
+          "pixels": ["#e2f3e4", "#332c50", "#bf4646", "#73c7d3"],
+          "buzzer": "#0c0c0c",
+          "silence": "#0c0c0c"
+        }
       }
     }
   },
