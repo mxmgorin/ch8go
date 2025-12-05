@@ -19,7 +19,7 @@
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
-- **High Accuracy**: Passes all Timendus test ROMs and runs them with Go testing framework and CI to ensure regression-free development.
+- **High Accuracy**: Passes all Timendus and octo test ROMs and runs them with Go testing framework and CI to ensure regression-free development.
 
 ## Controls
 
