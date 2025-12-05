@@ -1,0 +1,241 @@
+package app
+
+import (
+	"flag"
+	"path/filepath"
+	"testing"
+
+	"github.com/mxmgorin/ch8go/chip8"
+)
+
+var outputPNG = flag.Bool("output-png", false, "write output PNG images")
+
+var roms = map[string]string{
+	"../roms/test/corax_test_opcode.ch8":     "663dc43daa22fa6450a29a4a799dee948b29d4f60699d1d1acf5907b030f0721",
+	"../roms/test/timendus/1-chip8-logo.ch8": "120fbab26afb931a193082a3290f3606b70ca566625b9f1067041ca2b70deaa1",
+	"../roms/test/timendus/2-ibm-logo.ch8":   "1bf96f46bc964efb0985aa88d8eeefe0229eb7c4d56ae1cd239caa9a5ea95c6c",
+	"../roms/test/timendus/3-corax+.ch8":     "af252a64884c2b1bc6772ae5b837ffcba82e083e73a8b695cf2f44b54f9529b3",
+	"../roms/test/timendus/4-flags.ch8":      "3ce4308fd0add55e5c84e036e13c2a25c3000f48120ca66d8003997a1fc77aa1",
+}
+
+func TestROMs(t *testing.T) {
+	for path, expectedHash := range roms {
+		t.Run(path, func(t *testing.T) {
+			testROM(t, path, expectedHash)
+		})
+	}
+}
+
+func TestQuirksChip8(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "9d83cd2da005411781d9e52f6b1c805e3678711098d53fbf954431e204717ce4"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksChip8)
+
+	pressAndReleaseKey(a, 0x1)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestQuirksSuperChipModern(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "2b8be7cfa57527e142a321d4b6643862a4de8534e45ae7933535c0451f70b429"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(a, 0x1)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestQuirksSuperChipLegacy(t *testing.T) {
+	path := "../roms/test/timendus/5-quirks.ch8"
+	expectedHash := "b9a1bdffa9dd3ee96a97d45234f6dd79fbc80b269dae7f8ceab3a9ff8d50a083"
+
+	key := byte(0x2)
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChip11)
+
+	pressAndReleaseKey(a, key)
+	pressAndReleaseKey(a, key)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestScrollSuperChipLowresLegacy(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "b02eec5a6ea5042ab488f9d82ccc7262e5da140fcfaee870879f9e1fcb9ed6d5"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChip11)
+
+	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(a, 0x2)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestScrollSuperChipLowresModern(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "b02eec5a6ea5042ab488f9d82ccc7262e5da140fcfaee870879f9e1fcb9ed6d5"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(a, 0x1)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestScrollSuperChipHires(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "f61e02aacf428cf95fcffdca2b075606685136c627aa20ba694ad9e5cec01a8c"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(a, 0x2)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestScrollXoChipLowres(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "39e98e70eb0242da3b192accc245ff578e92edcbb359041bd05d4eb5ce7dfb05"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksXOChip)
+
+	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(a, 0x1)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestScrollXoChipHires(t *testing.T) {
+	path := "../roms/test/timendus/8-scrolling.ch8"
+	expectedHash := "357150e48b9338011513aa5941de1c208cb1d76b3a8ebbea4ed76d7bef80c9c3"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksXOChip)
+
+	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(a, 0x2)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestKeypadDown(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "75bb2c1659813140beefccbf2b8c23b0dff0a58acaf006b13ab148397879f109"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x1)
+
+	for i := range chip8.KEYS_COUNT {
+		a.VM.Keypad.Press(byte(i))
+	}
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestKeypadUp(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "75bb2c1659813140beefccbf2b8c23b0dff0a58acaf006b13ab148397879f109"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x2)
+
+	for i := range chip8.KEYS_COUNT {
+		a.VM.Keypad.Release(byte(i))
+	}
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func TestKeypadGetkey(t *testing.T) {
+	path := "../roms/test/timendus/6-keypad.ch8"
+	expectedHash := "9bef3db51e363351faac792cffbce35477686bdb2679e7d03a6b8f5999d9ab20"
+
+	a := setupApp(t, path)
+	a.VM.SetQuirks(chip8.QuirksSChipModern)
+
+	pressAndReleaseKey(a, 0x3)
+	pressAndReleaseKey(a, 0x3)
+
+	runAndassert(t, path, a, expectedHash)
+}
+
+func pressAndReleaseKey(app *App, key byte) {
+	frames := 120
+	dt := 1.0 / 60
+	app.VM.Keypad.Press(key)
+
+	for range frames {
+		app.RunFrameDT(dt)
+	}
+
+	app.VM.Keypad.Release(key)
+
+	for range frames {
+		app.RunFrameDT(dt)
+	}
+}
+
+func testROM(t *testing.T, path, expectedHash string) {
+	t.Helper() // marks this as a test helper
+
+	vm := setupApp(t, path)
+
+	runAndassert(t, path, vm, expectedHash)
+}
+
+func setupApp(t *testing.T, path string) *App {
+	t.Helper() // marks this as test helper
+
+	app, err := NewApp()
+	if err != nil {
+		t.Fatalf("failed NewApp: %v", err)
+	}
+
+	if _, err := app.ReadROM(path); err != nil {
+		t.Fatalf("failed to read ROM %s: %v", path, err)
+	}
+
+	return app
+}
+
+func runAndassert(t *testing.T, path string, app *App, expected string) {
+	t.Helper()
+
+	for range 500_000 {
+		app.RunFrameDT(1.0 / 60.0)
+	}
+
+	fb := app.RunFrame()
+	actual := fb.Hash()
+
+	if *outputPNG {
+		prefix := expected[:6]
+		out := "testdata/output/" + filepath.Base(path) + "_" + prefix + ".png"
+		if err := fb.SavePNG(out); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if actual != expected {
+		t.Fatalf("hash mismatch for %s:\nexpected: %s\nactual: %s",
+			path, expected, actual)
+	}
+}

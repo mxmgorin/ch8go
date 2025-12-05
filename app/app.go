@@ -1,7 +1,10 @@
 package app
 
 import (
+	"crypto/sha256"
 	"fmt"
+	"image"
+	"image/png"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -63,6 +66,32 @@ func (fb *FrameBuffer) Pitch() int {
 	return fb.Width * fb.BPP
 }
 
+func (fb *FrameBuffer) Hash() string {
+	sum := sha256.Sum256(fb.Pixels)
+	return fmt.Sprintf("%x", sum[:])
+}
+
+func (fb *FrameBuffer) SavePNG(path string) error {
+	if fb.BPP != 4 {
+		return fmt.Errorf("expected BPP=4 (RGBA), got %d", fb.BPP)
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, fb.Width, fb.Height))
+
+	// fb.Pixels is already RGBA ordered → safe direct copy
+	copy(img.Pix, fb.Pixels)
+
+	os.MkdirAll(filepath.Dir(path), 0755)
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return png.Encode(f, img)
+}
+
 type App struct {
 	VM          *chip8.VM
 	DB          *db.DB
@@ -102,10 +131,15 @@ func (a *App) RunFrame() *FrameBuffer {
 		dt := now.Sub(a.lastTime).Seconds()
 		a.lastTime = now
 
-		state := a.VM.RunFrame(dt)
-		a.updateFrameBuffer(state)
+		a.RunFrameDT(dt)
 	}
 
+	return &a.frameBuffer
+}
+
+func (a *App) RunFrameDT(dt float64) *FrameBuffer {
+	state := a.VM.RunFrame(dt)
+	a.updateFrameBuffer(state)
 	return &a.frameBuffer
 }
 
