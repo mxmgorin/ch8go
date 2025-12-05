@@ -21,6 +21,12 @@ var roms = map[string]string{
 	"../roms/test/timendus/2-ibm-logo.ch8":   "1bf96f46bc964efb0985aa88d8eeefe0229eb7c4d56ae1cd239caa9a5ea95c6c",
 	"../roms/test/timendus/3-corax+.ch8":     "af252a64884c2b1bc6772ae5b837ffcba82e083e73a8b695cf2f44b54f9529b3",
 	"../roms/test/timendus/4-flags.ch8":      "3ce4308fd0add55e5c84e036e13c2a25c3000f48120ca66d8003997a1fc77aa1",
+	"../roms/test/octo/bigfont.ch8":          "8a633131f1ac58031af7e570a113bde9f32877de24e4dd60488fe93b2dd627e5",
+	"../roms/test/octo/testbranch.ch8":       "4a28893ac197e80c0ef6342adc05a7ab95b4181b35e34da83da15ae3226e36aa",
+	"../roms/test/octo/testcollide.ch8":      "8dbf0bfcdb3f64580b7f18c03ef4c332c1398accc7932e0d44e8837d0b4dd76f",
+	"../roms/test/octo/testcompare.ch8":      "c0c45fbc3b5992cc12444ea91434f10376425822d2d5f00ff4ad198be3423178",
+	"../roms/test/octo/testquirks.ch8":       "4cb4f8029afb553bdfd5cdf3f72cdff254ad8ce4c7835ae2e8ea089e830dd9fe",
+	"../roms/test/octo/testunpack.ch8":       "1a8d5ef7e47564fbe9bebad4889881d47c597f94a654e8c58e339ad7ddaa1a23",
 }
 
 func TestROMs(t *testing.T) {
