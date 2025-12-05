@@ -10,11 +10,11 @@ bench:
 	go test ./app -run=^$$ -bench=. -count=1
 
 # Regenerate PNG output files for tests
-output-png:
+test-output:
 	go test ./app -run=. -bench=^$ -- -output-png
 
 # Remove generated PNG outputs
-clean:
+test-clean:
 	rm -rf app/testdata/output/*
 
 # static analysis

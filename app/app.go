@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -105,7 +106,7 @@ func NewApp() (*App, error) {
 	db, err := db.NewDB()
 
 	if err != nil {
-		fmt.Println("Failed to create DB:", err)
+		slog.Error("Failed to create DB", "err", err)
 	}
 
 	vm := chip8.NewVM()
@@ -126,20 +127,18 @@ func (a *App) HasROM() bool {
 }
 
 func (a *App) RunFrame() *FrameBuffer {
-	if a.HasROM() {
-		now := time.Now()
-		dt := now.Sub(a.lastTime).Seconds()
-		a.lastTime = now
+	now := time.Now()
+	dt := now.Sub(a.lastTime).Seconds()
+	a.lastTime = now
 
-		a.RunFrameDT(dt)
-	}
-
-	return &a.frameBuffer
+	return a.RunFrameDT(dt)
 }
 
 func (a *App) RunFrameDT(dt float64) *FrameBuffer {
-	state := a.VM.RunFrame(dt)
-	a.updateFrameBuffer(state)
+	if a.HasROM() {
+		state := a.VM.RunFrame(dt)
+		a.updateFrameBuffer(state)
+	}
 	return &a.frameBuffer
 }
 
@@ -156,9 +155,8 @@ func (a *App) LoadROM(rom []byte, ext string) (int, error) {
 	a.Palette = DefaultPalette
 	a.ROMHash = db.SHA1Of(rom)
 	len := len(rom)
-	fmt.Println("ROM size:", len)
-	fmt.Println("ROM hash:", a.ROMHash)
-	fmt.Println("ROM ext:", ext)
+
+	slog.Info("ROM loaded:", "size", len, "hash", a.ROMHash, "ext", ext)
 
 	if err := a.VM.LoadROM(rom); err != nil {
 		return 0, err
@@ -207,7 +205,7 @@ func (a *App) applyROMconf() {
 					ScaleScroll: platform.Quirks.ScaleScroll,
 				}
 				a.VM.SetQuirks(quirks)
-				fmt.Println("Quirks:", platform.ID)
+				slog.Info("Quirks:", "platformID", platform.ID)
 
 				if platform.DefaultTickrate > 0 {
 					tickrate = platform.DefaultTickrate
@@ -224,13 +222,13 @@ func (a *App) applyROMconf() {
 	colors := romInfo.Colors
 	if colors != nil && colors.Pixels != nil {
 		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
-			fmt.Println("Failed to set palette")
+			slog.Error("Failed to set palette", "err", err)
 		}
 	}
 
 	if tickrate > 0 {
 		a.VM.SetTickrate(tickrate)
-		fmt.Println("Tickrate:", tickrate)
+		slog.Info("Tickrate:", "val", tickrate)
 	}
 }
 
@@ -296,7 +294,7 @@ func (a *App) SetPalette(colors []string, buzzer, silence string) error {
 		a.Palette.Buzzer = color
 	}
 
-	fmt.Println("Palette:", colors, buzzer, silence)
+	slog.Info("Palette:", "colors", colors, "buzzer", buzzer, "silence", silence)
 
 	return nil
 }

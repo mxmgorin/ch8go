@@ -6,7 +6,6 @@ async function init() {
   const result = await WebAssembly.instantiate(bytes, go.importObject);
 
   go.run(result.instance);
-  console.log("WASM started");
 
   document.getElementById("romInput").onchange = async (e) => {
     const file = e.target.files[0];
@@ -74,7 +73,6 @@ function setupKeyboard() {
     });
   });
 }
-
 
 const audioDot = document.getElementById("audio-dot");
 let audioCtx = null;

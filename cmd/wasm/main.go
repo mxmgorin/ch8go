@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"path/filepath"
 	"strconv"
 	"syscall/js"
@@ -275,7 +276,7 @@ func drainChan[T any](ch <-chan T, fn func(T)) {
 }
 
 func main() {
-	fmt.Println("ch8go WASM")
+	slog.Info("ch8go WASM")
 	wasm = newWASM()
 	wasm.run()
 }
