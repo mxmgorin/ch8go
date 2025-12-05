@@ -2209,7 +2209,7 @@
     "roms": {
       "7a4a89870f2ab23c28024dd1c3dd52cf1af1ad00": {
         "file": "octopeg.ch8",
-        "platforms": ["superchip"],
+        "platforms": ["xochip", "superchip"],
         "tickrate": 200,
         "colors": {
           "pixels": ["#113152", "#acd5ff"],
