@@ -399,38 +399,42 @@ func (c *CPU) opF33(x uint16, memory *Memory) {
 
 // Save Vx..Vy to memory at I
 func (c *CPU) op5XY2(mem *Memory, op uint16) {
-	ix := read_x(op)
-	iy := read_y(op)
+	x := read_x(op)
+	y := read_y(op)
 
-	if ix <= iy {
-		// forward: Vx, V(x+1), ..., Vy
-		for r := ix; r <= iy; r++ {
-			mem.bytes[c.i+uint16(r-ix)] = c.v[r]
+	dist := int(x) - int(y)
+	if dist < 0 {
+		dist = -dist
+	}
+
+	if x < y {
+		for z := 0; z <= dist; z++ {
+			mem.bytes[c.i+uint16(z)] = c.v[int(x)+z]
 		}
 	} else {
-		// backward: Vx, V(x-1), ..., Vy
-		for r := ix; r >= iy; r-- {
-			offset := ix - r
-			mem.bytes[c.i+uint16(offset)] = c.v[r]
+		for z := 0; z <= dist; z++ {
+			mem.bytes[c.i+uint16(z)] = c.v[int(x)-z]
 		}
 	}
 }
 
 // 5XY3: Load Vx..Vy from memory at I
 func (c *CPU) op5XY3(mem *Memory, op uint16) {
-	ix := read_x(op)
-	iy := read_y(op)
+	x := read_x(op)
+	y := read_y(op)
 
-	if ix <= iy {
-		// forward range
-		for r := ix; r <= iy; r++ {
-			c.v[r] = mem.bytes[c.i+uint16(r-ix)]
+	dist := int(x) - int(y)
+	if dist < 0 {
+		dist = -dist
+	}
+
+	if x < y {
+		for z := 0; z <= dist; z++ {
+			c.v[int(x)+z] = mem.bytes[c.i+uint16(z)]
 		}
 	} else {
-		// backward range
-		for r := ix; r >= iy; r-- {
-			offset := ix - r
-			c.v[r] = mem.bytes[c.i+uint16(offset)]
+		for z := 0; z <= dist; z++ {
+			c.v[int(x)-z] = mem.bytes[c.i+uint16(z)]
 		}
 	}
 }
