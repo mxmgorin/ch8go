@@ -302,6 +302,10 @@ body {
     background: #c1c4cc;
 }
 
+.scale-group {
+    width: 150px;
+}
+
 .scale-btn {
     width: 20px;
     height: 20px;
