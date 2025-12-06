@@ -29,11 +29,17 @@ async function setupROMS() {
     chip8_loadROM(data, file.name);
   });
 
-  roms.onchange = async (e) => {
-    const path = e.target.value;
+  roms.addEventListener("change", async (e) => {
+    // save rom to url
+    const index = roms.selectedIndex;
+    const params = new URLSearchParams(window.location.search);
+    params.set("rom", index);
+    history.replaceState({}, "", "?" + params.toString());
+    // load
+    const url = e.target.value;
     fileName.textContent = e.target.value;
-    if (path) loadRomFromUrl(path);
-  };
+    if (url) loadRomFromUrl(url);
+  });
 
   const romParam = getURLParam("rom");
   var rom = roms.options[0].value;
