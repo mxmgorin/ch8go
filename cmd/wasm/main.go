@@ -141,26 +141,14 @@ func newColorPickers(doc js.Value, app *app.App) ColorPickers {
 	pickers[2] = doc.Call("getElementById", "c3Picker")
 	pickers[3] = doc.Call("getElementById", "c4Picker")
 
-	pickers[0].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := pickers[0].Get("value").String()
-		app.SetColor(0, color)
-		return nil
-	}))
-	pickers[1].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := pickers[1].Get("value").String()
-		app.SetColor(1, color)
-		return nil
-	}))
-	pickers[2].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := pickers[2].Get("value").String()
-		app.SetColor(2, color)
-		return nil
-	}))
-	pickers[3].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		color := pickers[3].Get("value").String()
-		app.SetColor(3, color)
-		return nil
-	}))
+	for i := range pickers {
+		id := i
+		pickers[id].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+			color := pickers[id].Get("value").String()
+			app.SetColor(id, color)
+			return nil
+		}))
+	}
 
 	return pickers
 }
@@ -176,11 +164,38 @@ type KeyEvent struct {
 	Pressed bool
 }
 
+type Conf struct {
+	tickrateInput js.Value
+}
+
+func newConf(doc js.Value, app *app.App) Conf {
+	conf := Conf{}
+	conf.tickrateInput = doc.Call("getElementById", "tickrateInput")
+	conf.tickrateInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.tickrateInput.Get("value").String()
+		tickrate, err := strconv.Atoi(value)
+		if err != nil {
+			slog.Error("Invalid tickrate:", "tickrate", value)
+			return nil
+		}
+		app.VM.SetTickrate(tickrate)
+
+		return nil
+	}))
+
+	return conf
+}
+
+func (c *Conf) setTickrate(tr int) {
+	c.tickrateInput.Set("value", tr)
+}
+
 type WASM struct {
 	frameFunc    js.Func
 	app          *app.App
 	colorPickers ColorPickers
 	painter      CanvasPainter
+	conf         Conf
 	KeyChan      chan KeyEvent
 }
 
@@ -209,6 +224,9 @@ func newWASM() WASM {
 	doc := js.Global().Get("document")
 	colorPickers := newColorPickers(doc, app)
 
+	// Conf
+	conf := newConf(doc, app)
+
 	// Audio
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
@@ -224,6 +242,7 @@ func newWASM() WASM {
 		frameFunc:    frameFunc,
 		colorPickers: colorPickers,
 		painter:      painter,
+		conf:         conf,
 		KeyChan:      make(chan KeyEvent, 32),
 	}
 }
@@ -245,24 +264,34 @@ func loadROM(this js.Value, args []js.Value) any {
 	}
 
 	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
+	wasm.conf.setTickrate(wasm.app.VM.Tickrate())
 
 	return nil
 }
 
 func onKeyDown(this js.Value, args []js.Value) any {
-	key := args[0].Get("key").String()
-	if k, ok := keymap[key]; ok {
-		wasm.KeyChan <- KeyEvent{Key: k, Pressed: true}
-		args[0].Call("preventDefault")
-	}
-	return nil
+	return onKey(args[0], true)
 }
 
 func onKeyUp(this js.Value, args []js.Value) any {
-	key := args[0].Get("key").String()
+	return onKey(args[0], false)
+}
+
+func onKey(event js.Value, pressed bool) any {
+	// Detect if user is typing into an input, textarea, or contenteditable
+	target := event.Get("target")
+	nodeName := target.Get("nodeName").String()
+	isContentEditable := target.Get("isContentEditable").Truthy()
+
+	if nodeName == "INPUT" || nodeName == "TEXTAREA" || isContentEditable {
+		// Don't block keypresses on input fields
+		return nil
+	}
+
+	key := event.Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.KeyChan <- KeyEvent{Key: k, Pressed: false}
-		args[0].Call("preventDefault")
+		wasm.KeyChan <- KeyEvent{Key: k, Pressed: pressed}
+		event.Call("preventDefault")
 	}
 	return nil
 }
@@ -306,6 +335,7 @@ func handleKey(evt KeyEvent) {
 		wasm.app.VM.Keypad.Release(evt.Key)
 	}
 }
+
 func fillROMs(this js.Value, args []js.Value) any {
 	selectEl := js.Global().Get("document").Call("getElementById", "roms")
 	selectEl.Set("innerHTML", "")

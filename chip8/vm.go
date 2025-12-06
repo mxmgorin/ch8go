@@ -40,6 +40,7 @@ func (vm *VM) ApplyConf(conf PlatformConf) {
 	vm.Audio.SetMode(conf.AudioMode)
 }
 
+func (vm *VM) Tickrate() int      { return int(vm.cpuHz / 60.0) }
 func (vm *VM) SetTickrate(tr int) { vm.cpuHz = float64(tr) * 60.0 }
 func (vm *VM) SetQuirks(q Quirks) { vm.CPU.quirks = q }
 

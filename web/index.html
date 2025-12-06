@@ -317,41 +317,74 @@
                         <div class="input-group">
                             <label>Scale:</label>
                             <div class="scale-control">
-                                <button id="scaleMinus" class="scale-btn bezel-btn">
+                                <button
+                                    id="scaleMinus"
+                                    class="scale-btn bezel-btn"
+                                >
                                     −
                                 </button>
-                                <input id="scaleInput" value="5" />
-                                <button id="scalePlus" class="scale-btn bezel-btn">
+                                <input
+                                    id="scaleInput"
+                                    class="bezel-input"
+                                    value="5"
+                                />
+                                <button
+                                    id="scalePlus"
+                                    class="scale-btn bezel-btn"
+                                >
                                     +
                                 </button>
                             </div>
                         </div>
-                        <div class="input-group">
-                            <label class="picker">Palette:</label>
-                            <input
-                                class="color-picker"
-                                id="bgPicker"
-                                type="color"
-                                value="#000000"
+
+                        <button id="settings-btn" class="key sound">
+                            <img
+                                src="settings-icon24.ico"
+                                style="margin-top: 2px"
+                                alt="settings"
                             />
-                            <input
-                                class="color-picker"
-                                id="fgPicker"
-                                type="color"
-                                value="#FFFFFF"
-                            />
-                            <input
-                                class="color-picker"
-                                id="c3Picker"
-                                type="color"
-                                value="#000000"
-                            />
-                            <input
-                                class="color-picker"
-                                id="c4Picker"
-                                type="color"
-                                value="#FFFFFF"
-                            />
+                        </button>
+                        <div
+                            id="settings-panel"
+                            class="settings-panel"
+                            style="display: none"
+                        >
+                            <div class="settings-title">Settings:</div>
+                            <div class="input-group">
+                                <label>Tick rate:</label>
+                                <input
+                                    id="tickrateInput"
+                                    class="bezel-input settings-input"
+                                    type="number"
+                                />
+                            </div>
+                            <div class="input-group">
+                                <label class="picker">Palette:</label>
+                                <input
+                                    class="color-picker"
+                                    id="bgPicker"
+                                    type="color"
+                                    value="#000000"
+                                />
+                                <input
+                                    class="color-picker"
+                                    id="fgPicker"
+                                    type="color"
+                                    value="#FFFFFF"
+                                />
+                                <input
+                                    class="color-picker"
+                                    id="c3Picker"
+                                    type="color"
+                                    value="#000000"
+                                />
+                                <input
+                                    class="color-picker"
+                                    id="c4Picker"
+                                    type="color"
+                                    value="#FFFFFF"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

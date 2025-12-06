@@ -75,6 +75,7 @@ function setupKeyboard() {
   });
 }
 
+// audio
 const audioDot = document.getElementById("audio-dot");
 let audioCtx = null;
 let audioNode = null;
@@ -148,10 +149,10 @@ function toggleAudio() {
   }
 }
 
+// scale
 const scaleInput = document.getElementById("scaleInput");
 const scaleMinus = document.getElementById("scaleMinus");
 const scalePlus = document.getElementById("scalePlus");
-
 scaleMinus.onclick = () => {
   let v = parseInt(scaleInput.value);
   if (v > 1) {
@@ -159,12 +160,22 @@ scaleMinus.onclick = () => {
     scaleInput.dispatchEvent(new Event("input"));
   }
 };
-
 scalePlus.onclick = () => {
   let v = parseInt(scaleInput.value);
   if (v < 15) {
     scaleInput.value = v + 1;
     scaleInput.dispatchEvent(new Event("input"));
+  }
+};
+
+// settings
+const settingsPanel = document.getElementById("settings-panel");
+const settingsBtn = document.getElementById("settings-btn");
+settingsBtn.onclick = () => {
+  if (settingsPanel.style.display == "none") {
+    settingsPanel.style.display = "flex";
+  } else {
+    settingsPanel.style.display = "none";
   }
 };
 

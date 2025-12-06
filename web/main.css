@@ -315,11 +315,44 @@ body {
     justify-content: center;
 }
 
-#scaleInput {
+.bezel-input {
     width: 15px;
     height: 15px;
     text-align: center;
     background: #c1c4cc;
     color: white;
     border: none;
+}
+
+.settings-btn {
+    width: 50px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+.settings-title {
+    font-weight: 700;
+}
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: absolute;
+    left: 30px;
+    top: 100px;
+    background: #c1c4cc;
+    padding: 15px;
+    border-radius: 6px;
+    width: 210px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.settings-input {
+    color: black;
+    background: #e5e5e5 !important;
+    border: 1px solid #8993aead;
+    border-radius: 5px;
+    width: 75px;
+    height: 20;
 }
