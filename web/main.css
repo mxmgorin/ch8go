@@ -344,8 +344,13 @@ body {
     background: #c1c4cc;
     padding: 15px;
     border-radius: 6px;
-    width: 210px;
+    width: 240px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.settings-row {
+    width: 220px !important;
+    justify-content: space-between;
 }
 
 .settings-input {

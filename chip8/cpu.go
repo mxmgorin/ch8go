@@ -14,13 +14,13 @@ type CPU struct {
 	stack  [256]uint16 // original is 16 but modern games require deeper stack
 	dt     byte
 	flags  [16]byte // xochip ext, schip has 8
-	quirks Quirks
+	Quirks Quirks
 }
 
 func NewCpu(quirks Quirks) CPU {
 	return CPU{
 		pc:     0x200,
-		quirks: quirks,
+		Quirks: quirks,
 	}
 }
 
@@ -63,10 +63,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			c.ret()
 
 		case 0xFB:
-			display.ScrollRight4(c.quirks.ScaleScroll)
+			display.ScrollRight4(c.Quirks.ScaleScroll)
 
 		case 0xFC:
-			display.ScrollLeft4(c.quirks.ScaleScroll)
+			display.ScrollLeft4(c.Quirks.ScaleScroll)
 
 		case 0xFD:
 			c.Reset()
@@ -82,7 +82,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			switch op & 0x00F0 {
 			case 0x00C0: // 00CN, schip
 				n := read_n(op)
-				display.ScrollDown(n, c.quirks.ScaleScroll)
+				display.ScrollDown(n, c.Quirks.ScaleScroll)
 			case 0x00D0: // 00DN , xochip
 				n := read_n(op)
 				display.ScrollUp(int(n))
@@ -165,7 +165,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 
 func (c *CPU) opJP(op uint16) {
 	var v byte
-	if c.quirks.Jump {
+	if c.Quirks.Jump {
 		x := read_x(op)
 		v = c.v[x]
 	} else {
@@ -198,12 +198,12 @@ func (c *CPU) opDRAW(op uint16, memory *Memory, display *Display) {
 		const bytesPerRow = 2
 		endAddr := height * bytesPerRow * uint16(display.planesLen())
 		sprite := memory.ReadSprite(c.i, endAddr)
-		collisions = display.DrawSprite(vx, vy, sprite, 16, height, bytesPerRow, c.quirks.Wrap)
+		collisions = display.DrawSprite(vx, vy, sprite, 16, height, bytesPerRow, c.Quirks.Wrap)
 	} else {
 		// Classic CHIP-8 8×N sprite
 		endAddr := n * uint16(display.planesLen())
 		sprite := memory.ReadSprite(c.i, endAddr)
-		collisions = display.DrawSprite(vx, vy, sprite, 8, int(n), 1, c.quirks.Wrap)
+		collisions = display.DrawSprite(vx, vy, sprite, 8, int(n), 1, c.Quirks.Wrap)
 	}
 	if collisions > 0 {
 		c.v[0xF] = 1
@@ -222,19 +222,19 @@ func (c *CPU) op8XYN(op uint16) {
 
 	case 0x1: // OR Vx, Vy
 		c.v[x] |= c.v[y]
-		if c.quirks.VFReset {
+		if c.Quirks.VFReset {
 			c.v[0xF] = 0
 		}
 
 	case 0x2: // AND Vx, Vy
 		c.v[x] &= c.v[y]
-		if c.quirks.VFReset {
+		if c.Quirks.VFReset {
 			c.v[0xF] = 0
 		}
 
 	case 0x3: // XOR Vx, Vy
 		c.v[x] ^= c.v[y]
-		if c.quirks.VFReset {
+		if c.Quirks.VFReset {
 			c.v[0xF] = 0
 		}
 
@@ -274,7 +274,7 @@ func (c *CPU) opSUB(x, y uint16) {
 
 func (c *CPU) opSHR(x, y uint16) {
 	in := y
-	if c.quirks.Shift {
+	if c.Quirks.Shift {
 		in = x
 	}
 	v := c.v[in]
@@ -296,7 +296,7 @@ func (c *CPU) opSUBN(x, y uint16) {
 
 func (c *CPU) opSHL(x, y uint16) {
 	in := y
-	if c.quirks.Shift {
+	if c.Quirks.Shift {
 		in = x
 	}
 	v := c.v[in]
@@ -359,13 +359,13 @@ func (c *CPU) opFNNN(op uint16, display *Display, memory *Memory, keypad *Keypad
 		for r := uint16(0); r <= uint16(x); r++ {
 			memory.Write(c.i+r, c.v[r])
 		}
-		c.quirks.opMem(c, x)
+		c.Quirks.opMem(c, x)
 
 	case 0x65:
 		for r := uint16(0); r <= uint16(x); r++ {
 			c.v[r] = memory.Read(c.i + r)
 		}
-		c.quirks.opMem(c, x)
+		c.Quirks.opMem(c, x)
 
 	case 0x75: // FX75 - store V0..VX into flags
 		for i := byte(0); i <= byte(x); i++ {

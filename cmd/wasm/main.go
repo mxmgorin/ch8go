@@ -12,6 +12,7 @@ import (
 	"unsafe"
 
 	"github.com/mxmgorin/ch8go/app"
+	"github.com/mxmgorin/ch8go/chip8"
 )
 
 var (
@@ -166,11 +167,20 @@ type KeyEvent struct {
 }
 
 type Conf struct {
-	tickrateInput js.Value
+	tickrateInput    js.Value
+	shiftInput       js.Value
+	incIByXInput     js.Value
+	leaveIInput      js.Value
+	wrapInput        js.Value
+	jumpInput        js.Value
+	vBlankWaitInput  js.Value
+	resetFInput      js.Value
+	scaleScrollInput js.Value
 }
 
 func newConf(doc js.Value, app *app.App) Conf {
 	conf := Conf{}
+
 	conf.tickrateInput = doc.Call("getElementById", "tickrateInput")
 	conf.tickrateInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.tickrateInput.Get("value").String()
@@ -184,11 +194,86 @@ func newConf(doc js.Value, app *app.App) Conf {
 		return nil
 	}))
 
+	conf.shiftInput = doc.Call("getElementById", "shiftInput")
+	conf.shiftInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.shiftInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.Shift = value
+
+		return nil
+	}))
+
+	conf.wrapInput = doc.Call("getElementById", "wrapInput")
+	conf.wrapInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.wrapInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.Wrap = value
+
+		return nil
+	}))
+
+	conf.incIByXInput = doc.Call("getElementById", "incIbyXInput")
+	conf.incIByXInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.incIByXInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.MemIncIByX = value
+
+		return nil
+	}))
+
+	conf.leaveIInput = doc.Call("getElementById", "leaveIInput")
+	conf.leaveIInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.leaveIInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.MemLeaveI = value
+
+		return nil
+	}))
+
+	conf.jumpInput = doc.Call("getElementById", "jumpInput")
+	conf.jumpInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.jumpInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.Jump = value
+
+		return nil
+	}))
+
+	conf.vBlankWaitInput = doc.Call("getElementById", "vblankInput")
+	conf.vBlankWaitInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.vBlankWaitInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.VBlankWait = value
+
+		return nil
+	}))
+
+	conf.resetFInput = doc.Call("getElementById", "resetFInput")
+	conf.resetFInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.resetFInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.VFReset = value
+
+		return nil
+	}))
+
+	conf.scaleScrollInput = doc.Call("getElementById", "scaleScrollInput")
+	conf.scaleScrollInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.scaleScrollInput.Get("checked").Bool()
+		app.VM.CPU.Quirks.ScaleScroll = value
+
+		return nil
+	}))
+
 	return conf
 }
 
 func (c *Conf) setTickrate(tr int) {
 	c.tickrateInput.Set("value", tr)
+}
+
+func (c *Conf) setQuirks(quirks chip8.Quirks) {
+	c.shiftInput.Set("checked", js.ValueOf(quirks.Shift))
+	c.wrapInput.Set("checked", js.ValueOf(quirks.Wrap))
+	c.incIByXInput.Set("checked", js.ValueOf(quirks.MemIncIByX))
+	c.leaveIInput.Set("checked", js.ValueOf(quirks.MemLeaveI))
+	c.jumpInput.Set("checked", js.ValueOf(quirks.Jump))
+	c.vBlankWaitInput.Set("checked", js.ValueOf(quirks.VBlankWait))
+	c.resetFInput.Set("checked", js.ValueOf(quirks.VFReset))
+	c.scaleScrollInput.Set("checked", js.ValueOf(quirks.ScaleScroll))
 }
 
 type WASM struct {
@@ -266,6 +351,7 @@ func loadROM(this js.Value, args []js.Value) any {
 
 	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
 	wasm.conf.setTickrate(wasm.app.VM.Tickrate())
+	wasm.conf.setQuirks(wasm.app.VM.CPU.Quirks)
 
 	return nil
 }

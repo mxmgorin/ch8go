@@ -350,7 +350,7 @@
                             style="display: none"
                         >
                             <div class="settings-title">Settings:</div>
-                            <div class="input-group">
+                            <div class="input-group settings-row">
                                 <label>Tick rate:</label>
                                 <input
                                     id="tickrateInput"
@@ -358,7 +358,8 @@
                                     type="number"
                                 />
                             </div>
-                            <div class="input-group">
+
+                            <div class="input-group settings-row">
                                 <label class="picker">Palette:</label>
                                 <input
                                     class="color-picker"
@@ -384,6 +385,47 @@
                                     type="color"
                                     value="#FFFFFF"
                                 />
+                            </div>
+
+                            <div class="settings-title">Quirks:</div>
+                            <div class="input-group settings-row">
+                                <label
+                                    >Shift
+                                    <input id="shiftInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >Wrap
+                                    <input id="wrapInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >IncIX
+                                    <input id="incIbyXInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >LeaveI
+                                    <input id="leaveIInput" type="checkbox" />
+                                </label>
+                            </div>
+                            <div class="input-group settings-row">
+                                <label
+                                    >Jump
+                                    <input id="jumpInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >VBlank
+                                    <input id="vblankInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >ResetF
+                                    <input id="resetFInput" type="checkbox" />
+                                </label>
+                                <label
+                                    >Scroll
+                                    <input
+                                        id="scaleScrollInput"
+                                        type="checkbox"
+                                    />
+                                </label>
                             </div>
                         </div>
                     </div>

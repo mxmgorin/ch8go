@@ -42,7 +42,7 @@ func (vm *VM) ApplyConf(conf PlatformConf) {
 
 func (vm *VM) Tickrate() int      { return int(vm.cpuHz / 60.0) }
 func (vm *VM) SetTickrate(tr int) { vm.cpuHz = float64(tr) * 60.0 }
-func (vm *VM) SetQuirks(q Quirks) { vm.CPU.quirks = q }
+func (vm *VM) SetQuirks(q Quirks) { vm.CPU.Quirks = q }
 
 func (vm *VM) LoadROM(bytes []byte) error {
 	vm.Reset()
@@ -61,11 +61,11 @@ func (vm *VM) Reset() {
 	vm.CPU.Reset()
 	vm.Audio.Reset()
 	vm.cpuHz = defaultPlatform.CPUHz()
-	vm.CPU.quirks = defaultPlatform.Quirks
+	vm.CPU.Quirks = defaultPlatform.Quirks
 }
 
 func (vm *VM) Step() {
-	if !vm.Display.pendingVBlank || !vm.CPU.quirks.VBlankWait {
+	if !vm.Display.pendingVBlank || !vm.CPU.Quirks.VBlankWait {
 		opcode := vm.CPU.fetch(&vm.Memory)
 		vm.CPU.execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad, &vm.Audio)
 	}
