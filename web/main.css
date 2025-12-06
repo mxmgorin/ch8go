@@ -219,7 +219,7 @@ body {
     border-radius: 10px !important;
     width: 80px !important;
     height: 40px !important;
-    box-shadow: 0 3px 0 #5d3603 !important;
+    box-shadow: 0 3px 0 #b06b10 !important;
 }
 
 .ti-keys {
@@ -241,7 +241,7 @@ body {
     font-weight: bold;
     padding: 16px;
     border-radius: 50%;
-    box-shadow: 0 4px 0 #202b4a;
+    box-shadow: 0 4px 0 #323b55;
     transition: 0.1s ease;
     cursor: pointer;
     width: 150px;

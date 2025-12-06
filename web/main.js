@@ -100,12 +100,10 @@ function setupKeyboard() {
 
 // audio
 const audioDot = document.getElementById("audio-dot");
-let audioCtx = null;
-let audioNode = null;
-let audioEnabled = false;
-let audioFreq = 0.0;
-let audioBufSize = 0;
 const audioApi = 0;
+var audioCtx = null;
+var audioEnabled = false;
+var audioNode = null;
 const audioIconOn = document.getElementById("icon-audio-on");
 const audioIconOff = document.getElementById("icon-audio-off");
 const audioBtn = document.getElementById("audio");
@@ -123,13 +121,14 @@ audioBtn.onclick = async () => {
 };
 
 async function startAudioScriptProcessor() {
-  audioBufSize = 512;
+  const audioBufSize = 512;
   window.startAudio(audioBufSize);
 
   audioCtx = new AudioContext();
-  audioFreq = audioCtx.sampleRate;
-  console.log("Audio sample rate:", audioFreq);
   await audioCtx.resume();
+  const audioFreq = audioCtx.sampleRate;
+
+  console.log("Audio sample rate:", audioFreq);
 
   audioNode = audioCtx.createScriptProcessor(audioBufSize, 0, 1);
   audioNode.onaudioprocess = (e) => {
@@ -139,11 +138,11 @@ async function startAudioScriptProcessor() {
 }
 
 async function startAudioWorklet() {
-  audioBufSize = 128;
+  const audioBufSize = 128;
   window.startAudio(audioBufSize);
-
   audioCtx = new AudioContext();
-  audioFreq = audioCtx.sampleRate;
+  const audioFreq = audioCtx.sampleRate;
+
   console.log("Audio sample rate:", audioFreq);
 
   await audioCtx.audioWorklet.addModule("audio-processor.js");
@@ -196,7 +195,7 @@ const settingsPanel = document.getElementById("settings-panel");
 const settingsBtn = document.getElementById("settings-btn");
 settingsBtn.onclick = () => {
   if (settingsPanel.style.display == "none") {
-    settingsPanel.style.display = "flex";
+    settingsPanel.style.display = null;
   } else {
     settingsPanel.style.display = "none";
   }
