@@ -126,7 +126,7 @@ body {
 
 .bezel-btn {
     background: #d4d6dd !important;     /* slightly lighter than page */
-    border: 1px solid #9ea2ac !important;
+    border: 1px solid #d4d6dd !important;
     box-shadow: 0 2px 0 #8b909b !important;
 }
 
