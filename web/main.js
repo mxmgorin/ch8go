@@ -15,6 +15,11 @@ async function init() {
     chip8_loadROM(data, file.name);
   };
 
+  await setupROMS();
+  setupKeyboard();
+}
+
+async function setupROMS() {
   const input = document.getElementById("romInput");
   const fileName = document.getElementById("fileName");
 
@@ -30,11 +35,23 @@ async function init() {
   };
 
   window.fillROMs();
-  const firstRom = select.options[0].value;
-  fileName.textContent = firstRom;
-  await loadRomFromUrl(firstRom);
+  const romParam = getURLParam("rom");
+  var rom = select.options[0].value;
+  if (romParam) {
+    const option = select.options[romParam];
+    if (option) {
+      rom = option.value;
+    }
+  }
 
-  setupKeyboard();
+  select.value = rom;
+  fileName.textContent = rom;
+  await loadRomFromUrl(rom);
+}
+
+function getURLParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
 }
 
 async function loadRomFromUrl(url) {
