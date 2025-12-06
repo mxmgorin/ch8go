@@ -7,44 +7,44 @@ async function init() {
 
   go.run(result.instance);
 
-  document.getElementById("romInput").onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const data = new Uint8Array(await file.arrayBuffer());
-    chip8_loadROM(data, file.name);
-  };
-
   await setupROMS();
   setupKeyboard();
 }
 
 async function setupROMS() {
-  const input = document.getElementById("romInput");
+  window.fillROMs();
+  const roms = document.getElementById("roms");
+  const romInput = document.getElementById("romInput");
   const fileName = document.getElementById("fileName");
 
-  input.addEventListener("change", () => {
-    fileName.textContent = input.files[0]?.name || "";
+  romInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      fileName.textContent = "";
+      return;
+    }
+
+    fileName.textContent = file.name;
+    const data = new Uint8Array(await file.arrayBuffer());
+    chip8_loadROM(data, file.name);
   });
 
-  const select = document.getElementById("roms");
-  select.onchange = async (e) => {
+  roms.onchange = async (e) => {
     const path = e.target.value;
     fileName.textContent = e.target.value;
     if (path) loadRomFromUrl(path);
   };
 
-  window.fillROMs();
   const romParam = getURLParam("rom");
-  var rom = select.options[0].value;
+  var rom = roms.options[0].value;
   if (romParam) {
-    const option = select.options[romParam];
+    const option = roms.options[romParam];
     if (option) {
       rom = option.value;
     }
   }
 
-  select.value = rom;
+  roms.value = rom;
   fileName.textContent = rom;
   await loadRomFromUrl(rom);
 }
