@@ -115,7 +115,8 @@ func newPainter(w, h int) (CanvasPainter, error) {
 func (p *CanvasPainter) setScale(value string) {
 	scale, err := strconv.Atoi(value)
 	if err != nil {
-		fmt.Println("Invalid scale:", value)
+		slog.Error("Invalid scale:", "scale", value)
+		return
 	}
 
 	canvasStyle := p.canvas.Get("style")
