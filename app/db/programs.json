@@ -2391,7 +2391,7 @@
     "roms": {
       "8ebf74e790e58a8d5a7beff598bb32ed7eeeabf7": {
         "file": "skyward.ch8",
-        "platforms": [],
+        "platforms": ["xochip"],
         "quirkyPlatforms": {
           "xochip": {
             "memoryLeaveIUnchanged": true

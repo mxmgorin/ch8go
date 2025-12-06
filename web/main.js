@@ -29,6 +29,7 @@ async function init() {
     if (path) loadRomFromUrl(path);
   };
 
+  window.fillROMs();
   const firstRom = select.options[0].value;
   fileName.textContent = firstRom;
   await loadRomFromUrl(firstRom);

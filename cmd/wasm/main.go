@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	wasm   WASM
-	keymap = map[string]byte{
+	audioBuf = make([]float32, 0)
+	wasm     WASM
+	keymap   = map[string]byte{
 		"1": 0x1, "2": 0x2, "3": 0x3, "4": 0xC,
 		"q": 0x4, "w": 0x5, "e": 0x6, "r": 0xD,
 		"a": 0x7, "s": 0x8, "d": 0x9, "f": 0xE,
@@ -24,9 +25,48 @@ var (
 		"ArrowUp": 0x5, "ArrowDown": 0x8, "ArrowLeft": 0x7, "ArrowRight": 0x9,
 		" ": 0x6,
 	}
+	roms = []struct {
+		Path string
+		Name string
+	}{
+		{"roms/xo/skyward.ch8", "Skyward"},
+		{"roms/xo/superneatboy.ch8", "Super Neat Boy"},
+		{"roms/xo/garlicscape.ch8", "Garlic Scape"},
+		{"roms/xo/octoma.ch8", "Octoma"},
+		{"roms/xo/t8nks.ch8", "T8nks"},
+		{"roms/xo/octopeg.ch8", "Octopeg"},
+		{"roms/ch/danm8ku.ch8", "Danm8ku"},
+		{"roms/ch/octogon.ch8", "Octogon"},
+		{"roms/ch/supersquare.ch8", "Super Square"},
+		{"roms/ch/down8.ch8", "Down8"},
+		{"roms/ch/slipperyslope.ch8", "Slippery Slope"},
+		{"roms/ch/rockto.ch8", "Rockto"},
+		{"roms/ch/sub8.ch8", "Sub8"},
+		{"roms/ch/DVN8.ch8", "DVN8"},
+		{"roms/ch/flightrunner.ch8", "Flight Runner"},
+		{"roms/ch/glitchGhost.ch8", "Glitch Ghost"},
+		{"roms/ch/turnover77.ch8", "Turn Over 77"},
+		{"roms/ch/blackrainbow.ch8", "Black Rainbow"},
+		{"roms/ch/binding.ch8", "Binding"},
+		{"roms/ch/br8kout.ch8", "Br8kout"},
+		{"roms/ch/spacejam.ch8", "Space Jam"},
+		{"roms/ch/octovore.ch8", "Octovore"},
+		{"roms/ch/INVADERS", "Invaders"},
+		{"roms/ch/TETRIS", "Tetris"},
+		{"roms/ch/snake.ch8", "Snake"},
+		{"roms/ch/TANK", "Tank"},
+		{"roms/xo/D8GN.ch8", "D8GN"},
+		{"roms/xo/civiliz8n.ch8", "Civiliz8n"},
+		{"roms/xo/clostro.ch8", "Clostro"},
+		{"roms/xo/sneaksurround.ch8", "Sneak Surround"},
+		{"roms/xo/chickenScratch.ch8", "Chicken Scratch"},
+		{"roms/sc/ANT", "Ant"},
+		{"roms/sc/sweetcopter.ch8", "Sw8Copter"},
+		{"roms/xo/tapeworm.ch8", "Tapeworm"},
+		{"roms/xo/snake.ch8", "xSnake"},
+		{"roms/xo/alien-inv8sion.ch8", "Alien Inv8sion (Timendus)"},
+	}
 )
-
-var audioBuf = make([]float32, 0)
 
 type CanvasPainter struct {
 	ctx           js.Value
@@ -173,6 +213,9 @@ func newWASM() WASM {
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
+	// Roms
+	js.Global().Set("fillROMs", js.FuncOf(fillROMs))
+
 	// Animation loop (must persist function or GC will kill it)
 	frameFunc := js.FuncOf(frame)
 
@@ -262,6 +305,19 @@ func handleKey(evt KeyEvent) {
 	} else {
 		wasm.app.VM.Keypad.Release(evt.Key)
 	}
+}
+func fillROMs(this js.Value, args []js.Value) any {
+	selectEl := js.Global().Get("document").Call("getElementById", "roms")
+	selectEl.Set("innerHTML", "")
+
+	for _, r := range roms {
+		opt := js.Global().Get("document").Call("createElement", "option")
+		opt.Set("value", r.Path)
+		opt.Set("textContent", r.Name)
+		selectEl.Call("appendChild", opt)
+	}
+
+	return nil
 }
 
 func drainChan[T any](ch <-chan T, fn func(T)) {

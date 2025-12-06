@@ -56,86 +56,11 @@
                 <div class="bezel">
                     <div class="inputs">
                         <div class="input-group">
-                            <label for="roms" class="label">Select:</label>
-                            <select id="roms">
-                                <option value="roms/xo/superneatboy.ch8">
-                                    Super Neat Boy
-                                </option>
-                                <option value="roms/xo/garlicscape.ch8">
-                                    Garlic Scape
-                                </option>
-                                <option value="roms/xo/octoma.ch8">
-                                    Octoma
-                                </option>
-                                <option value="roms/xo/t8nks.ch8">T8nks</option>
-                                <option value="roms/xo/octopeg.ch8">Octopeg</option>
-                                <option value="roms/xo/civiliz8n.ch8">
-                                    Civiliz8n
-                                </option>
-                                <option value="roms/danm8ku.ch8">
-                                    Danm8ku
-                                </option>
-                                <option value="roms/octogon.ch8">
-                                    Octogon
-                                </option>
-                                <option value="roms/supersquare.ch8">
-                                    Super Square
-                                </option>
-                                <option value="roms/down8.ch8">Down8</option>
-                                <option value="roms/xo/D8GN.ch8">D8GN</option>
-                                <option value="roms/slipperyslope.ch8">
-                                    Slippery Slope
-                                </option>
-                                <option value="roms/rockto.ch8">Rockto</option>
-                                <option value="roms/sub8.ch8">Sub8</option>
-                                <option value="roms/DVN8.ch8">DVN8</option>
-                                <option value="roms/xo/chickenScratch.ch8">
-                                    Chicken Scratch
-                                </option>
-                                <option value="roms/flightrunner.ch8">
-                                    Flight Runner
-                                </option>
-                                <option value="roms/glitchGhost.ch8">
-                                    Glitch Ghost
-                                </option>
-                                <option value="roms/turnover77.ch8">
-                                    Turn Over 77
-                                </option>
-                                <option value="roms/blackrainbow.ch8">
-                                    Black Rainbow
-                                </option>
-                                <option value="roms/xo/clostro.ch8">
-                                    Clostro
-                                </option>
-                                <option value="roms/xo/sneaksurround.ch8">
-                                    Sneak Surround
-                                </option>
-                                <option value="roms/binding.ch8">
-                                    Binding
-                                </option>
-                                <option value="roms/br8kout.ch8">
-                                    Br8kout
-                                </option>
-                                <option value="roms/INVADERS">Invaders</option>
-                                <option value="roms/TETRIS">Tetris</option>
-                                <option value="roms/snake.ch8">Snake</option>
-                                <option value="roms/TANK">Tank</option>
-                                <option value="roms/sc/ANT">Ant</option>
-                                <option value="roms/sc/sweetcopter.ch8">
-                                    Sw8Copter
-                                </option>
-                                <option value="roms/xo/tapeworm.ch8">
-                                    Tapeworm
-                                </option>
-                                <option value="roms/xo/snake.ch8">
-                                    xSnake
-                                </option>
-                                <option value="roms/xo/alien-inv8sion.ch8">
-                                    Alien Inv8sion (Timendus)
-                                </option>
+                            <label for="roms" class="label">ROM:</label>
+                            <select id="roms" class="bezel-btn">
+                                <option value="">-</option>
                             </select>
                         </div>
-
                         <div class="input-group">
                             <input
                                 type="file"
@@ -143,9 +68,9 @@
                                 accept=".ch8, .sc8, .xo8, .xo, .sc"
                                 hidden
                             />
-                            <label for="romInput" class="file-btn"
-                                >Upload
-                            </label>
+                            <label for="romInput" class="file-btn bezel-btn"
+                                >FILE</label
+                            >
                             <span id="fileName" class="file-name">No file</span>
                         </div>
                     </div>
@@ -392,11 +317,11 @@
                         <div class="input-group">
                             <label>Scale:</label>
                             <div class="scale-control">
-                                <button id="scaleMinus" class="scale-btn">
+                                <button id="scaleMinus" class="scale-btn bezel-btn">
                                     −
                                 </button>
                                 <input id="scaleInput" value="5" />
-                                <button id="scalePlus" class="scale-btn">
+                                <button id="scalePlus" class="scale-btn bezel-btn">
                                     +
                                 </button>
                             </div>
