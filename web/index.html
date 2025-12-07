@@ -80,6 +80,16 @@
                             id="chip8-canvas"
                             style="transform-origin: top left"
                         ></canvas>
+
+                        <div id="loader" class="bar-loader">
+                          <div class="label">Loading…</div>
+                          <div class="bar">
+                            <span></span><span></span><span></span><span></span>
+                            <span></span><span></span><span></span><span></span>
+                            <span></span><span></span>
+                          </div>
+                        </div>
+
                     </div>
 
                     <div class="inputs">
@@ -314,7 +324,7 @@
                                 />
                             </svg>
                         </button>
-                        <div class="input-group scale-group" >
+                        <div class="input-group scale-group">
                             <label>Scale:</label>
                             <div class="scale-control">
                                 <button

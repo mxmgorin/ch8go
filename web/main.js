@@ -1,4 +1,5 @@
 const go = new Go();
+const loader = document.getElementById("loader");
 
 async function init() {
   const resp = await fetch("main.wasm");
@@ -9,6 +10,7 @@ async function init() {
 
   await setupROMS();
   setupKeyboard();
+  loader.style.display = "none";
 }
 
 async function setupROMS() {

@@ -365,3 +365,50 @@ body {
     width: 75px;
     height: 20;
 }
+
+.bar-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-loader .label {
+  opacity: 0.8;
+}
+
+.bar {
+  display: flex;
+  border: 2px solid white;
+  padding: 4px;
+  gap: 4px;
+}
+
+.bar span {
+  display: block;
+  width: 18px;
+  height: 24px;
+  background: transparent;
+  opacity: 0.15;
+  animation: fill 1.2s infinite;
+}
+
+.bar span:nth-child(1) { animation-delay: 0.0s; }
+.bar span:nth-child(2) { animation-delay: 0.1s; }
+.bar span:nth-child(3) { animation-delay: 0.2s; }
+.bar span:nth-child(4) { animation-delay: 0.3s; }
+.bar span:nth-child(5) { animation-delay: 0.4s; }
+.bar span:nth-child(6) { animation-delay: 0.5s; }
+.bar span:nth-child(7) { animation-delay: 0.6s; }
+.bar span:nth-child(8) { animation-delay: 0.7s; }
+.bar span:nth-child(9) { animation-delay: 0.8s; }
+.bar span:nth-child(10){ animation-delay: 0.9s; }
+
+@keyframes fill {
+  0%   { background: white; opacity: 0.2; }
+  50%  { background: white; opacity: 1; }
+  100% { background: transparent; opacity: 0.2; }
+}
