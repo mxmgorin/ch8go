@@ -3,6 +3,8 @@ package db
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
+	"strings"
 )
 
 //go:embed programs.json platforms.json sha1-hashes.json
@@ -38,6 +40,18 @@ type ProgramDto struct {
 	Authors     []string          `json:"authors"`
 	Description string            `json:"description"`
 	ROMs        map[string]RomDto `json:"roms"`
+}
+
+func (p *ProgramDto) Format() string {
+	authors := strings.Join(p.Authors, ", ")
+
+	return fmt.Sprintf(
+		"%s\nReleased: %s\nAuthors: %s\n\n%s",
+		p.Title,
+		p.Release,
+		authors,
+		p.Description,
+	)
 }
 
 type RomDto struct {

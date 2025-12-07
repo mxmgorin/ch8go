@@ -31,7 +31,10 @@ func (db *DB) FindPlatform(id string) (platform *PlatformDto) {
 }
 
 func (db *DB) FindProgram(hash string) *ProgramDto {
-	idx := db.Hashes[hash]
+	idx, ok := db.Hashes[hash]
+	if !ok {
+		return nil
+	}
 
 	if idx < 0 || idx >= len(db.Programs) {
 		return nil

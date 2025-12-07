@@ -184,8 +184,21 @@ func (a *App) ROMInfo() *db.RomDto {
 	return &rom
 }
 
+func (a *App) ROMDesc() string {
+	program := a.DB.FindProgram(a.ROMHash)
+	if program == nil {
+		return "Unknown"
+	}
+	return program.Format()
+}
+
 func (a *App) applyROMconf() {
 	romInfo := a.ROMInfo()
+	if romInfo == nil {
+		slog.Info("Unknown ROM")
+		return
+	}
+
 	tickrate := 0
 
 	for i := range romInfo.Platforms {

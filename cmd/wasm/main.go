@@ -339,6 +339,12 @@ func (wasm *WASM) run() {
 	select {}
 }
 
+func setTooltip(text string) {
+    doc := js.Global().Get("document")
+    info := doc.Call("getElementById", "info")
+    info.Call("setAttribute", "data-tip", text)
+
+}
 func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
 	name := args[1].String()
@@ -352,6 +358,8 @@ func loadROM(this js.Value, args []js.Value) any {
 	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
 	wasm.conf.setTickrate(wasm.app.VM.Tickrate())
 	wasm.conf.setQuirks(wasm.app.VM.CPU.Quirks)
+	desc := wasm.app.ROMDesc()
+	setTooltip(desc)
 
 	return nil
 }
