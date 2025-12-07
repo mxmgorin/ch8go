@@ -10,6 +10,7 @@ async function init() {
 
   await setupROMS();
   setupKeyboard();
+  setupButtons();
   loader.style.display = "none";
 }
 
@@ -96,6 +97,24 @@ function setupKeyboard() {
 
       cell.classList.remove("pressed"); // <-- also remove here
       window.dispatchEvent(new KeyboardEvent("keyup", { key }));
+    });
+  });
+}
+
+function setupButtons() {
+  const buttons = document.querySelectorAll(".pressable");
+
+  buttons.forEach((button) => {
+    button.addEventListener("pointerdown", (e) => {
+      button.classList.add("pressed"); // <-- add animation class
+    });
+
+    button.addEventListener("pointerup", (e) => {
+      button.classList.remove("pressed"); // <-- remove animation class
+    });
+
+    button.addEventListener("pointerleave", (e) => {
+      button.classList.remove("pressed"); // <-- also remove here
     });
   });
 }

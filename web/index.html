@@ -61,6 +61,11 @@
                                 <option value="">-</option>
                             </select>
                         </div>
+
+                        <button id="toggle-pause-btn" class="pressable bezel-btn">
+                            <img id="toggle-pause-icon" src="pause-icon.svg" style="margin-top: 4px;" />
+                        </button>
+
                         <div class="input-group">
                             <input
                                 type="file"
@@ -68,7 +73,7 @@
                                 accept=".ch8, .sc8, .xo8, .xo, .sc"
                                 hidden
                             />
-                            <label for="romInput" class="file-btn bezel-btn"
+                            <label for="romInput" class="file-btn bezel-btn pressable"
                                 >FILE</label
                             >
                             <span id="fileName" class="file-name">No file</span
@@ -335,7 +340,7 @@
                             <div class="scale-control">
                                 <button
                                     id="scaleMinus"
-                                    class="scale-btn bezel-btn"
+                                    class="scale-btn bezel-btn pressable"
                                 >
                                     −
                                 </button>
@@ -346,7 +351,7 @@
                                 />
                                 <button
                                     id="scalePlus"
-                                    class="scale-btn bezel-btn"
+                                    class="scale-btn bezel-btn pressable"
                                 >
                                     +
                                 </button>

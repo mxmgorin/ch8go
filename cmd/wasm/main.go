@@ -277,12 +277,13 @@ func (c *Conf) setQuirks(quirks chip8.Quirks) {
 }
 
 type WASM struct {
-	frameFunc    js.Func
-	app          *app.App
-	colorPickers ColorPickers
-	painter      CanvasPainter
-	conf         Conf
-	KeyChan      chan KeyEvent
+	frameFunc       js.Func
+	app             *app.App
+	colorPickers    ColorPickers
+	painter         CanvasPainter
+	conf            Conf
+	togglePauseIcon js.Value
+	KeyChan         chan KeyEvent
 }
 
 func newWASM() WASM {
@@ -317,6 +318,11 @@ func newWASM() WASM {
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
+	// Pause, resume
+	togglePauseIcon := doc.Call("getElementById", "toggle-pause-icon")
+	togglePauseBtn := doc.Call("getElementById", "toggle-pause-btn")
+	togglePauseBtn.Call("addEventListener", "click", js.FuncOf(togglePause))
+
 	// Roms
 	js.Global().Set("fillROMs", js.FuncOf(fillROMs))
 
@@ -324,12 +330,13 @@ func newWASM() WASM {
 	frameFunc := js.FuncOf(frame)
 
 	return WASM{
-		app:          app,
-		frameFunc:    frameFunc,
-		colorPickers: colorPickers,
-		painter:      painter,
-		conf:         conf,
-		KeyChan:      make(chan KeyEvent, 32),
+		app:             app,
+		frameFunc:       frameFunc,
+		colorPickers:    colorPickers,
+		painter:         painter,
+		conf:            conf,
+		togglePauseIcon: togglePauseIcon,
+		KeyChan:         make(chan KeyEvent, 32),
 	}
 }
 
@@ -340,9 +347,9 @@ func (wasm *WASM) run() {
 }
 
 func setTooltip(text string) {
-    doc := js.Global().Get("document")
-    info := doc.Call("getElementById", "info")
-    info.Call("setAttribute", "data-tip", text)
+	doc := js.Global().Get("document")
+	info := doc.Call("getElementById", "info")
+	info.Call("setAttribute", "data-tip", text)
 
 }
 func loadROM(this js.Value, args []js.Value) any {
@@ -440,6 +447,18 @@ func fillROMs(this js.Value, args []js.Value) any {
 		opt.Set("value", r.Path)
 		opt.Set("textContent", r.Name)
 		selectEl.Call("appendChild", opt)
+	}
+
+	return nil
+}
+
+func togglePause(this js.Value, args []js.Value) any {
+	wasm.app.Paused = !wasm.app.Paused
+
+	if wasm.app.Paused {
+		wasm.togglePauseIcon.Set("src", "play-icon.svg")
+	} else {
+		wasm.togglePauseIcon.Set("src", "pause-icon.svg")
 	}
 
 	return nil

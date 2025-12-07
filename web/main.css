@@ -118,8 +118,7 @@ body {
     line-height: 1rem;
 }
 .credit {
-    font-family: monospace;
-    font-size: 0.5rem;
+    font-size: 0.7rem;
     opacity: 0.9;
     letter-spacing: 1px;
 }
@@ -128,6 +127,14 @@ body {
     background: #d4d6dd !important; /* slightly lighter than page */
     border: 1px solid #d4d6dd !important;
     box-shadow: 0 2px 0 #8b909b !important;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 40px;
+}
+
+.bezel-btn.pressed {
+    box-shadow: 0 1px 0 #8b909b !important;
 }
 
 .file-btn {

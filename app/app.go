@@ -98,6 +98,7 @@ type App struct {
 	DB          *db.DB
 	ROMHash     string
 	Palette     Palette
+	Paused      bool
 	frameBuffer FrameBuffer
 	lastTime    time.Time
 }
@@ -135,7 +136,7 @@ func (a *App) RunFrame() *FrameBuffer {
 }
 
 func (a *App) RunFrameDT(dt float64) *FrameBuffer {
-	if a.HasROM() {
+	if a.HasROM() && !a.Paused {
 		state := a.VM.RunFrame(dt)
 		a.updateFrameBuffer(state)
 	}
