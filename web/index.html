@@ -62,8 +62,15 @@
                             </select>
                         </div>
 
-                        <button id="toggle-pause-btn" class="pressable bezel-btn">
-                            <img id="toggle-pause-icon" src="pause-icon.svg" style="margin-top: 4px;" />
+                        <button
+                            id="toggle-pause-btn"
+                            class="pressable bezel-btn"
+                        >
+                            <img
+                                id="toggle-pause-icon"
+                                src="pause-icon.svg"
+                                style="margin-top: 4px"
+                            />
                         </button>
 
                         <div class="input-group">
@@ -73,16 +80,18 @@
                                 accept=".ch8, .sc8, .xo8, .xo, .sc"
                                 hidden
                             />
-                            <label for="romInput" class="file-btn bezel-btn pressable"
+                            <label
+                                for="romInput"
+                                class="file-btn bezel-btn pressable"
                                 >FILE</label
                             >
                             <span id="fileName" class="file-name">No file</span
-                            ><span
-                                id="info"
-                                class="info"
-                                data-tip="This game uses wrap & shift quirks."
-                                >i</span
+                            ><button
+                                id="info-btn"
+                                class="info-btn pressable bezel-btn"
                             >
+                                i
+                            </button>
                         </div>
                     </div>
 
@@ -175,6 +184,7 @@
                                 </label>
                             </div>
                         </div>
+                        <div id="info-overlay" style="display: none"></div>
                         <div id="pause-overlay">PAUSED</div>
                         <div id="loader" class="bar-loader">
                             <div class="label">Loading…</div>
@@ -449,7 +459,6 @@
                                 alt="settings"
                             />
                         </button>
-
                     </div>
                 </div>
 

@@ -27,6 +27,7 @@ async function setupROMS() {
       return;
     }
 
+    roms.value = "";
     fileName.textContent = file.name;
     const data = new Uint8Array(await file.arrayBuffer());
     chip8_loadROM(data, file.name);
@@ -219,6 +220,15 @@ settingsBtn.onclick = () => {
     settingsPanel.style.display = null;
   } else {
     settingsPanel.style.display = "none";
+  }
+};
+
+document.getElementById("info-btn").onclick = () => {
+  const infoOverlay = document.getElementById("info-overlay");
+  if (infoOverlay.style.display == "none") {
+    infoOverlay.style.display = null;
+  } else {
+    infoOverlay.style.display = "none";
   }
 };
 

@@ -352,10 +352,10 @@ func (wasm *WASM) run() {
 func setROMInfo() {
 	text := wasm.app.ROMInfo()
 	doc := js.Global().Get("document")
-	info := doc.Call("getElementById", "info")
-	info.Call("setAttribute", "data-tip", text)
-
+	info := doc.Call("getElementById", "info-overlay")
+	info.Set("innerHTML", text)
 }
+
 func loadROM(this js.Value, args []js.Value) any {
 	jsBuff := args[0]
 	name := args[1].String()
