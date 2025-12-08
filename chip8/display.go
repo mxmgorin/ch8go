@@ -4,7 +4,13 @@ import (
 	"math/bits"
 )
 
-const lowresScale = 2
+const (
+	Chip8Width  = 64
+	Chip8Height = 32
+	SChipWidth  = 128
+	SChipHeight = 64
+	lowresScale = SChipWidth / Chip8Width
+)
 
 type Display struct {
 	Planes        [4][]byte
@@ -53,12 +59,12 @@ func (d *Display) poll() bool {
 }
 
 func (d *Display) opPlane(x uint16) {
-	d.planeMask = int(x) // keep only lowest 2 bits
+	d.planeMask = int(x)
 }
 
 func (d *Display) setRes(hires bool) {
-	d.Width = 128
-	d.Height = 64
+	d.Width = SChipWidth
+	d.Height = SChipHeight
 	d.hires = hires
 	for i := range d.Planes {
 		d.Planes[i] = make([]byte, d.Width*d.Height)
@@ -87,8 +93,20 @@ func (d *Display) DrawSprite(
 
 	d.pendingVBlank = true
 	wrap = wrap || d.spriteWrap(int(x), int(y), width, height)
-	planeIdx := 0
+
+	baseX := int(x)
+	baseY := int(y)
+
+	// Precomputed masks (16 bits)
+	var bitMask = [...]uint16{
+		1 << 15, 1 << 14, 1 << 13, 1 << 12,
+		1 << 11, 1 << 10, 1 << 9, 1 << 8,
+		1 << 7, 1 << 6, 1 << 5, 1 << 4,
+		1 << 3, 1 << 2, 1 << 1, 1 << 0,
+	}
+
 	planeStride := height * bytesPerRow
+	planeIdx := 0
 
 	for pi := range d.Planes {
 		if d.isPlaneDisabled(pi) {
@@ -99,27 +117,22 @@ func (d *Display) DrawSprite(
 		planeIdx++
 
 		for row := range height {
-			// Read row bits (supports 1 or 2 bytes per row)
 			var rowBits uint16
 			if bytesPerRow == 1 {
-				rowBits = uint16(sprite[rowBase+row]) << 8 // align to MSB
-			} else { // 2 bytes per row
-				hi := sprite[rowBase+row*2]
-				lo := sprite[rowBase+row*2+1]
-				rowBits = uint16(hi)<<8 | uint16(lo)
+				rowBits = uint16(sprite[rowBase+row]) << 8
+			} else {
+				off := rowBase + row*2
+				rowBits = uint16(sprite[off])<<8 | uint16(sprite[off+1])
 			}
 
+			py := baseY + row
+
 			for col := range width {
-				if ((rowBits >> (15 - col)) & 1) == 0 {
+				if rowBits&bitMask[col] == 0 {
 					continue
 				}
 
-				if d.togglePixelScaled(
-					pi,
-					int(x)+col,
-					int(y)+row,
-					wrap,
-				) {
+				if d.togglePixelScaled(pi, baseX+col, py, wrap) {
 					collisions++
 				}
 			}
@@ -187,61 +200,27 @@ func (d *Display) ScrollDown(in byte, scale bool) {
 	if scale && !d.hires {
 		n *= lowresScale
 	}
-	h := d.Height
+
 	w := d.Width
+	h := d.Height
+	shift := n * w           // number of pixels to move downward
+	remain := (h - n) * w    // number of pixels that stay visible
 
 	for plane := range d.Planes {
 		if d.isPlaneDisabled(plane) {
 			continue
 		}
 
-		// Scroll from bottom upwards
-		for y := h - 1; y >= n; y-- {
-			copy(d.Planes[plane][y*w:y*w+w], d.Planes[plane][(y-n)*w:(y-n)*w+w])
-		}
-
-		// Clear new top rows
-		for y := range n {
-			for x := range w {
-				d.Planes[plane][y*w+x] = 0
-			}
-		}
+		pixels := d.Planes[plane]
+		// Move everything down using a single memmove
+        copy(pixels[shift:shift+remain], pixels[:remain])
+		// Clear top n rows
+		clear(pixels[:shift])
 	}
 }
 
 // schip
 func (d *Display) ScrollRight4(scale bool) {
-	d.dirty = true
-	w := d.Width
-	h := d.Height
-	n := 4
-	if scale && !d.hires {
-		n *= lowresScale
-	}
-
-	for plane := range d.Planes {
-		if d.isPlaneDisabled(plane) {
-			continue
-		}
-
-		for y := range h {
-
-			row := y * w
-
-			// scroll right
-			for x := w - 1; x >= n; x-- {
-				d.Planes[plane][row+x] = d.Planes[plane][row+(x-n)]
-			}
-
-			for x := range n {
-				d.Planes[plane][row+x] = 0
-			}
-		}
-	}
-}
-
-// schip
-func (d *Display) ScrollLeft4(scale bool) {
 	d.dirty = true
 	w := d.Width
 	h := d.Height
@@ -260,26 +239,51 @@ func (d *Display) ScrollLeft4(scale bool) {
 
 		for y := range h {
 			row := y * w
+			start := row
+			end := row + w
 
-			// shift left
-			for x := 0; x < w-n; x++ {
-				pixels[row+x] = pixels[row+(x+n)]
-			}
-
-			// clear rightmost n pixels
-			for x := w - n; x < w; x++ {
-				pixels[row+x] = 0
-			}
+			// Shift right: copy(src, dst) with overlap (safe: Go uses memmove)
+			copy(pixels[start+n:end], pixels[start:start+(w-n)])
+			// Clear leftmost n pixels
+			clear(pixels[start : start+n])
 		}
 	}
 }
+
+// schip
+func (d *Display) ScrollLeft4(scale bool) {
+	d.dirty = true
+	w := d.Width
+	h := d.Height
+	n := 4
+	if scale && !d.hires {
+		n *= lowresScale
+	}
+
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
+		}
+
+		pixels := d.Planes[plane]
+
+		for y := range h {
+			row := y * w
+
+			// scroll left using one copy
+			copy(pixels[row:row+w-n], pixels[row+n:row+w])
+			// clear rightmost n pixels
+			clear(pixels[row+w-n : row+w])
+		}
+	}
+}
+
 
 // xochip
 func (d *Display) ScrollUp(n int) {
 	if n <= 0 {
 		return
 	}
-
 	if !d.hires {
 		n *= lowresScale
 	}
@@ -288,25 +292,22 @@ func (d *Display) ScrollUp(n int) {
 	h := d.Height
 	d.dirty = true
 
+	scroll := n * w
+	remain := (h - n) * w
+
 	for plane := range d.Planes {
 		if d.isPlaneDisabled(plane) {
 			continue
 		}
 
-		// Move rows upward
-		for y := 0; y < h-n; y++ {
-			src := (y + n) * w
-			dst := y * w
-			copy(d.Planes[plane][dst:dst+w], d.Planes[plane][src:src+w])
-		}
-
-		// Clear bottom n rows
-		start := (h - n) * w
-		for i := start; i < len(d.Planes[plane]); i++ {
-			d.Planes[plane][i] = 0
-		}
+		pixels := d.Planes[plane]
+		// Move everything in one go
+		copy(pixels[:remain], pixels[scroll:scroll+remain])
+		// Clear bottom N rows
+		clear(pixels[remain:])
 	}
 }
+
 
 func (d *Display) isPlaneDisabled(plane int) bool {
 	return d.planeMask&(1<<plane) == 0
