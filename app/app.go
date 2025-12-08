@@ -192,12 +192,7 @@ func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 		palette := a.Palette.Pixels
 
 		for i := range size {
-			colorIdx := 0
-			for plane := range planes {
-				pixel := planes[plane][i]
-				colorIdx |= int(pixel) << plane
-			}
-
+			colorIdx := int(planes[0][i]) | int(planes[1][i])<<1 | int(planes[2][i])<<2 | int(planes[3][i])<<3
 			idx := i * bpp
 			copy(pixels[idx:idx+4], palette[colorIdx][:])
 		}
