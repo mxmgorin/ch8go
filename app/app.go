@@ -18,28 +18,28 @@ import (
 
 var DefaultPalette = Palette{
 	Pixels: [16]Color{
-		{0, 0, 0},       // #000000
-		{255, 255, 255}, // #FFFFFF
-		{170, 170, 170}, // #AAAAAA
-		{85, 85, 85},    // #555555
-		{255, 0, 0},     // #FF0000
-		{0, 255, 0},     // #00FF00
-		{0, 0, 255},     // #0000FF
-		{255, 255, 0},   // #FFFF00
-		{136, 0, 0},     // #880000
-		{0, 136, 0},     // #008800
-		{0, 0, 136},     // #000088
-		{136, 136, 0},   // #888800
-		{255, 0, 255},   // #FF00FF
-		{0, 255, 255},   // #00FFFF
-		{136, 0, 136},   // #880088
-		{0, 136, 136},   // #008888
+		{0, 0, 0, 255},       // #000000
+		{255, 255, 255, 255}, // #FFFFFF
+		{170, 170, 170, 255}, // #AAAAAA
+		{85, 85, 85, 255},    // #555555
+		{255, 0, 0, 255},     // #FF0000
+		{0, 255, 0, 255},     // #00FF00
+		{0, 0, 255, 255},     // #0000FF
+		{255, 255, 0, 255},   // #FFFF00
+		{136, 0, 0, 255},     // #880000
+		{0, 136, 0, 255},     // #008800
+		{0, 0, 136, 255},     // #000088
+		{136, 136, 0, 255},   // #888800
+		{255, 0, 255, 255},   // #FF00FF
+		{0, 255, 255, 255},   // #00FFFF
+		{136, 0, 136, 255},   // #880088
+		{0, 136, 136, 255},   // #008888
 	},
-	Buzzer:  Color{255, 255, 255},
-	Silence: Color{0, 0, 0},
+	Buzzer:  Color{255, 255, 255, 255},
+	Silence: Color{0, 0, 0, 255},
 }
 
-type Color [3]byte
+type Color [4]byte
 
 func (c Color) ToHex() string {
 	return fmt.Sprintf("#%02x%02x%02x", c[0], c[1], c[2])
@@ -192,12 +192,8 @@ func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 				colorIdx |= int(pixel) << plane
 			}
 
-			color := a.Palette.Pixels[colorIdx]
 			idx := i * a.frameBuffer.BPP
-			a.frameBuffer.Pixels[idx] = color[0]
-			a.frameBuffer.Pixels[idx+1] = color[1]
-			a.frameBuffer.Pixels[idx+2] = color[2]
-			a.frameBuffer.Pixels[idx+3] = 255
+			copy(a.frameBuffer.Pixels[idx:idx+4], a.Palette.Pixels[colorIdx][:])
 		}
 	}
 
@@ -335,5 +331,5 @@ func ParseHexColor(s string) (Color, error) {
 		return Color{}, err
 	}
 
-	return Color{byte(ri), byte(gi), byte(bi)}, nil
+	return Color{byte(ri), byte(gi), byte(bi), byte(255)}, nil
 }

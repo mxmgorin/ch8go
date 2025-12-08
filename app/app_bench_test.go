@@ -2,6 +2,8 @@ package app
 
 import (
 	"testing"
+
+	"github.com/mxmgorin/ch8go/chip8"
 )
 
 func BenchmarkRunFrame(b *testing.B) {
@@ -16,5 +18,18 @@ func BenchmarkRunFrame(b *testing.B) {
 
 	for b.Loop() {
 		app.RunFrameDT(dt)
+	}
+}
+
+func BenchmarkUpdateFrameBuffer(b *testing.B) {
+	fs := chip8.FrameState{
+		Dirty: true,
+	}
+	app, _ := NewApp()
+
+	b.ResetTimer()
+
+	for b.Loop() {
+		app.updateFrameBuffer(fs)
 	}
 }
