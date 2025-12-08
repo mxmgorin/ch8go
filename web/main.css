@@ -131,6 +131,12 @@ body {
     border-radius: 6px;
     cursor: pointer;
     width: 40px;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 .bezel-btn.pressed {
@@ -479,4 +485,28 @@ body {
     z-index: 50;
     text-overflow: ellipsis;
     box-shadow: inset 0 0 3px #0004;
+}
+
+#pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.9);
+    font-size: 40px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 0 4px #000000;
+    letter-spacing: 2px;
+}
+#pause-overlay {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+}
+#pause-overlay.active {
+    opacity: 1;
 }

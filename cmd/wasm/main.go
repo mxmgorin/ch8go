@@ -283,6 +283,7 @@ type WASM struct {
 	painter         CanvasPainter
 	conf            Conf
 	togglePauseIcon js.Value
+	pauseOverlay    js.Value
 	KeyChan         chan KeyEvent
 }
 
@@ -319,6 +320,7 @@ func newWASM() WASM {
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
 	// Pause, resume
+	pauseOverlay := js.Global().Get("document").Call("getElementById", "pause-overlay")
 	togglePauseIcon := doc.Call("getElementById", "toggle-pause-icon")
 	togglePauseBtn := doc.Call("getElementById", "toggle-pause-btn")
 	togglePauseBtn.Call("addEventListener", "click", js.FuncOf(togglePause))
@@ -336,6 +338,7 @@ func newWASM() WASM {
 		painter:         painter,
 		conf:            conf,
 		togglePauseIcon: togglePauseIcon,
+		pauseOverlay:    pauseOverlay,
 		KeyChan:         make(chan KeyEvent, 32),
 	}
 }
@@ -456,8 +459,10 @@ func togglePause(this js.Value, args []js.Value) any {
 	wasm.app.Paused = !wasm.app.Paused
 
 	if wasm.app.Paused {
+		wasm.pauseOverlay.Get("classList").Call("add", "active")
 		wasm.togglePauseIcon.Set("src", "play-icon.svg")
 	} else {
+		wasm.pauseOverlay.Get("classList").Call("remove", "active")
 		wasm.togglePauseIcon.Set("src", "pause-icon.svg")
 	}
 
