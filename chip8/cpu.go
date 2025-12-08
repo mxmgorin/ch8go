@@ -4,7 +4,7 @@ import (
 	"math/rand"
 )
 
-const OP_SIZE = 2
+const opSize = 2
 
 type CPU struct {
 	v      [16]byte

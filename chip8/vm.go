@@ -128,9 +128,9 @@ func (vm *VM) Peek(n int) []DisasmInfo {
 func (vm *VM) DisasmROM() []DisasmInfo {
 	start := ProgramStart
 	end := ProgramStart + vm.RomSize
-	results := make([]DisasmInfo, 0, vm.RomSize/OP_SIZE)
+	results := make([]DisasmInfo, 0, vm.RomSize/opSize)
 
-	for pc := uint16(start); pc < uint16(end); pc += OP_SIZE {
+	for pc := uint16(start); pc < uint16(end); pc += opSize {
 		op := vm.Memory.ReadU16(pc)
 		asm := Disasm(op)
 
