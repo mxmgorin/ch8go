@@ -192,10 +192,12 @@ func (a *App) LoadROM(rom []byte, ext string) (int, error) {
 	conf := a.ROMConf(meta, ext)
 	a.VM.SetConf(conf)
 
-	colors := meta.Colors
-	if colors != nil && colors.Pixels != nil {
-		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
-			slog.Error("Failed to set palette", "err", err)
+	if meta != nil {
+		colors := meta.Colors
+		if colors != nil && colors.Pixels != nil {
+			if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
+				slog.Error("Failed to set palette", "err", err)
+			}
 		}
 	}
 
