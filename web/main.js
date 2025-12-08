@@ -76,27 +76,24 @@ function setupKeyboard() {
   cells.forEach((cell) => {
     const key = cell.textContent.trim().toLowerCase();
 
-    // PRESS
     cell.addEventListener("pointerdown", (e) => {
       e.preventDefault();
 
-      cell.classList.add("pressed"); // <-- add animation class
+      cell.classList.add("pressed");
       window.dispatchEvent(new KeyboardEvent("keydown", { key }));
     });
 
-    // RELEASE
     cell.addEventListener("pointerup", (e) => {
       e.preventDefault();
 
-      cell.classList.remove("pressed"); // <-- remove animation class
+      cell.classList.remove("pressed");
       window.dispatchEvent(new KeyboardEvent("keyup", { key }));
     });
 
-    // Safety: pointer leaves key
     cell.addEventListener("pointerleave", (e) => {
       e.preventDefault();
 
-      cell.classList.remove("pressed"); // <-- also remove here
+      cell.classList.remove("pressed");
       window.dispatchEvent(new KeyboardEvent("keyup", { key }));
     });
   });
@@ -107,30 +104,28 @@ function setupButtons() {
 
   buttons.forEach((button) => {
     button.addEventListener("pointerdown", (e) => {
-      button.classList.add("pressed"); // <-- add animation class
+      button.classList.add("pressed");
     });
 
     button.addEventListener("pointerup", (e) => {
-      button.classList.remove("pressed"); // <-- remove animation class
+      button.classList.remove("pressed");
     });
 
     button.addEventListener("pointerleave", (e) => {
-      button.classList.remove("pressed"); // <-- also remove here
+      button.classList.remove("pressed");
     });
   });
 }
 
 // audio
-const audioDot = document.getElementById("audio-dot");
 const audioApi = 0;
 var audioCtx = null;
 var audioEnabled = false;
 var audioNode = null;
 const audioIconOn = document.getElementById("icon-audio-on");
 const audioIconOff = document.getElementById("icon-audio-off");
-const audioBtn = document.getElementById("audio");
 
-audioBtn.onclick = async () => {
+document.getElementById("audio").onclick = async () => {
   if (!audioCtx) {
     if (audioApi === 0) {
       await startAudioScriptProcessor();

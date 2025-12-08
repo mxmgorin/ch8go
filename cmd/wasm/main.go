@@ -147,7 +147,7 @@ func newColorPickers(doc js.Value, app *app.App) ColorPickers {
 		id := i
 		pickers[id].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 			color := pickers[id].Get("value").String()
-			app.SetColor(id, color)
+			app.Palette.SetColor(id, color)
 			return nil
 		}))
 	}

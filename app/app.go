@@ -51,6 +51,46 @@ type Palette struct {
 	Silence Color
 }
 
+func (a *Palette) SetColor(index int, hex string) error {
+	color, err := ParseHexColor(hex)
+
+	if err != nil {
+		return err
+	}
+
+	a.Pixels[index] = color
+
+	return nil
+}
+
+func NewPalette(colors []string, buzzer, silence string) (p Palette, e error) {
+	for i := 0; i < len(p.Pixels) && i < len(colors); i++ {
+		p.SetColor(i, colors[i])
+	}
+
+	if buzzer != "" {
+		color, err := ParseHexColor(buzzer)
+
+		if err != nil {
+			return p, err
+		}
+
+		p.Buzzer = color
+	}
+
+	if silence != "" {
+		color, err := ParseHexColor(silence)
+
+		if err != nil {
+			return p, err
+		}
+
+		p.Buzzer = color
+	}
+
+	return p, nil
+}
+
 type FrameBuffer struct {
 	Pixels     []byte
 	SoundColor Color
@@ -195,8 +235,11 @@ func (a *App) LoadROM(rom []byte, ext string) (int, error) {
 	if meta != nil {
 		colors := meta.Colors
 		if colors != nil && colors.Pixels != nil {
-			if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
+			p, err := NewPalette(colors.Pixels, colors.Buzzer, colors.Silence)
+			if err != nil {
 				slog.Error("Failed to set palette", "err", err)
+			} else {
+				a.Palette = p
 			}
 		}
 	}
@@ -237,13 +280,13 @@ func (a *App) ROMConf(meta *db.RomDto, ext string) chip8.PlatformConf {
 		return conf
 	}
 
-	for i := range meta.Platforms {
-		id := meta.Platforms[i]
+	for _, id := range meta.Platforms {
 		if id != "megachip8" { // not supported
 			platform := a.DB.FindPlatform(id)
 
 			if platform != nil {
-				quirks := chip8.Quirks{
+				slog.Info("Platform:", "id", id)
+				conf.Quirks = chip8.Quirks{
 					Shift:       platform.Quirks.Shift,
 					MemIncIByX:  platform.Quirks.MemoryIncrementByX,
 					MemLeaveI:   platform.Quirks.MemoryLeaveIUnchanged,
@@ -253,8 +296,6 @@ func (a *App) ROMConf(meta *db.RomDto, ext string) chip8.PlatformConf {
 					VFReset:     platform.Quirks.Logic,
 					ScaleScroll: platform.Quirks.ScaleScroll,
 				}
-				conf.Quirks = quirks
-				slog.Info("Quirks:", "platformID", platform.ID)
 
 				if platform.DefaultTickrate > 0 {
 					conf.Tickrate = platform.DefaultTickrate
@@ -270,48 +311,6 @@ func (a *App) ROMConf(meta *db.RomDto, ext string) chip8.PlatformConf {
 	}
 
 	return conf
-}
-
-func (a *App) SetColor(index int, hex string) error {
-	color, err := ParseHexColor(hex)
-
-	if err != nil {
-		return err
-	}
-
-	a.Palette.Pixels[index] = color
-
-	return nil
-}
-
-func (a *App) SetPalette(colors []string, buzzer, silence string) error {
-	for i := 0; i < len(a.Palette.Pixels) && i < len(colors); i++ {
-		a.SetColor(i, colors[i])
-	}
-
-	if buzzer != "" {
-		color, err := ParseHexColor(buzzer)
-
-		if err != nil {
-			return nil
-		}
-
-		a.Palette.Buzzer = color
-	}
-
-	if silence != "" {
-		color, err := ParseHexColor(silence)
-
-		if err != nil {
-			return nil
-		}
-
-		a.Palette.Buzzer = color
-	}
-
-	slog.Info("Palette:", "colors", colors, "buzzer", buzzer, "silence", silence)
-
-	return nil
 }
 
 func ParseHexColor(s string) (Color, error) {
