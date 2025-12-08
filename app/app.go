@@ -185,15 +185,21 @@ func (a *App) RunFrameDT(dt float64) *FrameBuffer {
 
 func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 	if frameState.Dirty {
-		for i := range a.VM.Display.Height * a.VM.Display.Width {
+		size := a.VM.Display.Height * a.VM.Display.Width
+		planes := a.VM.Display.Planes
+		bpp := a.frameBuffer.BPP
+		pixels := a.frameBuffer.Pixels
+		palette := a.Palette.Pixels
+
+		for i := range size {
 			colorIdx := 0
-			for plane := range a.VM.Display.Planes {
-				pixel := a.VM.Display.Planes[plane][i]
+			for plane := range planes {
+				pixel := planes[plane][i]
 				colorIdx |= int(pixel) << plane
 			}
 
-			idx := i * a.frameBuffer.BPP
-			copy(a.frameBuffer.Pixels[idx:idx+4], a.Palette.Pixels[colorIdx][:])
+			idx := i * bpp
+			copy(pixels[idx:idx+4], palette[colorIdx][:])
 		}
 	}
 
