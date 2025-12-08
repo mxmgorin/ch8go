@@ -24,28 +24,22 @@ type Display struct {
 
 func NewDisplay() Display {
 	d := Display{}
-	d.setRes(false)
+	d.opRes(false)
 	d.planeMask = 1
+	d.Width = SChipWidth
+	d.Height = SChipHeight
+
+	for i := range d.Planes {
+		d.Planes[i] = make([]byte, d.Width*d.Height)
+		clear(d.Planes[i])
+	}
+
 	return d
 }
 
-func (d *Display) Clear() {
-	for plane := range d.Planes {
-		if d.isPlaneDisabled(plane) {
-			continue
-		}
-
-		for i := range d.Planes[plane] {
-			d.Planes[plane][i] = 0
-		}
-	}
-
-	d.dirty = true
-}
-
 func (d *Display) Reset() {
-	d.Clear()
-	d.setRes(false)
+	d.opClear()
+	d.opRes(false)
 	d.pendingVBlank = false
 	d.planeMask = 1
 }
@@ -58,16 +52,30 @@ func (d *Display) poll() bool {
 	return result
 }
 
+func (d *Display) opClear() {
+	for plane := range d.Planes {
+		if d.isPlaneDisabled(plane) {
+			continue
+		}
+
+		for i := range d.Planes[plane] {
+			d.Planes[plane][i] = 0
+		}
+
+		clear(d.Planes[plane])
+	}
+
+	d.dirty = true
+}
+
 func (d *Display) opPlane(x uint16) {
 	d.planeMask = int(x)
 }
 
-func (d *Display) setRes(hires bool) {
-	d.Width = SChipWidth
-	d.Height = SChipHeight
+func (d *Display) opRes(hires bool) {
 	d.hires = hires
 	for i := range d.Planes {
-		d.Planes[i] = make([]byte, d.Width*d.Height)
+		clear(d.Planes[i])
 	}
 }
 
@@ -203,8 +211,8 @@ func (d *Display) ScrollDown(in byte, scale bool) {
 
 	w := d.Width
 	h := d.Height
-	shift := n * w           // number of pixels to move downward
-	remain := (h - n) * w    // number of pixels that stay visible
+	shift := n * w        // number of pixels to move downward
+	remain := (h - n) * w // number of pixels that stay visible
 
 	for plane := range d.Planes {
 		if d.isPlaneDisabled(plane) {
@@ -213,7 +221,7 @@ func (d *Display) ScrollDown(in byte, scale bool) {
 
 		pixels := d.Planes[plane]
 		// Move everything down using a single memmove
-        copy(pixels[shift:shift+remain], pixels[:remain])
+		copy(pixels[shift:shift+remain], pixels[:remain])
 		// Clear top n rows
 		clear(pixels[:shift])
 	}
@@ -278,7 +286,6 @@ func (d *Display) ScrollLeft4(scale bool) {
 	}
 }
 
-
 // xochip
 func (d *Display) ScrollUp(n int) {
 	if n <= 0 {
@@ -307,7 +314,6 @@ func (d *Display) ScrollUp(n int) {
 		clear(pixels[remain:])
 	}
 }
-
 
 func (d *Display) isPlaneDisabled(plane int) bool {
 	return d.planeMask&(1<<plane) == 0

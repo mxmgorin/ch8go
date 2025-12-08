@@ -57,7 +57,7 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	case 0x0000:
 		switch op & 0x00FF {
 		case 0xE0: // 00E0 - CLS
-			display.Clear()
+			display.opClear()
 
 		case 0xEE: // 00EE - RET
 			c.ret()
@@ -72,10 +72,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 			c.Reset()
 
 		case 0xFE: // 00FE - lowres schip
-			display.setRes(false)
+			display.opRes(false)
 
 		case 0xFF: // 00FF - hires schip
-			display.setRes(true)
+			display.opRes(true)
 
 		default:
 			// Special: 00CN (00C0 – 00CF)
