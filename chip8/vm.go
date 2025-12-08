@@ -2,8 +2,6 @@ package chip8
 
 import "fmt"
 
-var defaultPlatform = ConfByPlatform[PlatformSChip11]
-
 type FrameState struct {
 	Dirty bool
 	Beep  bool
@@ -24,19 +22,19 @@ type VM struct {
 
 func NewVM() *VM {
 	return &VM{
-		CPU:     NewCpu(defaultPlatform.Quirks),
+		CPU:     NewCpu(DefaultConf.Quirks),
 		Memory:  NewMemory(),
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
 		Audio:   NewAudio(),
 		timerHz: 60.0,
-		cpuHz:   defaultPlatform.CPUHz(),
+		cpuHz:   DefaultConf.CPUHz(),
 	}
 }
 
-func (vm *VM) ApplyConf(conf PlatformConf) {
+func (vm *VM) SetConf(conf PlatformConf) {
 	vm.SetQuirks(conf.Quirks)
-	vm.SetTickrate(conf.TickRate)
+	vm.SetTickrate(conf.Tickrate)
 	vm.Audio.SetMode(conf.AudioMode)
 }
 
@@ -60,8 +58,8 @@ func (vm *VM) Reset() {
 	vm.Keypad.Reset()
 	vm.CPU.Reset()
 	vm.Audio.Reset()
-	vm.cpuHz = defaultPlatform.CPUHz()
-	vm.CPU.Quirks = defaultPlatform.Quirks
+	vm.cpuHz = DefaultConf.CPUHz()
+	vm.CPU.Quirks = DefaultConf.Quirks
 }
 
 func (vm *VM) Step() {

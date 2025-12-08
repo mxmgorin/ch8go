@@ -98,7 +98,7 @@ func (cli *CLI) run() {
 			cli.dis()
 
 		case "info":
-			info := cli.app.ROMInfo()
+			info := cli.app.ROMMeta()
 			b, _ := json.MarshalIndent(info, "", "  ")
 			fmt.Println(string(b))
 

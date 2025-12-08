@@ -277,7 +277,7 @@ func (c *Conf) setQuirks(quirks chip8.Quirks) {
 }
 
 type WASM struct {
-	frameFunc       js.Func
+	runFrameFunc    js.Func
 	app             *app.App
 	colorPickers    ColorPickers
 	painter         CanvasPainter
@@ -329,11 +329,11 @@ func newWASM() WASM {
 	js.Global().Set("fillROMs", js.FuncOf(fillROMs))
 
 	// Animation loop (must persist function or GC will kill it)
-	frameFunc := js.FuncOf(frame)
+	runFrameFunc := js.FuncOf(runFrame)
 
 	return WASM{
 		app:             app,
-		frameFunc:       frameFunc,
+		runFrameFunc:    runFrameFunc,
 		colorPickers:    colorPickers,
 		painter:         painter,
 		conf:            conf,
@@ -344,12 +344,13 @@ func newWASM() WASM {
 }
 
 func (wasm *WASM) run() {
-	js.Global().Call("requestAnimationFrame", wasm.frameFunc)
+	js.Global().Call("requestAnimationFrame", wasm.runFrameFunc)
 	// Keep WASM alive
 	select {}
 }
 
-func setTooltip(text string) {
+func setROMInfo() {
+	text := wasm.app.ROMInfo()
 	doc := js.Global().Get("document")
 	info := doc.Call("getElementById", "info")
 	info.Call("setAttribute", "data-tip", text)
@@ -368,8 +369,7 @@ func loadROM(this js.Value, args []js.Value) any {
 	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
 	wasm.conf.setTickrate(wasm.app.VM.Tickrate())
 	wasm.conf.setQuirks(wasm.app.VM.CPU.Quirks)
-	desc := wasm.app.ROMDesc()
-	setTooltip(desc)
+	setROMInfo()
 
 	return nil
 }
@@ -424,12 +424,12 @@ func fillAudio(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func frame(this js.Value, args []js.Value) any {
+func runFrame(this js.Value, args []js.Value) any {
 	drainChan(wasm.KeyChan, handleKey)
 	fb := wasm.app.RunFrame()
 	wasm.painter.Paint(fb)
 	// Schedule next frame
-	js.Global().Call("requestAnimationFrame", wasm.frameFunc)
+	js.Global().Call("requestAnimationFrame", wasm.runFrameFunc)
 	return nil
 }
 

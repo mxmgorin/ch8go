@@ -188,19 +188,21 @@ func (a *App) LoadROM(rom []byte, ext string) (int, error) {
 		return 0, err
 	}
 
-	platform, ok := chip8.PlatformByExt[ext]
-	if ok {
-		conf, ok := chip8.ConfByPlatform[platform]
-		if ok {
-			a.VM.ApplyConf(conf)
+	meta := a.ROMMeta()
+	conf := a.ROMConf(meta, ext)
+	a.VM.SetConf(conf)
+
+	colors := meta.Colors
+	if colors != nil && colors.Pixels != nil {
+		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
+			slog.Error("Failed to set palette", "err", err)
 		}
 	}
-	a.applyROMconf()
 
 	return len, nil
 }
 
-func (a *App) ROMInfo() *db.RomDto {
+func (a *App) ROMMeta() *db.RomDto {
 	program := a.DB.FindProgram(a.ROMHash)
 	if program == nil {
 		return nil // Unknown ROM
@@ -210,7 +212,7 @@ func (a *App) ROMInfo() *db.RomDto {
 	return &rom
 }
 
-func (a *App) ROMDesc() string {
+func (a *App) ROMInfo() string {
 	program := a.DB.FindProgram(a.ROMHash)
 	if program == nil {
 		return "Unknown"
@@ -218,17 +220,23 @@ func (a *App) ROMDesc() string {
 	return program.Format()
 }
 
-func (a *App) applyROMconf() {
-	romInfo := a.ROMInfo()
-	if romInfo == nil {
-		slog.Info("Unknown ROM")
-		return
+func (a *App) ROMConf(meta *db.RomDto, ext string) chip8.PlatformConf {
+	conf := chip8.DefaultConf
+	platform, ok := chip8.PlatformByExt[ext]
+	if ok {
+		platConf, ok := chip8.ConfByPlatform[platform]
+		if ok {
+			conf = platConf
+		}
 	}
 
-	tickrate := 0
+	if meta == nil {
+		slog.Info("Unknown ROM")
+		return conf
+	}
 
-	for i := range romInfo.Platforms {
-		id := romInfo.Platforms[i]
+	for i := range meta.Platforms {
+		id := meta.Platforms[i]
 		if id != "megachip8" { // not supported
 			platform := a.DB.FindPlatform(id)
 
@@ -243,32 +251,23 @@ func (a *App) applyROMconf() {
 					VFReset:     platform.Quirks.Logic,
 					ScaleScroll: platform.Quirks.ScaleScroll,
 				}
-				a.VM.SetQuirks(quirks)
+				conf.Quirks = quirks
 				slog.Info("Quirks:", "platformID", platform.ID)
 
 				if platform.DefaultTickrate > 0 {
-					tickrate = platform.DefaultTickrate
+					conf.Tickrate = platform.DefaultTickrate
 				}
+
 				break
 			}
 		}
 	}
 
-	if romInfo.Tickrate > 0 {
-		tickrate = romInfo.Tickrate
+	if meta.Tickrate > 0 {
+		conf.Tickrate = meta.Tickrate
 	}
 
-	colors := romInfo.Colors
-	if colors != nil && colors.Pixels != nil {
-		if err := a.SetPalette(colors.Pixels, colors.Buzzer, colors.Silence); err != nil {
-			slog.Error("Failed to set palette", "err", err)
-		}
-	}
-
-	if tickrate > 0 {
-		a.VM.SetTickrate(tickrate)
-		slog.Info("Tickrate:", "val", tickrate)
-	}
+	return conf
 }
 
 func (a *App) SetColor(index int, hex string) error {
