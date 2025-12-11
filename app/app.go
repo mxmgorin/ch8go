@@ -259,7 +259,7 @@ func (a *App) ROMInfo() string {
 	if program == nil {
 		return "Unknown"
 	}
-	return program.Format()
+	return program.Info()
 }
 
 func (a *App) ROMConf(meta *db.RomDto, ext string) chip8.PlatformConf {

@@ -42,7 +42,7 @@ type ProgramDto struct {
 	ROMs        map[string]RomDto `json:"roms"`
 }
 
-func (p *ProgramDto) Format() string {
+func (p *ProgramDto) Info() string {
 	authors := strings.Join(p.Authors, ", ")
 
 	return fmt.Sprintf(
@@ -55,12 +55,24 @@ func (p *ProgramDto) Format() string {
 }
 
 type RomDto struct {
-	File          string        `json:"file"`
-	Platforms     []string      `json:"platforms"`
-	Description   string        `json:"description,omitempty"`
-	EmbeddedTitle string        `json:"embeddedTitle,omitempty"`
-	Tickrate      int           `json:"tickrate"`
-	Colors        *RomColorsDto `json:"colors,omitempty"`
+	File          string         `json:"file"`
+	Platforms     []string       `json:"platforms"`
+	Description   string         `json:"description,omitempty"`
+	EmbeddedTitle string         `json:"embeddedTitle,omitempty"`
+	Tickrate      int            `json:"tickrate"`
+	Colors        *RomColorsDto  `json:"colors,omitempty"`
+	Keys          map[string]int `json:"keys"`
+}
+
+func (r *RomDto) KeysInfo() (keys string) {
+	if len(r.Keys) > 0 {
+		var b strings.Builder
+		for k, v := range r.Keys {
+			fmt.Fprintf(&b, "%s: %d\n", k, v)
+		}
+		keys = fmt.Sprintf("Keys:\n%s\n", b.String())
+	}
+	return
 }
 
 type RomColorsDto struct {
