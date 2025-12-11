@@ -73,7 +73,7 @@ func (a *Audio) Beep() bool {
 	return a.st > 0
 }
 
-func (a *Audio) Output(out []float32, freq float64) {
+func (a *Audio) Output(out []float32, sampleRate float64) {
 	if !a.Beep() {
 		outputSilence(out)
 		return
@@ -81,9 +81,9 @@ func (a *Audio) Output(out []float32, freq float64) {
 
 	switch a.mode {
 	case AudioXOChip:
-		a.outputPattern(out, freq)
+		a.outputPattern(out, sampleRate)
 	case AudioChip8:
-		a.outputBeep(out, freq)
+		a.outputBeep(out, sampleRate)
 	}
 }
 
@@ -100,11 +100,11 @@ func (a *Audio) samplePattern(pos int) float32 {
 }
 
 // XO-HIP
-func (a *Audio) outputPattern(out []float32, freq float64) {
+func (a *Audio) outputPattern(out []float32, sampleRate float64) {
 	for i := range out {
 		pos := int(a.phase) & 128
 		out[i] = a.samplePattern(pos)
-		stepSize := calcPlaybackRate(float64(a.pitch)) / freq
+		stepSize := patternFreq(float64(a.pitch)) / sampleRate
 		a.phase += stepSize
 		if a.phase >= 128 {
 			a.phase -= 128
@@ -113,7 +113,7 @@ func (a *Audio) outputPattern(out []float32, freq float64) {
 }
 
 // Chip8
-func (a *Audio) outputBeep(out []float32, freq float64) {
+func (a *Audio) outputBeep(out []float32, sampleRate float64) {
 	for i := range out {
 		if a.phase < 1.0 {
 			out[i] = 1
@@ -121,7 +121,7 @@ func (a *Audio) outputBeep(out []float32, freq float64) {
 			out[i] = -1
 		}
 
-		stepSize := BeepFreq / freq
+		stepSize := BeepFreq / sampleRate
 		a.phase += stepSize
 		if a.phase >= 2 { // square wave period = 2
 			a.phase -= 2
@@ -136,6 +136,6 @@ func outputSilence(out []float32) {
 }
 
 // XOCHIP pattern formula: 4000*2^((vx-64)/48)
-func calcPlaybackRate(pitch float64) float64 {
+func patternFreq(pitch float64) float64 {
 	return 4000.0 * math.Pow(2.0, (pitch-64.0)/48.0)
 }

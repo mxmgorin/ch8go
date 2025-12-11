@@ -140,17 +140,16 @@ document.getElementById("audio").onclick = async () => {
 async function startAudioScriptProcessor() {
   const audioBufSize = 512;
   window.startAudio(audioBufSize);
-
   audioCtx = new AudioContext();
   await audioCtx.resume();
-  const audioFreq = audioCtx.sampleRate;
+  const sampleRate = audioCtx.sampleRate;
 
-  console.log("Audio sample rate:", audioFreq);
+  console.log("Audio sample rate:", sampleRate);
 
   audioNode = audioCtx.createScriptProcessor(audioBufSize, 0, 1);
   audioNode.onaudioprocess = (e) => {
     const out = e.outputBuffer.getChannelData(0);
-    window.fillAudio(out, audioFreq);
+    window.fillAudio(out, sampleRate);
   };
 }
 
@@ -158,16 +157,16 @@ async function startAudioWorklet() {
   const audioBufSize = 128;
   window.startAudio(audioBufSize);
   audioCtx = new AudioContext();
-  const audioFreq = audioCtx.sampleRate;
+  const sampleRate = audioCtx.sampleRate;
 
-  console.log("Audio sample rate:", audioFreq);
+  console.log("Audio sample rate:", sampleRate);
 
   await audioCtx.audioWorklet.addModule("audio-processor.js");
   audioNode = new AudioWorkletNode(audioCtx, "simple-processor");
 
   audioNode.port.onmessage = () => {
     const buf = new Float32Array(audioBufSize);
-    window.fillAudio(buf, audioFreq);
+    window.fillAudio(buf, sampleRate);
     audioNode.port.postMessage(buf);
   };
 }
