@@ -2,9 +2,11 @@ package app
 
 import (
 	"crypto/sha256"
+	"flag"
 	"fmt"
 	"image"
 	"image/png"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -139,7 +141,7 @@ type App struct {
 	ROMHash     string
 	Palette     Palette
 	Paused      bool
-	frameBuffer FrameBuffer
+	FrameBuffer FrameBuffer
 	lastTime    time.Time
 }
 
@@ -157,7 +159,7 @@ func NewApp() (*App, error) {
 	return &App{
 		DB:          db,
 		VM:          vm,
-		frameBuffer: newFrameBuffer(w, h, 4),
+		FrameBuffer: newFrameBuffer(w, h, 4),
 		lastTime:    time.Now(),
 		Palette:     DefaultPalette,
 	}, nil
@@ -180,15 +182,15 @@ func (a *App) RunFrameDT(dt float64) *FrameBuffer {
 		state := a.VM.RunFrame(dt)
 		a.updateFrameBuffer(state)
 	}
-	return &a.frameBuffer
+	return &a.FrameBuffer
 }
 
 func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 	if frameState.Dirty {
 		size := a.VM.Display.Height * a.VM.Display.Width
 		planes := a.VM.Display.Planes
-		bpp := a.frameBuffer.BPP
-		pixels := a.frameBuffer.Pixels
+		bpp := a.FrameBuffer.BPP
+		pixels := a.FrameBuffer.Pixels
 		palette := a.Palette.Pixels
 
 		for i := range size {
@@ -199,9 +201,9 @@ func (a *App) updateFrameBuffer(frameState chip8.FrameState) {
 	}
 
 	if frameState.Beep {
-		a.frameBuffer.SoundColor = a.Palette.Buzzer
+		a.FrameBuffer.SoundColor = a.Palette.Buzzer
 	} else {
-		a.frameBuffer.SoundColor = a.Palette.Silence
+		a.FrameBuffer.SoundColor = a.Palette.Silence
 	}
 }
 
@@ -333,4 +335,16 @@ func ParseHexColor(s string) (Color, error) {
 	}
 
 	return Color{byte(ri), byte(gi), byte(bi), byte(255)}, nil
+}
+
+func ParseFlags() (string, int) {
+	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
+	scale := flag.Int("scale", 12, "window scale")
+	flag.Parse()
+
+	if *romPath == "" {
+		log.Fatal("You must provide a ROM: --rom path/to/file.ch8")
+	}
+
+	return *romPath, *scale
 }

@@ -3,11 +3,8 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"log"
-	"os"
-	"path/filepath"
+	"log/slog"
 	"time"
 	"unsafe"
 
@@ -91,7 +88,7 @@ func (p *Sdl2Painter) Destroy() {
 }
 
 type Sdl2App struct {
-	app     *app.App
+	*app.App
 	painter *Sdl2Painter
 }
 
@@ -110,7 +107,7 @@ func NewSdl2App(scale int) (*Sdl2App, error) {
 		return nil, err
 	}
 
-	return &Sdl2App{app: app, painter: painter}, nil
+	return &Sdl2App{App: app, painter: painter}, nil
 }
 
 func (a *Sdl2App) Quit() {
@@ -118,10 +115,7 @@ func (a *Sdl2App) Quit() {
 	sdl.Quit()
 }
 
-func (a *Sdl2App) Run(rom []byte, ext string) error {
-	if _, err := a.app.LoadROM(rom, ext); err != nil {
-		return err
-	}
+func (a *Sdl2App) Run() error {
 	frameDelay := time.Second / 60 // target 60 FPS
 
 	running := true
@@ -136,14 +130,14 @@ func (a *Sdl2App) Run(rom []byte, ext string) error {
 			case *sdl.KeyboardEvent:
 				switch ev.Type {
 				case sdl.KEYDOWN:
-					handleKey(ev.Keysym.Sym, &a.app.VM.Keypad, true)
+					handleKey(ev.Keysym.Sym, &a.VM.Keypad, true)
 				case sdl.KEYUP:
-					handleKey(ev.Keysym.Sym, &a.app.VM.Keypad, false)
+					handleKey(ev.Keysym.Sym, &a.VM.Keypad, false)
 				}
 			}
 		}
 
-		fb := a.app.RunFrame()
+		fb := a.RunFrame()
 		a.painter.Paint(fb)
 
 		elapsed := time.Since(frameStart)
@@ -162,29 +156,20 @@ func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {
 }
 
 func main() {
-	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
-	scale := flag.Int("scale", 12, "window scale")
-	flag.Parse()
+	slog.Info("ch8go SDL2")
 
-	if *romPath == "" {
-		log.Fatal("You must provide a ROM: --rom path/to/file.ch8")
-	}
-
-	rom, err := os.ReadFile(*romPath)
+	romPath, scale := app.ParseFlags()
+	a, err := NewSdl2App(scale)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer a.Quit()
 
-	sdlApp, err := NewSdl2App(*scale)
-	if err != nil {
+	if _, err := a.ReadROM(romPath); err != nil {
 		log.Fatal(err)
 	}
-	defer sdlApp.Quit()
 
-	fmt.Println("ch8go SDL2")
-	fmt.Printf("ROM: %s\n", *romPath)
-
-	if err := sdlApp.Run(rom, filepath.Ext(*romPath)); err != nil {
+	if err := a.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
