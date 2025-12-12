@@ -148,10 +148,10 @@ func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypa
 	case 0xE000:
 		switch op & 0x00FF {
 		case 0x9E: // SKP Vx
-			c.skipNextIf(memory, keypad.IsPressed(c.v[read_x(op)]))
+			c.skipNextIf(memory, keypad.IsPressed(Key(c.v[read_x(op)])))
 
 		case 0xA1: // SKNP Vx
-			c.skipNextIf(memory, !keypad.IsPressed(c.v[read_x(op)]))
+			c.skipNextIf(memory, !keypad.IsPressed(Key(c.v[read_x(op)])))
 
 		default: // ignored
 		}

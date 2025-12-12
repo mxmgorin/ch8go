@@ -66,7 +66,7 @@ func TestQuirksSuperChipLegacy(t *testing.T) {
 	path := "../roms/test/timendus/5-quirks.ch8"
 	expectedHash := "b9a1bdffa9dd3ee96a97d45234f6dd79fbc80b269dae7f8ceab3a9ff8d50a083"
 
-	key := byte(0x2)
+	key := chip8.Key2
 	a := setup(t, path)
 	a.VM.SetQuirks(chip8.QuirksSChip11)
 
@@ -152,8 +152,8 @@ func TestKeypadDown(t *testing.T) {
 
 	pressAndReleaseKey(a, 0x1)
 
-	for i := range chip8.KEYS_COUNT {
-		a.VM.Keypad.Press(byte(i))
+	for key := range chip8.KeyCount {
+		a.VM.Keypad.Press(key)
 	}
 
 	runAndAssert(t, path, a, expectedHash)
@@ -168,8 +168,8 @@ func TestKeypadUp(t *testing.T) {
 
 	pressAndReleaseKey(a, 0x2)
 
-	for i := range chip8.KEYS_COUNT {
-		a.VM.Keypad.Press(byte(i))
+	for key := range chip8.KeyCount {
+		a.VM.Keypad.Press(key)
 	}
 
 	runAndAssert(t, path, a, expectedHash)
@@ -188,7 +188,7 @@ func TestKeypadGetkey(t *testing.T) {
 	runAndAssert(t, path, a, expectedHash)
 }
 
-func pressAndReleaseKey(app *App, key byte) {
+func pressAndReleaseKey(app *App, key chip8.Key) {
 	app.VM.Keypad.Press(key)
 
 	for range keyFrames {

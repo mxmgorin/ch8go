@@ -18,13 +18,13 @@ import (
 var (
 	audioBuf = make([]float32, 0)
 	wasm     WASM
-	keymap   = map[string]byte{
-		"1": 0x1, "2": 0x2, "3": 0x3, "4": 0xC,
-		"q": 0x4, "w": 0x5, "e": 0x6, "r": 0xD,
-		"a": 0x7, "s": 0x8, "d": 0x9, "f": 0xE,
-		"z": 0xA, "x": 0x0, "c": 0xB, "v": 0xF,
-		"ArrowUp": 0x5, "ArrowDown": 0x8, "ArrowLeft": 0x7, "ArrowRight": 0x9,
-		" ": 0x6,
+	keymap   = map[string]chip8.Key{
+		"1": chip8.Key1, "2": chip8.Key2, "3": chip8.Key3, "4": chip8.KeyC,
+		"q": chip8.Key4, "w": chip8.Key5, "e": chip8.Key6, "r": chip8.KeyD,
+		"a": chip8.Key7, "s": chip8.Key8, "d": chip8.Key9, "f": chip8.KeyE,
+		"z": chip8.KeyA, "x": chip8.Key0, "c": chip8.KeyB, "v": chip8.KeyF,
+		"ArrowUp": chip8.Key5, "ArrowDown": chip8.Key8, "ArrowLeft": chip8.Key7, "ArrowRight": chip8.Key9,
+		" ": chip8.Key6,
 	}
 	roms = []struct {
 		Path string
@@ -162,7 +162,7 @@ func (cp *ColorPickers) setColors(colors *[16]app.Color) {
 }
 
 type KeyEvent struct {
-	Key     byte
+	Key     chip8.Key
 	Pressed bool
 }
 

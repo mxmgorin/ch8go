@@ -13,26 +13,26 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-var keymap = map[sdl.Keycode]byte{
-	sdl.K_1: 0x1,
-	sdl.K_2: 0x2,
-	sdl.K_3: 0x3,
-	sdl.K_4: 0xC,
+var keymap = map[sdl.Keycode]chip8.Key{
+	sdl.K_1: chip8.Key1,
+	sdl.K_2: chip8.Key2,
+	sdl.K_3: chip8.Key3,
+	sdl.K_4: chip8.KeyC,
 
-	sdl.K_q: 0x4,
-	sdl.K_w: 0x5,
-	sdl.K_e: 0x6,
-	sdl.K_r: 0xD,
+	sdl.K_q: chip8.Key4,
+	sdl.K_w: chip8.Key5,
+	sdl.K_e: chip8.Key6,
+	sdl.K_r: chip8.KeyD,
 
-	sdl.K_a: 0x7,
-	sdl.K_s: 0x8,
-	sdl.K_d: 0x9,
-	sdl.K_f: 0xE,
+	sdl.K_a: chip8.Key7,
+	sdl.K_s: chip8.Key8,
+	sdl.K_d: chip8.Key9,
+	sdl.K_f: chip8.KeyE,
 
-	sdl.K_z: 0xA,
-	sdl.K_x: 0x0,
-	sdl.K_c: 0xB,
-	sdl.K_v: 0xF,
+	sdl.K_z: chip8.KeyA,
+	sdl.K_x: chip8.Key0,
+	sdl.K_c: chip8.KeyB,
+	sdl.K_v: chip8.KeyF,
 }
 
 type Sdl2Painter struct {

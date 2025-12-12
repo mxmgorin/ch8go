@@ -6,28 +6,29 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mxmgorin/ch8go/app"
+	"github.com/mxmgorin/ch8go/chip8"
 )
 
-var keymap = map[ebiten.Key]byte{
-	ebiten.Key1: 0x1,
-	ebiten.Key2: 0x2,
-	ebiten.Key3: 0x3,
-	ebiten.Key4: 0xC,
+var keymap = map[ebiten.Key]chip8.Key{
+	ebiten.Key1: chip8.Key1,
+	ebiten.Key2: chip8.Key2,
+	ebiten.Key3: chip8.Key3,
+	ebiten.Key4: chip8.KeyC,
 
-	ebiten.KeyQ: 0x4,
-	ebiten.KeyW: 0x5,
-	ebiten.KeyE: 0x6,
-	ebiten.KeyR: 0xD,
+	ebiten.KeyQ: chip8.Key4,
+	ebiten.KeyW: chip8.Key5,
+	ebiten.KeyE: chip8.Key6,
+	ebiten.KeyR: chip8.KeyD,
 
-	ebiten.KeyA: 0x7,
-	ebiten.KeyS: 0x8,
-	ebiten.KeyD: 0x9,
-	ebiten.KeyF: 0xE,
+	ebiten.KeyA: chip8.Key7,
+	ebiten.KeyS: chip8.Key8,
+	ebiten.KeyD: chip8.Key9,
+	ebiten.KeyF: chip8.KeyE,
 
-	ebiten.KeyZ: 0xA,
-	ebiten.KeyX: 0x0,
-	ebiten.KeyC: 0xB,
-	ebiten.KeyV: 0xF,
+	ebiten.KeyZ: chip8.KeyA,
+	ebiten.KeyX: chip8.Key0,
+	ebiten.KeyC: chip8.KeyB,
+	ebiten.KeyV: chip8.KeyF,
 }
 
 type EbitenApp struct {
