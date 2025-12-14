@@ -1,8 +1,14 @@
 package host
 
 import (
+	"bytes"
+	"errors"
 	"flag"
+	"image/png"
+	"os"
 	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -10,207 +16,207 @@ import (
 )
 
 const (
-	keyFrames = 120
-	runFrames = 500_00
+	keyFrames  = 120
+	runFrames  = 500_00
 	frameDelta = time.Second / 60
 )
 
 var (
-	outputPNG = flag.Bool("output-png", false, "write output PNG images")
-	roms      = map[string]string{
-		"../../testdata/roms/test/corax_test_opcode.ch8":     "663dc43daa22fa6450a29a4a799dee948b29d4f60699d1d1acf5907b030f0721",
-		"../../testdata/roms/test/timendus/1-chip8-logo.ch8": "120fbab26afb931a193082a3290f3606b70ca566625b9f1067041ca2b70deaa1",
-		"../../testdata/roms/test/timendus/2-ibm-logo.ch8":   "1bf96f46bc964efb0985aa88d8eeefe0229eb7c4d56ae1cd239caa9a5ea95c6c",
-		"../../testdata/roms/test/timendus/3-corax+.ch8":     "af252a64884c2b1bc6772ae5b837ffcba82e083e73a8b695cf2f44b54f9529b3",
-		"../../testdata/roms/test/timendus/4-flags.ch8":      "3ce4308fd0add55e5c84e036e13c2a25c3000f48120ca66d8003997a1fc77aa1",
-		"../../testdata/roms/test/octo/bigfont.ch8":          "8a633131f1ac58031af7e570a113bde9f32877de24e4dd60488fe93b2dd627e5",
-		"../../testdata/roms/test/octo/testbranch.ch8":       "4a28893ac197e80c0ef6342adc05a7ab95b4181b35e34da83da15ae3226e36aa",
-		"../../testdata/roms/test/octo/testcollide.ch8":      "8dbf0bfcdb3f64580b7f18c03ef4c332c1398accc7932e0d44e8837d0b4dd76f",
-		"../../testdata/roms/test/octo/testcompare.ch8":      "c0c45fbc3b5992cc12444ea91434f10376425822d2d5f00ff4ad198be3423178",
-		"../../testdata/roms/test/octo/testquirks.ch8":       "4cb4f8029afb553bdfd5cdf3f72cdff254ad8ce4c7835ae2e8ea089e830dd9fe",
-		"../../testdata/roms/test/octo/testunpack.ch8":       "1a8d5ef7e47564fbe9bebad4889881d47c597f94a654e8c58e339ad7ddaa1a23",
+	updateGolden = flag.Bool("update-golden", false, "write golden PNG images")
+	romPaths     = []string{
+		"../../testdata/roms/test/corax_test_opcode.ch8",
+		"../../testdata/roms/test/timendus/1-chip8-logo.ch8",
+		"../../testdata/roms/test/timendus/2-ibm-logo.ch8",
+		"../../testdata/roms/test/timendus/3-corax+.ch8",
+		"../../testdata/roms/test/timendus/4-flags.ch8",
+		"../../testdata/roms/test/octo/bigfont.ch8",
+		"../../testdata/roms/test/octo/testbranch.ch8",
+		"../../testdata/roms/test/octo/testcollide.ch8",
+		"../../testdata/roms/test/octo/testcompare.ch8",
+		"../../testdata/roms/test/octo/testquirks.ch8",
+		"../../testdata/roms/test/octo/testunpack.ch8",
 	}
 )
 
 func TestROMs(t *testing.T) {
-	for path, expectedHash := range roms {
+	for _, path := range romPaths {
 		t.Run(path, func(t *testing.T) {
-			runROM(t, path, expectedHash)
+			runROM(t, path, "")
 		})
 	}
 }
 
 func TestQuirksChip8(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/5-quirks.ch8"
-	expectedHash := "9d83cd2da005411781d9e52f6b1c805e3678711098d53fbf954431e204717ce4"
+	name := "chip8"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksChip8)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksChip8)
 
-	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(emu, 0x1)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func TestQuirksSuperChipModern(t *testing.T) {
+func TestQuirksSChipModern(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/5-quirks.ch8"
-	expectedHash := "2b8be7cfa57527e142a321d4b6643862a4de8534e45ae7933535c0451f70b429"
+	name := "schip-modern"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x2)
-	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(emu, 0x2)
+	pressAndReleaseKey(emu, 0x1)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func TestQuirksSuperChipLegacy(t *testing.T) {
+func TestQuirksSChipLegacy(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/5-quirks.ch8"
-	expectedHash := "b9a1bdffa9dd3ee96a97d45234f6dd79fbc80b269dae7f8ceab3a9ff8d50a083"
+	name := "schip-legacy"
 
 	key := chip8.Key2
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChip11)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChip11)
 
-	pressAndReleaseKey(a, key)
-	pressAndReleaseKey(a, key)
+	pressAndReleaseKey(emu, key)
+	pressAndReleaseKey(emu, key)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func TestScrollSuperChipLowresLegacy(t *testing.T) {
+func TestScrollSChipLowresLegacy(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/8-scrolling.ch8"
-	expectedHash := "b02eec5a6ea5042ab488f9d82ccc7262e5da140fcfaee870879f9e1fcb9ed6d5"
+	name := "schip-lowres-legacy"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChip11)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChip11)
 
-	pressAndReleaseKey(a, 0x1)
-	pressAndReleaseKey(a, 0x1)
-	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(emu, 0x1)
+	pressAndReleaseKey(emu, 0x1)
+	pressAndReleaseKey(emu, 0x2)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func TestScrollSuperChipLowresModern(t *testing.T) {
+func TestScrollSChipLowresModern(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/8-scrolling.ch8"
-	expectedHash := "b02eec5a6ea5042ab488f9d82ccc7262e5da140fcfaee870879f9e1fcb9ed6d5"
+	name := "schip-lowres-modern"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x1)
-	pressAndReleaseKey(a, 0x1)
-	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(emu, 0x1)
+	pressAndReleaseKey(emu, 0x1)
+	pressAndReleaseKey(emu, 0x1)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func TestScrollSuperChipHires(t *testing.T) {
+func TestScrollSChipHiresModern(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/8-scrolling.ch8"
-	expectedHash := "f61e02aacf428cf95fcffdca2b075606685136c627aa20ba694ad9e5cec01a8c"
+	name := "schip-hires-modern"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x1)
-	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(emu, 0x1)
+	pressAndReleaseKey(emu, 0x2)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
 func TestScrollXOChipLowres(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/8-scrolling.ch8"
-	expectedHash := "39e98e70eb0242da3b192accc245ff578e92edcbb359041bd05d4eb5ce7dfb05"
+	name := "xo-chip-lowres"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksXOChip)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksXOChip)
 
-	pressAndReleaseKey(a, 0x2)
-	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(emu, 0x2)
+	pressAndReleaseKey(emu, 0x1)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
 func TestScrollXOChipHires(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/8-scrolling.ch8"
-	expectedHash := "357150e48b9338011513aa5941de1c208cb1d76b3a8ebbea4ed76d7bef80c9c3"
+	name := "xo-chip-hires"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksXOChip)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksXOChip)
 
-	pressAndReleaseKey(a, 0x2)
-	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(emu, 0x2)
+	pressAndReleaseKey(emu, 0x2)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
 func TestKeypadDown(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/6-keypad.ch8"
-	expectedHash := "75bb2c1659813140beefccbf2b8c23b0dff0a58acaf006b13ab148397879f109"
+	name := "key-down"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x1)
+	pressAndReleaseKey(emu, 0x1)
 
 	for key := range chip8.KeyCount {
-		a.VM.Keypad.Press(key)
+		emu.VM.Keypad.Press(key)
 	}
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
 func TestKeypadUp(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/6-keypad.ch8"
-	expectedHash := "dfb2a361a04cb47336ab97509eef04b555940455018216ea98c485a3db17c6e0"
+	name := "key-up"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x2)
+	pressAndReleaseKey(emu, 0x2)
 
 	for key := range chip8.KeyCount {
-		a.VM.Keypad.Press(key)
+		emu.VM.Keypad.Press(key)
 	}
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
 func TestKeypadGetkey(t *testing.T) {
 	path := "../../testdata/roms/test/timendus/6-keypad.ch8"
-	expectedHash := "9bef3db51e363351faac792cffbce35477686bdb2679e7d03a6b8f5999d9ab20"
+	name := "get-key"
 
-	a := setup(t, path)
-	a.VM.SetQuirks(chip8.QuirksSChipModern)
+	emu := setup(t, path)
+	emu.VM.SetQuirks(chip8.QuirksSChipModern)
 
-	pressAndReleaseKey(a, 0x3)
-	pressAndReleaseKey(a, 0x3)
+	pressAndReleaseKey(emu, 0x3)
+	pressAndReleaseKey(emu, 0x3)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, name)
 }
 
-func pressAndReleaseKey(app *Emu, key chip8.Key) {
-	app.VM.Keypad.Press(key)
+func pressAndReleaseKey(emu *Emu, key chip8.Key) {
+	emu.VM.Keypad.Press(key)
 
 	for range keyFrames {
-		app.runFrame(frameDelta)
+		emu.runFrame(frameDelta)
 	}
 
-	app.VM.Keypad.Release(key)
+	emu.VM.Keypad.Release(key)
 
 	for range keyFrames {
-		app.runFrame(frameDelta)
+		emu.runFrame(frameDelta)
 	}
 }
 
-func runROM(t *testing.T, path, expectedHash string) {
+func runROM(t *testing.T, path, prefix string) {
 	t.Helper() // marks this as a test helper
 
-	a := setup(t, path)
+	emu := setup(t, path)
 
-	runAndAssert(t, path, a, expectedHash)
+	runAndAssert(t, path, emu, prefix)
 }
 
 func setup(t *testing.T, path string) *Emu {
@@ -228,31 +234,62 @@ func setup(t *testing.T, path string) *Emu {
 	return app
 }
 
-func runAndAssert(t *testing.T, path string, app *Emu, expected string) {
+func runAndAssert(t *testing.T, romPath string, emu *Emu, suffix string) {
 	t.Helper()
 
 	for range runFrames {
-		app.runFrame(frameDelta)
+		emu.runFrame(frameDelta)
 	}
 
-	fb := app.RunFrame()
-	actual := fb.Hash()
+	fb := emu.RunFrame()
 
-	if *outputPNG {
-		prefix := expected[:6]
-		out := filepath.Join(
-			"..",
-			"testdata",
-			"output",
-			filepath.Base(path)+"_"+prefix+".png",
-		)
-		if err := fb.SavePNG(out); err != nil {
+	goldenPath := goldenPath(romPath, suffix)
+
+	if *updateGolden {
+		if err := fb.SavePNG(goldenPath); err != nil {
 			t.Fatal(err)
 		}
 	}
 
-	if actual != expected {
-		t.Fatalf("hash mismatch for %s:\nexpected: %s\nactual: %s",
-			path, expected, actual)
+	want, err := os.ReadFile(goldenPath)
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	got, err := fb.PNG()
+	if err := comparePNG(got, want); err != nil {
+		t.Fatalf("framebuffer mismatch for %s: %v", romPath, err)
+	}
+}
+
+func comparePNG(emu, b []byte) error {
+	imgA, err := png.Decode(bytes.NewReader(emu))
+	if err != nil {
+		return err
+	}
+	imgB, err := png.Decode(bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+
+	if !reflect.DeepEqual(imgA, imgB) {
+		return errors.New("pixel mismatch")
+	}
+	return nil
+}
+
+func goldenPath(romPath, suffix string) string {
+	if suffix != "" {
+		suffix = "_" + suffix
+	}
+	base := filepath.Base(romPath)
+	filename := strings.TrimSuffix(base, filepath.Ext(base)) + suffix + ".png"
+	path := filepath.Join(
+		"..",
+		"..",
+		"testdata",
+		"golden",
+		filename,
+	)
+	return path
 }

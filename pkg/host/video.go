@@ -1,6 +1,7 @@
 package host
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"image"
@@ -109,25 +110,32 @@ func (fb *FrameBuffer) Hash() string {
 	return fmt.Sprintf("%x", sum[:])
 }
 
-func (fb *FrameBuffer) SavePNG(path string) error {
+func (fb *FrameBuffer) PNG() ([]byte, error) {
 	if fb.BPP != 4 {
-		return fmt.Errorf("expected BPP=4 (RGBA), got %d", fb.BPP)
+		return nil, fmt.Errorf("expected BPP=4 (RGBA), got %d", fb.BPP)
 	}
 
 	img := image.NewRGBA(image.Rect(0, 0, fb.Width, fb.Height))
-
-	// fb.Pixels is already RGBA ordered → safe direct copy
 	copy(img.Pix, fb.Pixels)
 
-	os.MkdirAll(filepath.Dir(path), 0755)
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
 
-	f, err := os.Create(path)
+func (fb *FrameBuffer) SavePNG(path string) error {
+	data, err := fb.PNG()
 	if err != nil {
 		return err
 	}
-	defer f.Close()
 
-	return png.Encode(f, img)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return err
+	}
+
+	return os.WriteFile(path, data, 0644)
 }
 
 func (fb *FrameBuffer) Update(state chip8.FrameState, pal *Palette, display *chip8.Display) {

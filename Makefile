@@ -10,12 +10,12 @@ bench:
 	go test ./pkg/host -run=^$$ -bench=. -count=1
 
 # Regenerate PNG output files for tests
-test-output:
-	go test ./pkg/host -run=. -bench=^$ -- -output-png
+test-update:
+	go test ./pkg/host -run=. -bench=^$ -- -update-golden
 
 # Remove generated PNG outputs
 test-clean:
-	rm -rf testdata/output/*
+	rm -rf testdata/golden/*
 
 # static analysis
 lint:
