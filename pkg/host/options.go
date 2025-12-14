@@ -5,14 +5,20 @@ import (
 	"fmt"
 )
 
-// Options contains command-line configuration used to run the emulator
-// on the host system.
+// Options contains command-line configuration used to run the emulator on the host system.
 type Options struct {
 	ROMPath string
 	Scale   int
 }
 
-// ParseOptions parses emulator-related command-line flags from args
+func (o *Options) ValidateROMPath() error {
+	if o.ROMPath == "" {
+		return fmt.Errorf("missing required --rom flag")
+	}
+	return nil
+}
+
+// ParseOptions parses emulator-related command-line flags from args.
 func ParseOptions(fs *flag.FlagSet, args []string) (Options, error) {
 	opts := Options{}
 
@@ -21,10 +27,6 @@ func ParseOptions(fs *flag.FlagSet, args []string) (Options, error) {
 
 	if err := fs.Parse(args); err != nil {
 		return opts, err
-	}
-
-	if opts.ROMPath == "" {
-		return opts, fmt.Errorf("missing required --rom flag")
 	}
 
 	return opts, nil

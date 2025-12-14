@@ -166,6 +166,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := opts.ValidateROMPath(); err != nil {
+		log.Fatal(err)
+	}
 
 	app, err := NewSdl2App(opts.Scale)
 	if err != nil {

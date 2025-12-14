@@ -86,6 +86,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err := opts.ValidateROMPath(); err != nil {
+		log.Fatal(err)
+	}
 
 	app, err := NewApp(opts.Scale)
 	if err != nil {
