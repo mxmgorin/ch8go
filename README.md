@@ -5,7 +5,7 @@
 
 <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/super-neat-boy.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/alien-inv8sion.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/octopeg-big.gif" width="30%">
 
-`ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP interpreter (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with good ROM compatibility.
+`ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP virtual machine (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with good ROM compatibility.
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
@@ -13,13 +13,13 @@
 
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **XO-CHIP Support**: Implements extended opcodes, four-plane graphics with 16 colors, and audio features.
+- **XO-CHIP Support**: Implements extended opcodes, four-plane graphics with 16 colors, and extended audio features.
 - **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
-- **High Accuracy**: Passes all Timendus and octo test ROMs and runs them with Go testing framework and CI to ensure regression-free development.
+- **High accuracy**: Fully passes Timendus and Octo test ROMs, with correctness validated against PNG golden files using the Go testing framework and continuous integration to prevent regressions.
 
 ## Controls
 
