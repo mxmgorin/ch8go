@@ -8,6 +8,10 @@ async function init() {
 
   go.run(result.instance);
 
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+
   await setupROMS();
   setupKeyboard();
   setupButtons();
