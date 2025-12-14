@@ -13,13 +13,13 @@ import (
 )
 
 type Emu struct {
-	VM          *chip8.VM
-	MetaDB      *db.MetaDB
-	ROMHash     string
-	Palette     Palette
-	Paused      bool
-	FrameBuffer FrameBuffer
-	lastTime    time.Time
+	VM            *chip8.VM
+	MetaDB        *db.MetaDB
+	ROMHash       string
+	Palette       Palette
+	Paused        bool
+	FrameBuffer   FrameBuffer
+	lastFrameTime time.Time
 }
 
 func NewEmu() (*Emu, error) {
@@ -33,32 +33,16 @@ func NewEmu() (*Emu, error) {
 	size := vm.Display.Size()
 
 	return &Emu{
-		MetaDB:      metaDB,
-		VM:          vm,
-		FrameBuffer: newFrameBuffer(size.Width, size.Height, 4),
-		lastTime:    time.Now(),
-		Palette:     DefaultPalette,
+		MetaDB:        metaDB,
+		VM:            vm,
+		FrameBuffer:   newFrameBuffer(size.Width, size.Height, 4),
+		lastFrameTime: time.Now(),
+		Palette:       DefaultPalette,
 	}, nil
 }
 
 func (e *Emu) Loaded() bool {
 	return e.ROMHash != ""
-}
-
-func (e *Emu) RunFrame() *FrameBuffer {
-	now := time.Now()
-	dt := now.Sub(e.lastTime).Seconds()
-	e.lastTime = now
-
-	return e.RunFrameDT(dt)
-}
-
-func (e *Emu) RunFrameDT(dt float64) *FrameBuffer {
-	if e.Loaded() && !e.Paused {
-		state := e.VM.RunFrame(dt)
-		e.FrameBuffer.Update(state, &e.Palette, &e.VM.Display)
-	}
-	return &e.FrameBuffer
 }
 
 func (e *Emu) ReadROM(path string) (int, error) {
@@ -158,6 +142,22 @@ func (e *Emu) ROMConf(meta *db.ROMMeta, ext string) chip8.PlatformConf {
 	}
 
 	return conf
+}
+
+func (e *Emu) RunFrame() *FrameBuffer {
+	now := time.Now()
+	frameDelta := now.Sub(e.lastFrameTime)
+	e.lastFrameTime = now
+
+	return e.runFrame(frameDelta)
+}
+
+func (e *Emu) runFrame(frameDelta time.Duration) *FrameBuffer {
+	if e.Loaded() && !e.Paused {
+		state := e.VM.RunFrame(frameDelta)
+		e.FrameBuffer.Update(state, &e.Palette, &e.VM.Display)
+	}
+	return &e.FrameBuffer
 }
 
 func ParseFlags() (string, int) {

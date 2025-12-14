@@ -4,6 +4,7 @@ import (
 	"flag"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/mxmgorin/ch8go/pkg/chip8"
 )
@@ -11,7 +12,7 @@ import (
 const (
 	keyFrames = 120
 	runFrames = 500_00
-	dt        = 1.0 / 60
+	frameDelta = time.Second / 60
 )
 
 var (
@@ -194,13 +195,13 @@ func pressAndReleaseKey(app *Emu, key chip8.Key) {
 	app.VM.Keypad.Press(key)
 
 	for range keyFrames {
-		app.RunFrameDT(dt)
+		app.runFrame(frameDelta)
 	}
 
 	app.VM.Keypad.Release(key)
 
 	for range keyFrames {
-		app.RunFrameDT(dt)
+		app.runFrame(frameDelta)
 	}
 }
 
@@ -231,7 +232,7 @@ func runAndAssert(t *testing.T, path string, app *Emu, expected string) {
 	t.Helper()
 
 	for range runFrames {
-		app.RunFrameDT(dt)
+		app.runFrame(frameDelta)
 	}
 
 	fb := app.RunFrame()

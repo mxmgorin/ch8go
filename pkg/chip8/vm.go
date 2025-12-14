@@ -1,6 +1,9 @@
 package chip8
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type FrameState struct {
 	Dirty bool
@@ -69,8 +72,9 @@ func (vm *VM) Step() {
 	}
 }
 
-func (vm *VM) RunFrame(dt float64) FrameState {
+func (vm *VM) RunFrame(frameDelta time.Duration) FrameState {
 	state := FrameState{}
+	dt := frameDelta.Seconds()
 	vm.cycleAccum += vm.cpuHz * dt
 
 	for vm.cycleAccum >= 1 {
