@@ -1,8 +1,6 @@
 package host
 
 import (
-	"flag"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -158,16 +156,4 @@ func (e *Emu) runFrame(frameDelta time.Duration) *FrameBuffer {
 		e.FrameBuffer.Update(state, &e.Palette, &e.VM.Display)
 	}
 	return &e.FrameBuffer
-}
-
-func ParseFlags() (string, int) {
-	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
-	scale := flag.Int("scale", 12, "window scale")
-	flag.Parse()
-
-	if *romPath == "" {
-		log.Fatal("You must provide a ROM: --rom path/to/file.ch8")
-	}
-
-	return *romPath, *scale
 }

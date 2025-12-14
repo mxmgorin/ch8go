@@ -1,8 +1,10 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/mxmgorin/ch8go/pkg/chip8"
@@ -79,18 +81,22 @@ func (a *App) Layout(outsideW, outsideH int) (int, int) {
 
 func main() {
 	slog.Info("ch8go ebiten")
-	romPath, scale := host.ParseFlags()
-
-	a, err := NewApp(scale)
+	fs := flag.NewFlagSet("ch8go", flag.ExitOnError)
+	opts, err := host.ParseOptions(fs, os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if _, err := a.ReadROM(romPath); err != nil {
+	app, err := NewApp(opts.Scale)
+	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := ebiten.RunGame(a); err != nil {
+	if _, err := app.ReadROM(opts.ROMPath); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := ebiten.RunGame(app); err != nil {
 		log.Fatal(err)
 	}
 }

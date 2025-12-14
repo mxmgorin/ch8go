@@ -3,8 +3,10 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"log/slog"
+	"os"
 	"time"
 	"unsafe"
 
@@ -159,18 +161,23 @@ func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {
 func main() {
 	slog.Info("ch8go SDL2")
 
-	romPath, scale := host.ParseFlags()
-	a, err := NewSdl2App(scale)
+	fs := flag.NewFlagSet("ch8go", flag.ExitOnError)
+	opts, err := host.ParseOptions(fs, os.Args[1:])
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer a.Quit()
 
-	if _, err := a.ReadROM(romPath); err != nil {
+	app, err := NewSdl2App(opts.Scale)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer app.Quit()
+
+	if _, err := app.ReadROM(opts.ROMPath); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := a.Run(); err != nil {
+	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
