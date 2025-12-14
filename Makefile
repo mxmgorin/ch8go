@@ -3,19 +3,19 @@
 
 # Run only tests (no benchmarks)
 test:
-	go test ./app -bench=^$
+	go test ./pkg/host -bench=^$
 
 # Run only benchmarks (no tests)
 bench:
-	go test ./app -run=^$$ -bench=. -count=1
+	go test ./pkg/host -run=^$$ -bench=. -count=1
 
 # Regenerate PNG output files for tests
 test-output:
-	go test ./app -run=. -bench=^$ -- -output-png
+	go test ./pkg/host -run=. -bench=^$ -- -output-png
 
 # Remove generated PNG outputs
 test-clean:
-	rm -rf app/testdata/output/*
+	rm -rf testdata/output/*
 
 # static analysis
 lint:

@@ -8,8 +8,8 @@ import (
 	"time"
 	"unsafe"
 
-	"github.com/mxmgorin/ch8go/app"
-	"github.com/mxmgorin/ch8go/chip8"
+	"github.com/mxmgorin/ch8go/pkg/chip8"
+	"github.com/mxmgorin/ch8go/pkg/host"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -35,14 +35,14 @@ var keymap = map[sdl.Keycode]chip8.Key{
 	sdl.K_v: chip8.KeyF,
 }
 
-type Sdl2Painter struct {
+type Painter struct {
 	window   *sdl.Window
 	texture  *sdl.Texture
 	renderer *sdl.Renderer
 	scale    int
 }
 
-func newPainter(width, height, scale int) (*Sdl2Painter, error) {
+func newPainter(width, height, scale int) (*Painter, error) {
 	window, err := sdl.CreateWindow("ch8go SDL2",
 		sdl.WINDOWPOS_CENTERED,
 		sdl.WINDOWPOS_CENTERED,
@@ -52,7 +52,7 @@ func newPainter(width, height, scale int) (*Sdl2Painter, error) {
 	if err != nil {
 		return nil, err
 	}
-	p := Sdl2Painter{}
+	p := Painter{}
 	p.window = window
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
@@ -74,48 +74,49 @@ func newPainter(width, height, scale int) (*Sdl2Painter, error) {
 	return &p, nil
 }
 
-func (p *Sdl2Painter) Paint(fb *app.FrameBuffer) {
+func (p *Painter) Paint(fb *host.FrameBuffer) {
 	p.texture.Update(nil, unsafe.Pointer(&fb.Pixels[0]), fb.Pitch())
 	p.renderer.Clear()
 	p.renderer.Copy(p.texture, nil, nil)
 	p.renderer.Present()
 }
 
-func (p *Sdl2Painter) Destroy() {
+func (p *Painter) Destroy() {
 	p.texture.Destroy()
 	p.renderer.Destroy()
 	p.window.Destroy()
 }
 
-type Sdl2App struct {
-	*app.App
-	painter *Sdl2Painter
+type App struct {
+	*host.Emu
+	painter *Painter
 }
 
-func NewSdl2App(scale int) (*Sdl2App, error) {
+func NewSdl2App(scale int) (*App, error) {
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
 		return nil, err
 	}
 
-	app, err := app.NewApp()
+	emu, err := host.NewEmu()
 	if err != nil {
 		return nil, err
 	}
 
-	painter, err := newPainter(app.VM.Display.Width, app.VM.Display.Height, 10)
+	size := emu.VM.Display.Size()
+	painter, err := newPainter(size.Width, size.Height, 10)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Sdl2App{App: app, painter: painter}, nil
+	return &App{Emu: emu, painter: painter}, nil
 }
 
-func (a *Sdl2App) Quit() {
+func (a *App) Quit() {
 	a.painter.Destroy()
 	sdl.Quit()
 }
 
-func (a *Sdl2App) Run() error {
+func (a *App) Run() error {
 	frameDelay := time.Second / 60 // target 60 FPS
 
 	running := true
@@ -158,7 +159,7 @@ func handleKey(key sdl.Keycode, keypad *chip8.Keypad, down bool) {
 func main() {
 	slog.Info("ch8go SDL2")
 
-	romPath, scale := app.ParseFlags()
+	romPath, scale := host.ParseFlags()
 	a, err := NewSdl2App(scale)
 	if err != nil {
 		log.Fatal(err)

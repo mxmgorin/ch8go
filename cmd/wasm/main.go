@@ -11,13 +11,13 @@ import (
 	"syscall/js"
 	"unsafe"
 
-	"github.com/mxmgorin/ch8go/app"
-	"github.com/mxmgorin/ch8go/chip8"
+	"github.com/mxmgorin/ch8go/pkg/chip8"
+	"github.com/mxmgorin/ch8go/pkg/host"
 )
 
 var (
 	audioBuf = make([]float32, 0)
-	wasm     WASM
+	app      App
 	keymap   = map[string]chip8.Key{
 		"1": chip8.Key1, "2": chip8.Key2, "3": chip8.Key3, "4": chip8.KeyC,
 		"q": chip8.Key4, "w": chip8.Key5, "e": chip8.Key6, "r": chip8.KeyD,
@@ -69,17 +69,17 @@ var (
 	}
 )
 
-type CanvasPainter struct {
+type Painter struct {
 	ctx           js.Value
 	imageData     js.Value
 	screen        js.Value
 	canvas        js.Value
-	screenBgColor *app.Color
+	screenBgColor *host.Color
 	width         int
 	height        int
 }
 
-func (p *CanvasPainter) setScreenBg(color app.Color) {
+func (p *Painter) setScreenBg(color host.Color) {
 	if p.screenBgColor == nil || *p.screenBgColor != color {
 		hex := color.ToHex()
 		p.screen.Get("style").Set("background", hex)
@@ -87,8 +87,8 @@ func (p *CanvasPainter) setScreenBg(color app.Color) {
 	}
 }
 
-func newPainter(w, h int) (CanvasPainter, error) {
-	p := CanvasPainter{}
+func newPainter(w, h int) (Painter, error) {
+	p := Painter{}
 	p.width = w
 	p.height = h
 	doc := js.Global().Get("document")
@@ -113,7 +113,7 @@ func newPainter(w, h int) (CanvasPainter, error) {
 	return p, nil
 }
 
-func (p *CanvasPainter) setScale(value string) {
+func (p *Painter) setScale(value string) {
 	scale, err := strconv.Atoi(value)
 	if err != nil {
 		slog.Error("Invalid scale:", "scale", value)
@@ -128,7 +128,7 @@ func (p *CanvasPainter) setScale(value string) {
 	screenStyle.Set("height", fmt.Sprintf("%dpx", p.height*scale))
 }
 
-func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
+func (p *Painter) Paint(fb *host.FrameBuffer) {
 	p.setScreenBg(fb.SoundColor)
 	js.CopyBytesToJS(p.imageData.Get("data"), fb.Pixels)
 	p.ctx.Call("putImageData", p.imageData, 0, 0)
@@ -136,7 +136,7 @@ func (p *CanvasPainter) Paint(fb *app.FrameBuffer) {
 
 type ColorPickers [4]js.Value
 
-func newColorPickers(doc js.Value, app *app.App) ColorPickers {
+func newColorPickers(doc js.Value, pal *host.Palette) ColorPickers {
 	pickers := ColorPickers{}
 	pickers[0] = doc.Call("getElementById", "bgPicker")
 	pickers[1] = doc.Call("getElementById", "fgPicker")
@@ -147,7 +147,7 @@ func newColorPickers(doc js.Value, app *app.App) ColorPickers {
 		id := i
 		pickers[id].Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 			color := pickers[id].Get("value").String()
-			app.Palette.SetColor(id, color)
+			pal.SetColor(id, color)
 			return nil
 		}))
 	}
@@ -155,7 +155,7 @@ func newColorPickers(doc js.Value, app *app.App) ColorPickers {
 	return pickers
 }
 
-func (cp *ColorPickers) setColors(colors *[16]app.Color) {
+func (cp *ColorPickers) setColors(colors *[16]host.Color) {
 	for i := range cp {
 		cp[i].Set("value", colors[i].ToHex())
 	}
@@ -166,20 +166,20 @@ type KeyEvent struct {
 	Pressed bool
 }
 
-type Conf struct {
+type ConfForm struct {
 	tickrateInput    js.Value
 	shiftInput       js.Value
 	incIByXInput     js.Value
 	leaveIInput      js.Value
 	wrapInput        js.Value
 	jumpInput        js.Value
-	vBlankWaitInput  js.Value
-	resetFInput      js.Value
+	waitVBlankInput  js.Value
+	resetFlagInput   js.Value
 	scaleScrollInput js.Value
 }
 
-func newConf(doc js.Value, app *app.App) Conf {
-	conf := Conf{}
+func newConf(doc js.Value, vm *chip8.VM) ConfForm {
+	conf := ConfForm{}
 
 	conf.tickrateInput = doc.Call("getElementById", "tickrateInput")
 	conf.tickrateInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
@@ -189,7 +189,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 			slog.Error("Invalid tickrate:", "tickrate", value)
 			return nil
 		}
-		app.VM.SetTickrate(tickrate)
+		vm.SetTickrate(tickrate)
 
 		return nil
 	}))
@@ -197,7 +197,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.shiftInput = doc.Call("getElementById", "shiftInput")
 	conf.shiftInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.shiftInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.Shift = value
+		vm.CPU.Quirks.Shift = value
 
 		return nil
 	}))
@@ -205,7 +205,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.wrapInput = doc.Call("getElementById", "wrapInput")
 	conf.wrapInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.wrapInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.Wrap = value
+		vm.CPU.Quirks.Wrap = value
 
 		return nil
 	}))
@@ -213,7 +213,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.incIByXInput = doc.Call("getElementById", "incIbyXInput")
 	conf.incIByXInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.incIByXInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.MemIncIByX = value
+		vm.CPU.Quirks.MemIncIByX = value
 
 		return nil
 	}))
@@ -221,7 +221,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.leaveIInput = doc.Call("getElementById", "leaveIInput")
 	conf.leaveIInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.leaveIInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.MemLeaveI = value
+		vm.CPU.Quirks.MemLeaveI = value
 
 		return nil
 	}))
@@ -229,23 +229,23 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.jumpInput = doc.Call("getElementById", "jumpInput")
 	conf.jumpInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.jumpInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.Jump = value
+		vm.CPU.Quirks.Jump = value
 
 		return nil
 	}))
 
-	conf.vBlankWaitInput = doc.Call("getElementById", "vblankInput")
-	conf.vBlankWaitInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		value := conf.vBlankWaitInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.VBlankWait = value
+	conf.waitVBlankInput = doc.Call("getElementById", "vblankInput")
+	conf.waitVBlankInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.waitVBlankInput.Get("checked").Bool()
+		vm.CPU.Quirks.WaitVBlank = value
 
 		return nil
 	}))
 
-	conf.resetFInput = doc.Call("getElementById", "resetFInput")
-	conf.resetFInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
-		value := conf.resetFInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.VFReset = value
+	conf.resetFlagInput = doc.Call("getElementById", "resetFInput")
+	conf.resetFlagInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
+		value := conf.resetFlagInput.Get("checked").Bool()
+		vm.CPU.Quirks.ResetFlag = value
 
 		return nil
 	}))
@@ -253,7 +253,7 @@ func newConf(doc js.Value, app *app.App) Conf {
 	conf.scaleScrollInput = doc.Call("getElementById", "scaleScrollInput")
 	conf.scaleScrollInput.Call("addEventListener", "input", js.FuncOf(func(this js.Value, args []js.Value) any {
 		value := conf.scaleScrollInput.Get("checked").Bool()
-		app.VM.CPU.Quirks.ScaleScroll = value
+		vm.CPU.Quirks.ScaleScroll = value
 
 		return nil
 	}))
@@ -261,41 +261,40 @@ func newConf(doc js.Value, app *app.App) Conf {
 	return conf
 }
 
-func (c *Conf) setTickrate(tr int) {
+func (c *ConfForm) setTickrate(tr int) {
 	c.tickrateInput.Set("value", tr)
 }
 
-func (c *Conf) setQuirks(quirks chip8.Quirks) {
+func (c *ConfForm) setQuirks(quirks chip8.Quirks) {
 	c.shiftInput.Set("checked", js.ValueOf(quirks.Shift))
 	c.wrapInput.Set("checked", js.ValueOf(quirks.Wrap))
 	c.incIByXInput.Set("checked", js.ValueOf(quirks.MemIncIByX))
 	c.leaveIInput.Set("checked", js.ValueOf(quirks.MemLeaveI))
 	c.jumpInput.Set("checked", js.ValueOf(quirks.Jump))
-	c.vBlankWaitInput.Set("checked", js.ValueOf(quirks.VBlankWait))
-	c.resetFInput.Set("checked", js.ValueOf(quirks.VFReset))
+	c.waitVBlankInput.Set("checked", js.ValueOf(quirks.WaitVBlank))
+	c.resetFlagInput.Set("checked", js.ValueOf(quirks.ResetFlag))
 	c.scaleScrollInput.Set("checked", js.ValueOf(quirks.ScaleScroll))
 }
 
-type WASM struct {
+type App struct {
 	runFrameFunc    js.Func
-	app             *app.App
+	emu             *host.Emu
 	colorPickers    ColorPickers
-	painter         CanvasPainter
-	conf            Conf
+	painter         Painter
+	confForm        ConfForm
 	togglePauseIcon js.Value
 	pauseOverlay    js.Value
-	KeyChan         chan KeyEvent
+	keyChan         chan KeyEvent
 }
 
-func newWASM() WASM {
-	app, err := app.NewApp()
-
+func newApp() App {
+	emu, err := host.NewEmu()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	painter, err := newPainter(app.VM.Display.Width, app.VM.Display.Height)
-
+	size := emu.VM.Display.Size()
+	painter, err := newPainter(size.Width, size.Height)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -310,10 +309,10 @@ func newWASM() WASM {
 
 	// Palette
 	doc := js.Global().Get("document")
-	colorPickers := newColorPickers(doc, app)
+	colorPickers := newColorPickers(doc, &emu.Palette)
 
 	// Conf
-	conf := newConf(doc, app)
+	conf := newConf(doc, emu.VM)
 
 	// Audio
 	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
@@ -331,26 +330,28 @@ func newWASM() WASM {
 	// Animation loop (must persist function or GC will kill it)
 	runFrameFunc := js.FuncOf(runFrame)
 
-	return WASM{
-		app:             app,
+	return App{
+		emu:             emu,
 		runFrameFunc:    runFrameFunc,
 		colorPickers:    colorPickers,
 		painter:         painter,
-		conf:            conf,
+		confForm:        conf,
 		togglePauseIcon: togglePauseIcon,
 		pauseOverlay:    pauseOverlay,
-		KeyChan:         make(chan KeyEvent, 32),
+		keyChan:         make(chan KeyEvent, 32),
 	}
 }
 
-func (wasm *WASM) run() {
-	js.Global().Call("requestAnimationFrame", wasm.runFrameFunc)
+// Run main loop
+func (a *App) run() {
+	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
 	// Keep WASM alive
 	select {}
 }
 
+// Set ROM info in overlay
 func setROMInfo() {
-	text := wasm.app.ROMInfo()
+	text := app.emu.ROMInfo()
 	doc := js.Global().Get("document")
 	info := doc.Call("getElementById", "info-overlay")
 	info.Set("innerHTML", text)
@@ -361,14 +362,14 @@ func loadROM(this js.Value, args []js.Value) any {
 	name := args[1].String()
 	buf := make([]byte, jsBuff.Length())
 	js.CopyBytesToGo(buf, jsBuff)
-	_, err := wasm.app.LoadROM(buf, filepath.Ext(name))
+	_, err := app.emu.LoadROM(buf, filepath.Ext(name))
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	wasm.colorPickers.setColors(&wasm.app.Palette.Pixels)
-	wasm.conf.setTickrate(wasm.app.VM.Tickrate())
-	wasm.conf.setQuirks(wasm.app.VM.CPU.Quirks)
+	app.colorPickers.setColors(&app.emu.Palette.Pixels)
+	app.confForm.setTickrate(app.emu.VM.Tickrate())
+	app.confForm.setQuirks(app.emu.VM.CPU.Quirks)
 	setROMInfo()
 
 	return nil
@@ -395,7 +396,7 @@ func onKey(event js.Value, pressed bool) any {
 
 	key := event.Get("key").String()
 	if k, ok := keymap[key]; ok {
-		wasm.KeyChan <- KeyEvent{Key: k, Pressed: pressed}
+		app.keyChan <- KeyEvent{Key: k, Pressed: pressed}
 		event.Call("preventDefault")
 	}
 	return nil
@@ -410,7 +411,7 @@ func startAudio(this js.Value, args []js.Value) any {
 func fillAudio(this js.Value, args []js.Value) any {
 	out := args[0] // JS Float32Array
 	freq := args[1].Float()
-	wasm.app.VM.Audio.Output(audioBuf, freq)
+	app.emu.VM.Audio.Output(audioBuf, freq)
 
 	outBuffer := js.Global().Get("Uint8Array").New(
 		out.Get("buffer"),
@@ -425,19 +426,19 @@ func fillAudio(this js.Value, args []js.Value) any {
 }
 
 func runFrame(this js.Value, args []js.Value) any {
-	drainChan(wasm.KeyChan, handleKey)
-	fb := wasm.app.RunFrame()
-	wasm.painter.Paint(fb)
+	drainChan(app.keyChan, handleKey)
+	fb := app.emu.RunFrame()
+	app.painter.Paint(fb)
 	// Schedule next frame
-	js.Global().Call("requestAnimationFrame", wasm.runFrameFunc)
+	js.Global().Call("requestAnimationFrame", app.runFrameFunc)
 	return nil
 }
 
 func handleKey(evt KeyEvent) {
 	if evt.Pressed {
-		wasm.app.VM.Keypad.Press(evt.Key)
+		app.emu.VM.Keypad.Press(evt.Key)
 	} else {
-		wasm.app.VM.Keypad.Release(evt.Key)
+		app.emu.VM.Keypad.Release(evt.Key)
 	}
 }
 
@@ -456,14 +457,14 @@ func fillROMs(this js.Value, args []js.Value) any {
 }
 
 func togglePause(this js.Value, args []js.Value) any {
-	wasm.app.Paused = !wasm.app.Paused
+	app.emu.Paused = !app.emu.Paused
 
-	if wasm.app.Paused {
-		wasm.pauseOverlay.Get("classList").Call("add", "active")
-		wasm.togglePauseIcon.Set("src", "play-icon.svg")
+	if app.emu.Paused {
+		app.pauseOverlay.Get("classList").Call("add", "active")
+		app.togglePauseIcon.Set("src", "play-icon.svg")
 	} else {
-		wasm.pauseOverlay.Get("classList").Call("remove", "active")
-		wasm.togglePauseIcon.Set("src", "pause-icon.svg")
+		app.pauseOverlay.Get("classList").Call("remove", "active")
+		app.togglePauseIcon.Set("src", "pause-icon.svg")
 	}
 
 	return nil
@@ -482,6 +483,6 @@ func drainChan[T any](ch <-chan T, fn func(T)) {
 
 func main() {
 	slog.Info("ch8go WASM")
-	wasm = newWASM()
-	wasm.run()
+	app = newApp()
+	app.run()
 }

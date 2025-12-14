@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mxmgorin/ch8go/app"
-	"github.com/mxmgorin/ch8go/chip8"
+	"github.com/mxmgorin/ch8go/pkg/chip8"
+	"github.com/mxmgorin/ch8go/pkg/host"
 )
 
 type ASCIIPainter struct{}
 
-func (p *ASCIIPainter) Paint(fb *app.FrameBuffer) {
+func (p *ASCIIPainter) Paint(fb *host.FrameBuffer) {
 	const (
 		on  = "██"
 		off = "░░"
@@ -48,12 +48,12 @@ func (p *ASCIIPainter) Paint(fb *app.FrameBuffer) {
 }
 
 type CLI struct {
-	app     *app.App
+	app     *host.Emu
 	painter ASCIIPainter
 }
 
 func newCLI() CLI {
-	a, _ := app.NewApp()
+	a, _ := host.NewEmu()
 	return CLI{app: a, painter: ASCIIPainter{}}
 }
 
@@ -127,7 +127,7 @@ func (cli *CLI) regs() {
 		return
 	}
 
-	fmt.Println(chip8.DebugRegisters(&cli.app.VM.CPU))
+	fmt.Println(chip8.RegistersString(&cli.app.VM.CPU))
 	fmt.Println()
 }
 
@@ -207,7 +207,7 @@ func (cli *CLI) dis() {
 }
 
 func (cli *CLI) noROM() bool {
-	if !cli.app.HasROM() {
+	if !cli.app.Loaded() {
 		fmt.Println("No ROM. Use 'load <file>' first.")
 		fmt.Println()
 		return true

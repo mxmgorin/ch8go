@@ -5,8 +5,8 @@ import (
 	"log/slog"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/mxmgorin/ch8go/app"
-	"github.com/mxmgorin/ch8go/chip8"
+	"github.com/mxmgorin/ch8go/pkg/chip8"
+	"github.com/mxmgorin/ch8go/pkg/host"
 )
 
 var keymap = map[ebiten.Key]chip8.Key{
@@ -31,33 +31,32 @@ var keymap = map[ebiten.Key]chip8.Key{
 	ebiten.KeyV: chip8.KeyF,
 }
 
-type EbitenApp struct {
-	*app.App
+type App struct {
+	*host.Emu
 	scale int
 }
 
-func NewApp(scale int) (*EbitenApp, error) {
-	base, err := app.NewApp()
+func NewApp(scale int) (*App, error) {
+	base, err := host.NewEmu()
 	if err != nil {
 		return nil, err
 	}
-	w := base.VM.Display.Width
-	h := base.VM.Display.Height
+	size := base.VM.Display.Size()
 
-	ebiten.SetWindowSize(w*scale, h*scale)
+	ebiten.SetWindowSize(size.Width*scale, size.Height*scale)
 	ebiten.SetWindowTitle("ch8go ebiten")
 
-	return &EbitenApp{
-		App:   base,
+	return &App{
+		Emu:   base,
 		scale: scale,
 	}, nil
 }
 
-func (a *EbitenApp) Draw(screen *ebiten.Image) {
+func (a *App) Draw(screen *ebiten.Image) {
 	screen.WritePixels(a.FrameBuffer.Pixels)
 }
 
-func (a *EbitenApp) handleInput() {
+func (a *App) handleInput() {
 	for k, v := range keymap {
 		if ebiten.IsKeyPressed(k) {
 			a.VM.Keypad.Press(v)
@@ -67,19 +66,20 @@ func (a *EbitenApp) handleInput() {
 	}
 }
 
-func (a *EbitenApp) Update() error {
+func (a *App) Update() error {
 	a.handleInput()
 	a.RunFrame()
 	return nil
 }
 
-func (a *EbitenApp) Layout(outsideW, outsideH int) (int, int) {
-	return a.VM.Display.Width, a.VM.Display.Height
+func (a *App) Layout(outsideW, outsideH int) (int, int) {
+	size := a.VM.Display.Size()
+	return size.Width, size.Height
 }
 
 func main() {
 	slog.Info("ch8go ebiten")
-	romPath, scale := app.ParseFlags()
+	romPath, scale := host.ParseFlags()
 
 	a, err := NewApp(scale)
 	if err != nil {
