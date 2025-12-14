@@ -262,8 +262,8 @@ func runAndAssert(t *testing.T, romPath string, emu *Emu, suffix string) {
 	}
 }
 
-func comparePNG(emu, b []byte) error {
-	imgA, err := png.Decode(bytes.NewReader(emu))
+func comparePNG(a, b []byte) error {
+	imgA, err := png.Decode(bytes.NewReader(a))
 	if err != nil {
 		return err
 	}
