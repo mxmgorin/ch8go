@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/web/favicon.ico" width="22"> ch8go
+# <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/web/icons/favicon.ico" width="22"> ch8go
 
 [![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mxmgorin/ch8go)](https://goreportcard.com/report/github.com/mxmgorin/ch8go)
@@ -19,7 +19,7 @@
 - **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
-- **WASM Frontend**: Runs directly in the browser using WebAssembly.
+- **WASM Frontend**: Runs directly in the browser using WebAssembly installable as PWA.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
 - **High accuracy**: Passes all Timendus and Octo test ROMs, executed via `go test` and validated using golden files and continuous integration ([details](https://github.com/mxmgorin/ch8go/wiki/Testing)).
 
