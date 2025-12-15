@@ -18,9 +18,10 @@
 - **XO-CHIP Support**: Implements extended opcodes, four-plane graphics with 16 colors, and extended audio features.
 - **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling.
 - **Auto Configuration**: Automatically applies the proper quirks, tickrate and colors for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
-- **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly installable as PWA.
+- **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
+- **Ebiten Frontend**: Runs natively using Ebiten, offering a lightweight, cross-platform, pure-Go graphical frontend with no external runtime dependencies.
 - **High accuracy**: Passes all Timendus and Octo test ROMs, executed via `go test` and validated using golden files and continuous integration ([details](https://github.com/mxmgorin/ch8go/wiki/Testing)).
 
 ## Controls
