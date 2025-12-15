@@ -461,10 +461,10 @@ func togglePause(this js.Value, args []js.Value) any {
 
 	if app.emu.Paused {
 		app.pauseOverlay.Get("classList").Call("add", "active")
-		app.togglePauseIcon.Set("src", "play-icon.svg")
+		app.togglePauseIcon.Set("src", "./icons/play-icon.svg")
 	} else {
 		app.pauseOverlay.Get("classList").Call("remove", "active")
-		app.togglePauseIcon.Set("src", "pause-icon.svg")
+		app.togglePauseIcon.Set("src", "./icons/pause-icon.svg")
 	}
 
 	return nil
