@@ -10,6 +10,12 @@ import (
 	"github.com/mxmgorin/ch8go/pkg/db"
 )
 
+// Emu represents a host-level emulator instance.
+//
+// It binds a CHIP-8 virtual machine to host-provided services such as
+// metadata lookup, palette configuration, and framebuffer management.
+// Emu owns execution control state (pause, timing) but does not contain
+// core emulation logic.
 type Emu struct {
 	VM            *chip8.VM
 	MetaDB        *db.MetaDB

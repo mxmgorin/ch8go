@@ -47,6 +47,7 @@ var fontSets = [240]byte{
 	0xFE, 0x66, 0x62, 0x64, 0x7C, 0x64, 0x60, 0x60, 0xF0, 0x00, // F
 }
 
+// Memory represents the CHIP-8 address space.
 type Memory struct {
 	bytes [MemorySize]byte
 }

@@ -5,11 +5,22 @@ import (
 	"time"
 )
 
+const (
+	// Timer decrements at 60 Hz independent of CPU frequency.
+	TimerHz = 60
+)
+
 type FrameState struct {
 	Dirty bool
 	Beep  bool
 }
 
+// VM represents a complete CHIP-8 virtual machine instance.
+//
+// It aggregates all core subsystems required for execution, including
+// CPU, memory, display, input, and audio. A VM instance owns its internal
+// timing state and is responsible for coordinating CPU execution and
+// timer updates.
 type VM struct {
 	CPU        CPU
 	Memory     Memory
@@ -18,7 +29,6 @@ type VM struct {
 	Audio      Audio
 	romSize    int
 	cpuHz      float64
-	timerHz    float64
 	cycleAccum float64
 	timerAccum float64
 }
@@ -30,7 +40,6 @@ func NewVM() *VM {
 		Display: NewDisplay(),
 		Keypad:  NewKeypad(),
 		Audio:   NewAudio(),
-		timerHz: 60.0,
 		cpuHz:   DefaultConf.CPUHz(),
 	}
 }
@@ -68,7 +77,7 @@ func (vm *VM) Reset() {
 func (vm *VM) Step() {
 	if !vm.Display.pendingVBlank || !vm.CPU.Quirks.WaitVBlank {
 		opcode := vm.CPU.fetch(&vm.Memory)
-		vm.CPU.execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad, &vm.Audio)
+		vm.CPU.Execute(opcode, &vm.Memory, &vm.Display, &vm.Keypad, &vm.Audio)
 	}
 }
 
@@ -82,7 +91,7 @@ func (vm *VM) RunFrame(frameDelta time.Duration) FrameState {
 		vm.Step()
 	}
 
-	vm.timerAccum += vm.timerHz * dt
+	vm.timerAccum += TimerHz * dt
 
 	for vm.timerAccum >= 1 {
 		vm.timerAccum -= 1

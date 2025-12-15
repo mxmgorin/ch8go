@@ -19,7 +19,14 @@ func (s Size) Area() int {
 	return s.Width * s.Height
 }
 
+// Display represents the CHIP-8 / XO-CHIP video state.
+//
+// It maintains one or more bitplanes, the active resolution mode,
+// and internal flags used to coordinate drawing and vertical blanking.
+// The Display type contains no rendering or host-specific output logic.
 type Display struct {
+	// Planes contains the video bitplanes.
+	// CHIP-8 uses a single plane; XO-CHIP supports up to four planes.
 	Planes        [4][]byte
 	size          Size
 	dirty         bool

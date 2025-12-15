@@ -13,12 +13,29 @@ const (
 	AudioXOChip                  // XO-Chip 16-byte pattern
 )
 
+// Audio represents the CHIP-8 / XO-CHIP sound generator state.
+//
+// It models the programmable audio pattern, pitch, and playback
+// position used by the virtual machine. The Audio type contains
+// no host-specific audio output logic and is controlled by the sound timer.
 type Audio struct {
-	pattern [16]byte // 128 bits
-	pitch   byte     // default in xochip is 64 meaning 4000 Hz
-	st      byte
-	phase   float64 // position inside pattern
-	mode    AudioMode
+	// pattern is a 128-bit (16-byte) audio pattern buffer.
+	// Each bit represents one step of the waveform.
+	pattern [16]byte
+
+	// pitch controls the playback frequency of the pattern.
+	// In XO-CHIP, the default value is 64, corresponding to 4000 Hz.
+	pitch byte
+
+	// st is the sound timer. While ST > 0, audio playback is active.
+	st byte
+
+	// phase represents the current playback position within the pattern.
+	// It is expressed as a fractional index to allow sub-step advancement.
+	phase float64
+
+	// mode selects the active audio mode (e.g. CHIP-8 or XO-CHIP).
+	mode AudioMode
 }
 
 func NewAudio() Audio {

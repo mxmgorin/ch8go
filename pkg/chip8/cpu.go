@@ -6,6 +6,7 @@ import (
 
 const opSize = 2
 
+// CPU represents the CHIP-8 processor state.
 type CPU struct {
 	v      [16]byte
 	i      uint16
@@ -52,7 +53,11 @@ func (c *CPU) fetch(memory *Memory) uint16 {
 	return opcode
 }
 
-func (c *CPU) execute(op uint16, memory *Memory, display *Display, keypad *Keypad, audio *Audio) {
+// Execute executes a single instruction.
+//
+// It fetches the opcode at PC, decodes it, executes it,
+// and updates timers as specified by the specification.
+func (c *CPU) Execute(op uint16, memory *Memory, display *Display, keypad *Keypad, audio *Audio) {
 	switch op & 0xF000 {
 	case 0x0000:
 		switch op & 0x00FF {
