@@ -6,11 +6,14 @@ import (
 
 const BeepFreq = 440.0 // or 400.0
 
+// AudioMode selects the active sound generation model.
 type AudioMode int
 
 const (
-	AudioChip8  AudioMode = iota // normal square wave (CHIP-8 default)
-	AudioXOChip                  // XO-Chip 16-byte pattern
+	// AudioChip8 uses the classic CHIP-8 square wave sound.
+	AudioChip8 AudioMode = iota
+	// AudioXOChip uses the XO-CHIP programmable 16-byte audio pattern.
+	AudioXOChip
 )
 
 // Audio represents the CHIP-8 / XO-CHIP sound generator state.
