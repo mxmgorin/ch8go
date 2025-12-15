@@ -19,7 +19,7 @@
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **WASM Frontend**: Runs directly in the browser using WebAssembly.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
-- **High accuracy**: Fully passes Timendus and Octo test ROMs, with correctness validated against PNG golden files using the Go testing framework and continuous integration to prevent regressions.
+- **High accuracy**: Passes all Timendus and Octo test ROMs, executed via `go test` and validated using golden files and continuous integration ([details](https://github.com/mxmgorin/ch8go/wiki/Testing)).
 
 ## Controls
 
