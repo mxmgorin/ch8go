@@ -7,7 +7,7 @@
 
 `ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP virtual machine (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with broad ROM compatibility.
 
-*Documentation and design notes are available in the [wiki](https://github.com/mxmgorin/ch8go/wiki).*
+*More about CHIP-8 and design notes are available in the [wiki](https://github.com/mxmgorin/ch8go/wiki).*
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
