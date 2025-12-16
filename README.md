@@ -16,7 +16,7 @@
 - **CHIP-8 Support**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP Support**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
 - **XO-CHIP Support**: Implements extended opcodes, four-plane graphics with 16 colors, and extended audio features.
-- **Quirks Support**: Implements all common CHIP-8, SCHIP, XO-CHIP quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling ([details](https://github.com/mxmgorin/ch8go/wiki/CHIP%E2%80%908-System#instruction-quirks)).
+- **Quirks Support**: Implements all common quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling ([details](https://github.com/mxmgorin/ch8go/wiki/CHIP%E2%80%908-System#quirks)).
 - **Ease of Use**: No manual setup required — quirks, tick rate, and color palette are automatically configured for each ROM using a built-in [metadata database](https://github.com/chip-8/chip-8-database)
 - **WASM Frontend**: Runs directly in the browser using WebAssembly and is installable as PWA.
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
