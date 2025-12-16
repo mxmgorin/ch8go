@@ -21,7 +21,7 @@
 - **WASM Frontend**: Runs directly in the browser using WebAssembly installable as PWA.
 - **CLI Frontend**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **SDL2 Frontend**: Runs natively using hardware-accelerated graphics.
-- **Ebiten Frontend**: Runs natively using Ebiten, offering a lightweight, cross-platform, pure-Go graphical frontend with no external runtime dependencies.
+- **Ebiten Frontend**: Runs natively using pure-Go graphical library with no external runtime dependencies.
 - **High accuracy**: Passes all Timendus and Octo test ROMs, executed via `go test` and validated using golden files and continuous integration ([details](https://github.com/mxmgorin/ch8go/wiki/Testing)).
 
 ## Controls
