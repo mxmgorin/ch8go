@@ -89,3 +89,11 @@ Useful resources for CHIP-8 development:
 - [CHIP-8 Database](https://github.com/chip-8/chip-8-database)
 - [CHIP-8 Archive](https://johnearnest.github.io/chip8Archive/)
 - [Awesome CHIP-8](https://github.com/tobiasvl/awesome-chip-8)
+
+## Acknowledgements
+
+This project is made possible by the work and documentation of the community:
+- The original CHIP-8, SUPER-CHIP, and XO-CHIP specifications and their authors, as listed in References section
+- Game authors, including participants of [Octo Jam](https://johnearnest.github.io/chip8Archive/), for making their work publicly available
+- Test ROM authors, [Timendus](https://github.com/Timendus/chip8-test-suite) and the [Octo](https://github.com/JohnEarnest/Octo) project
+- The Go, WebAssembly, Ebiten, and SDL ecosystems for providing robust tooling and libraries 
