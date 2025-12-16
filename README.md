@@ -7,7 +7,7 @@
 
 `ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP virtual machine (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with broad ROM compatibility.
 
-*More about CHIP-8 and design notes are available in the [wiki](https://github.com/mxmgorin/ch8go/wiki).*
+*More information about CHIP-8 and the project design is available in the [wiki](https://github.com/mxmgorin/ch8go/wiki)*
 
 🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
 
@@ -19,16 +19,16 @@
 ## Frontends
 
 - **WASM**: Runs directly in the browser using WebAssembly and is installable as PWA.
-- **CLI**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 - **SDL2**: Runs natively using hardware-accelerated graphics.
 - **Ebiten**: Runs natively using pure-Go graphical library with no external runtime dependencies.
+- **CLI**: Runs headless with an interactive REPL/debugger, built-in disassembler, and ASCII display renderer.
 
 ## Emulation Core
 
 - **CHIP-8**: Implements all 35 standard opcodes, including timers, stack, and registers.
 - **SUPER-CHIP**: Implements extended opcodes, high-resolution mode, 16×16 sprites, scrolling, and additional font.
-- **XO-CHIP**: Implements extended opcodes, four-plane graphics with 16 colors, and extended audio features.
-- **Quirks**: Implements all common quirks — shift behavior, jump offsets, VF reset, screen clipping, memory increment behavior, VBlank waiting, half scrolling ([details](https://github.com/mxmgorin/ch8go/wiki/CHIP%E2%80%908-System#quirks)).
+- **XO-CHIP**: Implements extended opcodes, four-plane graphics with 16 colors, and extended audio.
+- **Quirks**: Implements all common quirks — shift behavior, jump offsets, VF reset, screen clipping, memory behavior, VBlank waiting, half scrolling ([details](https://github.com/mxmgorin/ch8go/wiki/CHIP%E2%80%908-System#quirks)).
 
 ## Controls
 
