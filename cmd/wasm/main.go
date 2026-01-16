@@ -37,7 +37,7 @@ type App struct {
 	emu             *host.Emu
 	colorPickers    ColorPickers
 	painter         Painter
-	ConfOverlay        ConfOverlay
+	ConfOverlay     ConfOverlay
 	togglePauseIcon js.Value
 	pauseOverlay    js.Value
 	keyChan         chan KeyEvent
@@ -91,7 +91,7 @@ func newApp() App {
 		runFrameFunc:    runFrameFunc,
 		colorPickers:    colorPickers,
 		painter:         painter,
-		ConfOverlay:        conf,
+		ConfOverlay:     conf,
 		togglePauseIcon: togglePauseIcon,
 		pauseOverlay:    pauseOverlay,
 		keyChan:         make(chan KeyEvent, 32),
