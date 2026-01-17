@@ -2,7 +2,11 @@
 
 package main
 
-import "syscall/js"
+import (
+	"log/slog"
+	"path/filepath"
+	"syscall/js"
+)
 
 type Rom struct {
 	Path string
@@ -48,7 +52,7 @@ var Roms = []Rom{
 	{"roms/xo/alien-inv8sion.ch8", "Alien Inv8sion (Timendus)"},
 }
 
-func fillROMs(this js.Value, args []js.Value) any {
+func populateROMs(this js.Value, args []js.Value) any {
 	selectEl := js.Global().Get("document").Call("getElementById", "roms")
 	selectEl.Set("innerHTML", "")
 
@@ -58,6 +62,32 @@ func fillROMs(this js.Value, args []js.Value) any {
 		opt.Set("textContent", r.Name)
 		selectEl.Call("appendChild", opt)
 	}
+
+	return nil
+}
+
+// Set ROM info in overlay
+func setROMInfo() {
+	text := app.emu.ROMInfo()
+	doc := js.Global().Get("document")
+	info := doc.Call("getElementById", "info-overlay")
+	info.Set("innerHTML", text)
+}
+
+func loadROM(this js.Value, args []js.Value) any {
+	jsBuff := args[0]
+	name := args[1].String()
+	buf := make([]byte, jsBuff.Length())
+	js.CopyBytesToGo(buf, jsBuff)
+	_, err := app.emu.LoadROM(buf, filepath.Ext(name))
+	if err != nil {
+		slog.Error("Failed to LoadROM", "err", err)
+	}
+
+	app.palettePicker.setColors(&app.emu.Palette.Pixels)
+	app.ConfOverlay.setTickrate(app.emu.VM.Tickrate())
+	app.ConfOverlay.setQuirks(app.emu.VM.CPU.Quirks)
+	setROMInfo()
 
 	return nil
 }

@@ -4,8 +4,8 @@ package main
 
 import (
 	"log/slog"
-	"syscall/js"
 	"strconv"
+	"syscall/js"
 
 	"github.com/mxmgorin/ch8go/pkg/chip8"
 )
@@ -22,7 +22,7 @@ type ConfOverlay struct {
 	scaleScrollInput js.Value
 }
 
-func newConf(doc js.Value, vm *chip8.VM) ConfOverlay {
+func newConfOverlay(doc js.Value, vm *chip8.VM) ConfOverlay {
 	conf := ConfOverlay{}
 
 	conf.tickrateInput = doc.Call("getElementById", "tickrateInput")

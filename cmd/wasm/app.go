@@ -3,21 +3,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"path/filepath"
 	"syscall/js"
-	"unsafe"
 
 	"github.com/mxmgorin/ch8go/pkg/host"
 )
 
-var audioBuf = make([]float32, 0)
-
 type App struct {
 	runFrameFunc    js.Func
 	emu             *host.Emu
-	colorPickers    PalettePicker
+	palettePicker   PalettePicker
 	painter         Painter
 	ConfOverlay     ConfOverlay
 	togglePauseIcon js.Value
@@ -31,53 +26,51 @@ func newApp() App {
 		log.Fatal(err)
 	}
 
-	size := emu.VM.Display.Size()
-	painter, err := newPainter(size.Width, size.Height)
+	displaySize := emu.VM.Display.Size()
+	painter, err := newPainter(displaySize.Width, displaySize.Height)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Export ROM loader
 	js.Global().Set("chip8_loadROM", js.FuncOf(loadROM))
+	// ROMs select
+	js.Global().Set("fillROMs", js.FuncOf(populateROMs))
 
-	// Handle keyboard
 	win := js.Global().Get("window")
+	// Handle keyboard
 	win.Call("addEventListener", "keydown", js.FuncOf(onKeyDown))
 	win.Call("addEventListener", "keyup", js.FuncOf(onKeyUp))
 
-	// Palette
 	doc := js.Global().Get("document")
-	colorPickers := newPalettePicker(doc, &emu.Palette)
-
-	// Conf
-	conf := newConf(doc, emu.VM)
+	palettePicker := newPalettePicker(doc, &emu.Palette)
+	confOverlay := newConfOverlay(doc, emu.VM)
 
 	// Audio
-	js.Global().Set("fillAudio", js.FuncOf(fillAudio))
+	js.Global().Set("fillAudio", js.FuncOf(outputAudio))
 	js.Global().Set("startAudio", js.FuncOf(startAudio))
 
 	// Pause, resume
 	pauseOverlay := js.Global().Get("document").Call("getElementById", "pause-overlay")
 	togglePauseIcon := doc.Call("getElementById", "toggle-pause-icon")
-	togglePauseBtn := doc.Call("getElementById", "toggle-pause-btn")
-	togglePauseBtn.Call("addEventListener", "click", js.FuncOf(togglePause))
 
-	// Roms
-	js.Global().Set("fillROMs", js.FuncOf(fillROMs))
-
-	// Animation loop (must persist function or GC will kill it)
-	runFrameFunc := js.FuncOf(runFrame)
-
-	return App{
+	a := App{
 		emu:             emu,
-		runFrameFunc:    runFrameFunc,
-		colorPickers:    colorPickers,
+		palettePicker:   palettePicker,
 		painter:         painter,
-		ConfOverlay:     conf,
+		ConfOverlay:     confOverlay,
 		togglePauseIcon: togglePauseIcon,
 		pauseOverlay:    pauseOverlay,
 		keyChan:         make(chan KeyEvent, 32),
 	}
+
+	togglePauseBtn := doc.Call("getElementById", "toggle-pause-btn")
+	togglePauseBtn.Call("addEventListener", "click", js.FuncOf(a.togglePause))
+
+	// Animation loop (must persist function or GC will kill it)
+	a.runFrameFunc = js.FuncOf(a.runFrame)
+
+	return a
 }
 
 // Run main loop
@@ -87,73 +80,24 @@ func (a *App) run() {
 	select {}
 }
 
-// Set ROM info in overlay
-func setROMInfo() {
-	text := app.emu.ROMInfo()
-	doc := js.Global().Get("document")
-	info := doc.Call("getElementById", "info-overlay")
-	info.Set("innerHTML", text)
-}
-
-func loadROM(this js.Value, args []js.Value) any {
-	jsBuff := args[0]
-	name := args[1].String()
-	buf := make([]byte, jsBuff.Length())
-	js.CopyBytesToGo(buf, jsBuff)
-	_, err := app.emu.LoadROM(buf, filepath.Ext(name))
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	app.colorPickers.setColors(&app.emu.Palette.Pixels)
-	app.ConfOverlay.setTickrate(app.emu.VM.Tickrate())
-	app.ConfOverlay.setQuirks(app.emu.VM.CPU.Quirks)
-	setROMInfo()
-
-	return nil
-}
-
-func startAudio(this js.Value, args []js.Value) any {
-	size := args[0].Int()
-	audioBuf = make([]float32, size)
-	return nil
-}
-
-func fillAudio(this js.Value, args []js.Value) any {
-	out := args[0] // JS Float32Array
-	freq := args[1].Float()
-	app.emu.VM.Audio.Output(audioBuf, freq)
-
-	outBuffer := js.Global().Get("Uint8Array").New(
-		out.Get("buffer"),
-		out.Get("byteOffset"),
-		out.Get("byteLength"),
-	)
-	bufPointer := unsafe.Pointer(&audioBuf[0])
-	byteBuf := unsafe.Slice((*byte)(bufPointer), len(audioBuf)*4)
-	js.CopyBytesToJS(outBuffer, byteBuf)
-
-	return nil
-}
-
-func runFrame(this js.Value, args []js.Value) any {
-	drainChan(app.keyChan, handleKey)
-	fb := app.emu.RunFrame()
-	app.painter.Paint(fb)
+func (a *App) runFrame(this js.Value, args []js.Value) any {
+	drainChan(a.keyChan, handleKey)
+	fb := a.emu.RunFrame()
+	a.painter.Paint(fb)
 	// Schedule next frame
-	js.Global().Call("requestAnimationFrame", app.runFrameFunc)
+	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
 	return nil
 }
 
-func togglePause(this js.Value, args []js.Value) any {
-	app.emu.Paused = !app.emu.Paused
+func (a *App) togglePause(this js.Value, args []js.Value) any {
+	a.emu.Paused = !a.emu.Paused
 
-	if app.emu.Paused {
-		app.pauseOverlay.Get("classList").Call("add", "active")
-		app.togglePauseIcon.Set("src", "./icons/play-icon.svg")
+	if a.emu.Paused {
+		a.pauseOverlay.Get("classList").Call("add", "active")
+		a.togglePauseIcon.Set("src", "./icons/play-icon.svg")
 	} else {
-		app.pauseOverlay.Get("classList").Call("remove", "active")
-		app.togglePauseIcon.Set("src", "./icons/pause-icon.svg")
+		a.pauseOverlay.Get("classList").Call("remove", "active")
+		a.togglePauseIcon.Set("src", "./icons/pause-icon.svg")
 	}
 
 	return nil
