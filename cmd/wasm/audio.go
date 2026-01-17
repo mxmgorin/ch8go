@@ -12,12 +12,14 @@ import (
 type Audio struct {
 	buf        []float32
 	chip8Audio *chip8.Audio
+	jsGlobal   js.Value
 }
 
 func newAudio(jsGlobal js.Value, chip8Audio *chip8.Audio) Audio {
 	a := Audio{
 		buf:        make([]float32, 0),
 		chip8Audio: chip8Audio,
+		jsGlobal:   jsGlobal,
 	}
 
 	jsGlobal.Set("fillAudio", js.FuncOf(a.output))
@@ -37,7 +39,7 @@ func (a *Audio) output(this js.Value, args []js.Value) any {
 	freq := args[1].Float()
 	a.chip8Audio.Output(a.buf, freq)
 
-	outBuffer := js.Global().Get("Uint8Array").New(
+	outBuffer := a.jsGlobal.Get("Uint8Array").New(
 		out.Get("buffer"),
 		out.Get("byteOffset"),
 		out.Get("byteLength"),
