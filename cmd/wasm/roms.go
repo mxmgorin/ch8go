@@ -85,8 +85,8 @@ func loadROM(this js.Value, args []js.Value) any {
 	}
 
 	app.palettePicker.setColors(&app.emu.Palette.Pixels)
-	app.ConfOverlay.setTickrate(app.emu.VM.Tickrate())
-	app.ConfOverlay.setQuirks(app.emu.VM.CPU.Quirks)
+	app.confOverlay.setTickrate(app.emu.VM.Tickrate())
+	app.confOverlay.setQuirks(app.emu.VM.CPU.Quirks)
 	setROMInfo()
 
 	return nil

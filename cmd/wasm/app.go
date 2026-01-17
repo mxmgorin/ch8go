@@ -10,14 +10,15 @@ import (
 )
 
 type App struct {
-	runFrameFunc    js.Func
 	emu             *host.Emu
-	palettePicker   PalettePicker
 	painter         Painter
 	audio           Audio
-	ConfOverlay     ConfOverlay
-	togglePauseIcon js.Value
+	input           Input
+	runFrameFunc    js.Func
 	pauseOverlay    js.Value
+	confOverlay     ConfOverlay
+	palettePicker   PalettePicker
+	togglePauseIcon js.Value
 	keyChan         chan KeyEvent
 }
 
@@ -38,11 +39,6 @@ func newApp() App {
 	// ROMs select
 	js.Global().Set("fillROMs", js.FuncOf(populateROMs))
 
-	win := js.Global().Get("window")
-	// Handle keyboard
-	win.Call("addEventListener", "keydown", js.FuncOf(onKeyDown))
-	win.Call("addEventListener", "keyup", js.FuncOf(onKeyUp))
-
 	doc := js.Global().Get("document")
 	palettePicker := newPalettePicker(doc, &emu.Palette)
 	confOverlay := newConfOverlay(doc, emu.VM)
@@ -56,7 +52,8 @@ func newApp() App {
 		palettePicker:   palettePicker,
 		painter:         painter,
 		audio:           newAudio(),
-		ConfOverlay:     confOverlay,
+		input:           newInput(),
+		confOverlay:     confOverlay,
 		togglePauseIcon: togglePauseIcon,
 		pauseOverlay:    pauseOverlay,
 		keyChan:         make(chan KeyEvent, 32),
@@ -71,22 +68,6 @@ func newApp() App {
 	return a
 }
 
-// Run main loop
-func (a *App) run() {
-	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
-	// Keep WASM alive
-	select {}
-}
-
-func (a *App) runFrame(this js.Value, args []js.Value) any {
-	drainChan(a.keyChan, handleKey)
-	fb := a.emu.RunFrame()
-	a.painter.Paint(fb)
-	// Schedule next frame
-	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
-	return nil
-}
-
 func (a *App) togglePause(this js.Value, args []js.Value) any {
 	a.emu.Paused = !a.emu.Paused
 
@@ -99,4 +80,39 @@ func (a *App) togglePause(this js.Value, args []js.Value) any {
 	}
 
 	return nil
+}
+
+func (a *App) handleKey(evt KeyEvent) {
+	if evt.Pressed {
+		a.emu.VM.Keypad.Press(evt.Key)
+	} else {
+		a.emu.VM.Keypad.Release(evt.Key)
+	}
+}
+
+func (a *App) runFrame(this js.Value, args []js.Value) any {
+	drainChan(a.keyChan, a.handleKey)
+	fb := a.emu.RunFrame()
+	a.painter.Paint(fb)
+	// Schedule next frame
+	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
+	return nil
+}
+
+// Run main loop
+func (a *App) run() {
+	js.Global().Call("requestAnimationFrame", a.runFrameFunc)
+	// Keep WASM alive
+	select {}
+}
+
+func drainChan[T any](ch <-chan T, fn func(T)) {
+	for {
+		select {
+		case v := <-ch:
+			fn(v)
+		default:
+			return
+		}
+	}
 }
