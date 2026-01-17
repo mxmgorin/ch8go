@@ -3,8 +3,6 @@
 package main
 
 import (
-	"log/slog"
-	"path/filepath"
 	"syscall/js"
 )
 
@@ -67,27 +65,8 @@ func populateROMs(this js.Value, args []js.Value) any {
 }
 
 // Set ROM info in overlay
-func setROMInfo() {
-	text := app.emu.ROMInfo()
+func setROMInfo(text string) {
 	doc := js.Global().Get("document")
 	info := doc.Call("getElementById", "info-overlay")
 	info.Set("innerHTML", text)
-}
-
-func loadROM(this js.Value, args []js.Value) any {
-	jsBuff := args[0]
-	name := args[1].String()
-	buf := make([]byte, jsBuff.Length())
-	js.CopyBytesToGo(buf, jsBuff)
-	_, err := app.emu.LoadROM(buf, filepath.Ext(name))
-	if err != nil {
-		slog.Error("Failed to LoadROM", "err", err)
-	}
-
-	app.palettePicker.setColors(&app.emu.Palette.Pixels)
-	app.confOverlay.setTickrate(app.emu.VM.Tickrate())
-	app.confOverlay.setQuirks(app.emu.VM.CPU.Quirks)
-	setROMInfo()
-
-	return nil
 }

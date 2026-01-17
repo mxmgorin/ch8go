@@ -5,19 +5,23 @@ package main
 import (
 	"syscall/js"
 	"unsafe"
+
+	"github.com/mxmgorin/ch8go/pkg/chip8"
 )
 
 type Audio struct {
-	buf []float32
+	buf        []float32
+	chip8Audio *chip8.Audio
 }
 
-func newAudio() Audio {
+func newAudio(jsGlobal js.Value, chip8Audio *chip8.Audio) Audio {
 	a := Audio{
-		buf: make([]float32, 0),
+		buf:        make([]float32, 0),
+		chip8Audio: chip8Audio,
 	}
 
-	js.Global().Set("fillAudio", js.FuncOf(a.output))
-	js.Global().Set("startAudio", js.FuncOf(a.start))
+	jsGlobal.Set("fillAudio", js.FuncOf(a.output))
+	jsGlobal.Set("startAudio", js.FuncOf(a.start))
 
 	return a
 }
@@ -31,7 +35,7 @@ func (a *Audio) start(this js.Value, args []js.Value) any {
 func (a *Audio) output(this js.Value, args []js.Value) any {
 	out := args[0] // JS Float32Array
 	freq := args[1].Float()
-	app.emu.VM.Audio.Output(a.buf, freq)
+	a.chip8Audio.Output(a.buf, freq)
 
 	outBuffer := js.Global().Get("Uint8Array").New(
 		out.Get("buffer"),

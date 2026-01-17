@@ -9,11 +9,13 @@ import (
 )
 
 type Input struct {
-	keymap map[string]chip8.Key
+	keymap  map[string]chip8.Key
+	keyChan chan KeyEvent
 }
 
-func newInput() Input {
+func newInput(window js.Value, keyChan chan KeyEvent) Input {
 	i := Input{
+		keyChan: keyChan,
 		keymap: map[string]chip8.Key{
 			"1": chip8.Key1, "2": chip8.Key2, "3": chip8.Key3, "4": chip8.KeyC,
 			"q": chip8.Key4, "w": chip8.Key5, "e": chip8.Key6, "r": chip8.KeyD,
@@ -24,9 +26,8 @@ func newInput() Input {
 		},
 	}
 
-	win := js.Global().Get("window")
-	win.Call("addEventListener", "keydown", js.FuncOf(i.onKeyDown))
-	win.Call("addEventListener", "keyup", js.FuncOf(i.onKeyUp))
+	window.Call("addEventListener", "keydown", js.FuncOf(i.onKeyDown))
+	window.Call("addEventListener", "keyup", js.FuncOf(i.onKeyUp))
 
 	return i
 }
@@ -57,8 +58,9 @@ func (i *Input) onKey(event js.Value, pressed bool) any {
 
 	key := event.Get("key").String()
 	if k, ok := i.keymap[key]; ok {
-		app.keyChan <- KeyEvent{Key: k, Pressed: pressed}
+		i.keyChan <- KeyEvent{Key: k, Pressed: pressed}
 		event.Call("preventDefault")
 	}
+
 	return nil
 }

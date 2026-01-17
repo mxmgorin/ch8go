@@ -6,10 +6,8 @@ import (
 	"log/slog"
 )
 
-var app App
-
 func main() {
 	slog.Info("ch8go WASM")
-	app = newApp()
+	app := newApp()
 	app.run()
 }

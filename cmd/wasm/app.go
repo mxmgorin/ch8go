@@ -4,22 +4,24 @@ package main
 
 import (
 	"log"
+	"log/slog"
+	"path/filepath"
 	"syscall/js"
 
 	"github.com/mxmgorin/ch8go/pkg/host"
 )
 
 type App struct {
-	emu             *host.Emu
-	painter         Painter
-	audio           Audio
-	input           Input
-	runFrameFunc    js.Func
-	pauseOverlay    js.Value
-	confOverlay     ConfOverlay
-	palettePicker   PalettePicker
-	togglePauseIcon js.Value
-	keyChan         chan KeyEvent
+	emu               *host.Emu
+	painter           Painter
+	audio             Audio
+	input             Input
+	confOverlay       ConfOverlay
+	palettePicker     PalettePicker
+	runFrameFunc      js.Func
+	togglePauseIconEl js.Value
+	pauseOverlayEl    js.Value
+	keyChan           chan KeyEvent
 }
 
 func newApp() App {
@@ -34,31 +36,25 @@ func newApp() App {
 		log.Fatal(err)
 	}
 
-	// Export ROM loader
-	js.Global().Set("chip8_loadROM", js.FuncOf(loadROM))
-	// ROMs select
-	js.Global().Set("fillROMs", js.FuncOf(populateROMs))
-
+	jsGlobal := js.Global()
+	jsGlobal.Set("fillROMs", js.FuncOf(populateROMs))
 	doc := js.Global().Get("document")
-	palettePicker := newPalettePicker(doc, &emu.Palette)
-	confOverlay := newConfOverlay(doc, emu.VM)
-
-	// Pause, resume
-	pauseOverlay := js.Global().Get("document").Call("getElementById", "pause-overlay")
-	togglePauseIcon := doc.Call("getElementById", "toggle-pause-icon")
+	win := js.Global().Get("window")
+	keyChan := make(chan KeyEvent, 32)
 
 	a := App{
-		emu:             emu,
-		palettePicker:   palettePicker,
-		painter:         painter,
-		audio:           newAudio(),
-		input:           newInput(),
-		confOverlay:     confOverlay,
-		togglePauseIcon: togglePauseIcon,
-		pauseOverlay:    pauseOverlay,
-		keyChan:         make(chan KeyEvent, 32),
+		palettePicker:     newPalettePicker(doc, &emu.Palette),
+		painter:           painter,
+		audio:             newAudio(jsGlobal, &emu.VM.Audio),
+		input:             newInput(win, keyChan),
+		confOverlay:       newConfOverlay(doc, emu.VM),
+		togglePauseIconEl: doc.Call("getElementById", "toggle-pause-icon"),
+		pauseOverlayEl:    doc.Call("getElementById", "pause-overlay"),
+		keyChan:           keyChan,
+		emu:               emu,
 	}
 
+	jsGlobal.Set("chip8_loadROM", js.FuncOf(a.loadROM))
 	togglePauseBtn := doc.Call("getElementById", "toggle-pause-btn")
 	togglePauseBtn.Call("addEventListener", "click", js.FuncOf(a.togglePause))
 
@@ -68,15 +64,33 @@ func newApp() App {
 	return a
 }
 
+func (a *App) loadROM(this js.Value, args []js.Value) any {
+	jsBuff := args[0]
+	name := args[1].String()
+	buf := make([]byte, jsBuff.Length())
+	js.CopyBytesToGo(buf, jsBuff)
+	_, err := a.emu.LoadROM(buf, filepath.Ext(name))
+	if err != nil {
+		slog.Error("Failed to LoadROM", "err", err)
+	}
+
+	a.palettePicker.setColors(&a.emu.Palette.Pixels)
+	a.confOverlay.setTickrate(a.emu.VM.Tickrate())
+	a.confOverlay.setQuirks(a.emu.VM.CPU.Quirks)
+	setROMInfo(a.emu.ROMInfo())
+
+	return nil
+}
+
 func (a *App) togglePause(this js.Value, args []js.Value) any {
 	a.emu.Paused = !a.emu.Paused
 
 	if a.emu.Paused {
-		a.pauseOverlay.Get("classList").Call("add", "active")
-		a.togglePauseIcon.Set("src", "./icons/play-icon.svg")
+		a.pauseOverlayEl.Get("classList").Call("add", "active")
+		a.togglePauseIconEl.Set("src", "./icons/play-icon.svg")
 	} else {
-		a.pauseOverlay.Get("classList").Call("remove", "active")
-		a.togglePauseIcon.Set("src", "./icons/pause-icon.svg")
+		a.pauseOverlayEl.Get("classList").Call("remove", "active")
+		a.togglePauseIconEl.Set("src", "./icons/pause-icon.svg")
 	}
 
 	return nil
