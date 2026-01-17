@@ -1,4 +1,8 @@
+//go:build js && wasm
+
 package main
+
+import "syscall/js"
 
 type Rom struct {
 	Path string
@@ -42,4 +46,18 @@ var Roms = []Rom{
 	{"roms/xo/tapeworm.ch8", "Tapeworm"},
 	{"roms/xo/snake.ch8", "xSnake"},
 	{"roms/xo/alien-inv8sion.ch8", "Alien Inv8sion (Timendus)"},
+}
+
+func fillROMs(this js.Value, args []js.Value) any {
+	selectEl := js.Global().Get("document").Call("getElementById", "roms")
+	selectEl.Set("innerHTML", "")
+
+	for _, r := range Roms {
+		opt := js.Global().Get("document").Call("createElement", "option")
+		opt.Set("value", r.Path)
+		opt.Set("textContent", r.Name)
+		selectEl.Call("appendChild", opt)
+	}
+
+	return nil
 }
