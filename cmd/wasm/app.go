@@ -14,6 +14,7 @@ type App struct {
 	emu             *host.Emu
 	palettePicker   PalettePicker
 	painter         Painter
+	audio           Audio
 	ConfOverlay     ConfOverlay
 	togglePauseIcon js.Value
 	pauseOverlay    js.Value
@@ -46,10 +47,6 @@ func newApp() App {
 	palettePicker := newPalettePicker(doc, &emu.Palette)
 	confOverlay := newConfOverlay(doc, emu.VM)
 
-	// Audio
-	js.Global().Set("fillAudio", js.FuncOf(outputAudio))
-	js.Global().Set("startAudio", js.FuncOf(startAudio))
-
 	// Pause, resume
 	pauseOverlay := js.Global().Get("document").Call("getElementById", "pause-overlay")
 	togglePauseIcon := doc.Call("getElementById", "toggle-pause-icon")
@@ -58,6 +55,7 @@ func newApp() App {
 		emu:             emu,
 		palettePicker:   palettePicker,
 		painter:         painter,
+		audio:           newAudio(),
 		ConfOverlay:     confOverlay,
 		togglePauseIcon: togglePauseIcon,
 		pauseOverlay:    pauseOverlay,
