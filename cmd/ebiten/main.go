@@ -38,7 +38,7 @@ type App struct {
 	scale int
 }
 
-func NewApp(scale int) (*App, error) {
+func newApp(scale int) (*App, error) {
 	base, err := host.NewEmu()
 	if err != nil {
 		return nil, err
@@ -90,7 +90,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app, err := NewApp(opts.Scale)
+	app, err := newApp(opts.Scale)
 	if err != nil {
 		log.Fatal(err)
 	}
