@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Println("ch8go a. Type 'help' for commands.")
+	fmt.Println("ch8go cli. Type 'help' for commands.")
 
 	romPath := flag.String("rom", "", "path to CHIP-8 ROM")
 	flag.Parse()
