@@ -1,6 +1,10 @@
 package host
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestParseHexColor(t *testing.T) {
 	tests := []struct {
@@ -83,5 +87,44 @@ func TestNewPalette(t *testing.T) {
 
 	if _, err := NewPalette(nil, "zzzzzz", ""); err == nil {
 		t.Error("NewPalette with invalid buzzer color should return an error")
+	}
+}
+
+func TestFrameBufferPitchAndHash(t *testing.T) {
+	fb := newFrameBuffer(2, 2, 4)
+
+	if got := fb.Pitch(); got != 8 {
+		t.Errorf("Pitch() = %d, want 8", got)
+	}
+
+	h1 := fb.Hash()
+	if len(h1) != 64 { // sha256 hex
+		t.Errorf("Hash() length = %d, want 64", len(h1))
+	}
+	if fb2 := newFrameBuffer(2, 2, 4); fb.Hash() != fb2.Hash() {
+		t.Error("identical buffers should hash equally")
+	}
+
+	fb.Pixels[0] = 1
+	if fb.Hash() == h1 {
+		t.Error("changed buffer should hash differently")
+	}
+}
+
+func TestFrameBufferSavePNG(t *testing.T) {
+	fb := newFrameBuffer(2, 2, 4)
+	path := filepath.Join(t.TempDir(), "out.png")
+
+	if err := fb.SavePNG(path); err != nil {
+		t.Fatalf("SavePNG error = %v", err)
+	}
+	if _, err := os.Stat(path); err != nil {
+		t.Errorf("expected PNG file at %s: %v", path, err)
+	}
+
+	// PNG encoding requires RGBA (BPP=4); other depths must error.
+	bad := newFrameBuffer(2, 2, 1)
+	if _, err := bad.PNG(); err == nil {
+		t.Error("PNG with BPP != 4 should return an error")
 	}
 }
