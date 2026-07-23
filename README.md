@@ -1,7 +1,8 @@
 # <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/web/icons/favicon.ico" width="22"> ch8go
 
 [![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mxmgorin/ch8go)](https://goreportcard.com/report/github.com/mxmgorin/ch8go)
+[![Go](https://img.shields.io/github/go-mod/go-version/mxmgorin/ch8go)](go.mod)
+[![codecov](https://codecov.io/gh/mxmgorin/ch8go/branch/main/graph/badge.svg)](https://codecov.io/gh/mxmgorin/ch8go)
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://mxmgorin.github.io/ch8go/web/)
 [![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 
