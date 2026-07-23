@@ -122,7 +122,7 @@ func (a *Audio) samplePattern(pos int) float32 {
 // XO-HIP
 func (a *Audio) outputPattern(out []float32, sampleRate float64) {
 	for i := range out {
-		pos := int(a.phase) & 128
+		pos := int(a.phase) & 127
 		out[i] = a.samplePattern(pos)
 		stepSize := patternFreq(float64(a.pitch)) / sampleRate
 		a.phase += stepSize
