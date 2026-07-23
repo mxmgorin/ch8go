@@ -83,7 +83,7 @@ func NewPalette(colors []string, buzzer, silence string) (p Palette, e error) {
 			return p, err
 		}
 
-		p.Buzzer = color
+		p.Silence = color
 	}
 
 	return p, nil

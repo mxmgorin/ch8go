@@ -61,6 +61,8 @@ func (vm *VM) LoadROM(bytes []byte) error {
 		return fmt.Errorf("failed to load ROM: %w", err)
 	}
 
+	vm.romSize = len(bytes)
+
 	return nil
 }
 
