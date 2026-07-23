@@ -1,9 +1,19 @@
 
-.PHONY: test bench clean lint
+.PHONY: test bench cover clean lint
 
 # Run only tests (no benchmarks)
 test:
 	go test ./pkg/host -bench=^$
+
+# Run tests with coverage across all pkg packages.
+# Uses binary coverage + covdata so cross-package profiles (e.g. host tests
+# exercising chip8) are merged correctly instead of double-counted.
+cover:
+	rm -rf .coverdir && mkdir -p .coverdir
+	go test -cover -coverpkg=./pkg/... ./pkg/... -args -test.gocoverdir=$(CURDIR)/.coverdir
+	go tool covdata textfmt -i=.coverdir -o=coverage.out
+	go tool covdata percent -i=.coverdir
+	rm -rf .coverdir
 
 # Run only benchmarks (no tests)
 bench:

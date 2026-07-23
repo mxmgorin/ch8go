@@ -15,6 +15,7 @@
 *.out
 coverage.*
 *.coverprofile
+.coverdir/
 profile.cov
 
 # Dependency directories (remove the comment below to include it)
