@@ -2,14 +2,16 @@
 
 [![CI](https://github.com/mxmgorin/ch8go/actions/workflows/test.yml/badge.svg)](https://github.com/mxmgorin/ch8go/actions)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mxmgorin/ch8go)](https://goreportcard.com/report/github.com/mxmgorin/ch8go)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://mxmgorin.github.io/ch8go/web/)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 
 <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/super-neat-boy.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/alien-inv8sion.gif" width="30%"> <img src="https://raw.githubusercontent.com/mxmgorin/ch8go/main/assets/octopeg-big.gif" width="30%">
 
-`ch8go` is a CHIP-8, SUPER-CHIP and XO-CHIP virtual machine (emulator) written in Go, created as a fun project to practice the language and explore the system. The goal is to implement an accurate system with broad ROM compatibility.
+**`ch8go`** is an accurate CHIP-8, SUPER-CHIP and XO-CHIP emulator written in Go, with broad ROM compatibility and four frontends — the browser (WebAssembly/PWA), SDL2, Ebiten, and an interactive CLI debugger. It passes the full [Timendus](https://github.com/Timendus/chip8-test-suite) and [Octo](https://github.com/JohnEarnest/Octo) test suites, verified in CI.
 
-*More information about CHIP-8 and the project design is available in the [wiki](https://github.com/mxmgorin/ch8go/wiki)*
+It began as a project to learn Go and explore emulation. *More about CHIP-8 and the design is in the [wiki](https://github.com/mxmgorin/ch8go/wiki).*
 
-🌐 [Try the Live Demo](https://mxmgorin.github.io/ch8go/web/)
+🌐 **[Try the Live Demo →](https://mxmgorin.github.io/ch8go/web/)**
 
 ## Highlights
 
