@@ -1,0 +1,203 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - "*"
+  release:
+    types: [published]
+  workflow_dispatch: # manual runs build + upload artifacts for testing (release attach is skipped)
+
+permissions:
+  contents: write
+
+jobs:
+  # CLI: pure Go, cross-compiled from a single runner to every OS/arch.
+  cli:
+    name: CLI (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Build
+        shell: bash
+        run: |
+          OUT="ch8go-cli-${{ matrix.goos }}-${{ matrix.goarch }}"
+          [ "${{ matrix.goos }}" = "windows" ] && OUT="${OUT}.exe"
+          echo "ASSET=$OUT" >> "$GITHUB_ENV"
+          mkdir -p dist
+          CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            go build -trimpath -ldflags "-s -w" -o "dist/$OUT" ./cmd/cli
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cli-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.ASSET }}
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ASSET }}
+
+  # Ebiten: needs CGO on Linux/macOS (X11/OpenGL/ALSA headers), so it is built
+  # natively per OS. Windows needs no C compiler. No runtime deps -> bare binary.
+  ebiten:
+    name: Ebiten (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-latest, goos: linux, goarch: amd64, cgo: 1 }
+          - { runner: windows-latest, goos: windows, goarch: amd64, cgo: 0 }
+          - { runner: macos-13, goos: darwin, goarch: amd64, cgo: 1 }
+          - { runner: macos-latest, goos: darwin, goarch: arm64, cgo: 1 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Install Linux build deps
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-dev libxcursor-dev libxi-dev libxinerama-dev \
+            libxrandr-dev libxxf86vm-dev libasound2-dev pkg-config
+
+      - name: Build
+        shell: bash
+        run: |
+          OUT="ch8go-ebiten-${{ matrix.goos }}-${{ matrix.goarch }}"
+          LDFLAGS="-s -w"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            OUT="${OUT}.exe"
+            LDFLAGS="$LDFLAGS -H windowsgui"   # hide the console window for the GUI app
+          fi
+          echo "ASSET=$OUT" >> "$GITHUB_ENV"
+          mkdir -p dist
+          CGO_ENABLED=${{ matrix.cgo }} GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            go build -trimpath -ldflags "$LDFLAGS" -o "dist/$OUT" ./cmd/ebiten
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ebiten-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.ASSET }}
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ASSET }}
+
+  # SDL2 (Linux/macOS): CGO + native SDL2 dev libs, built per OS. Packaged as a
+  # tar.gz; the macOS archive bundles the SDL2 dylib so the binary is portable.
+  sdl2-unix:
+    name: SDL2 (${{ matrix.goos }}/${{ matrix.goarch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: ubuntu-latest, goos: linux, goarch: amd64 }
+          - { runner: macos-13, goos: darwin, goarch: amd64 }
+          - { runner: macos-latest, goos: darwin, goarch: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Install SDL2 (Linux)
+        if: matrix.goos == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev pkg-config
+
+      - name: Install SDL2 (macOS)
+        if: matrix.goos == 'darwin'
+        run: brew install sdl2 pkg-config
+
+      - name: Build and package
+        shell: bash
+        run: |
+          ASSET="ch8go-sdl2-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz"
+          echo "ASSET=$ASSET" >> "$GITHUB_ENV"
+          mkdir -p dist pkg
+          CGO_ENABLED=1 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
+            go build -trimpath -ldflags "-s -w" -o pkg/ch8go-sdl2 ./cmd/sdl2
+
+          if [ "${{ matrix.goos }}" = "darwin" ]; then
+            # Bundle the SDL2 dylib next to the binary and rewrite its load path
+            # so the release runs without a Homebrew install.
+            DYLIB="$(otool -L pkg/ch8go-sdl2 | awk '/libSDL2/{print $1; exit}')"
+            cp "$DYLIB" pkg/
+            install_name_tool -change "$DYLIB" "@executable_path/$(basename "$DYLIB")" pkg/ch8go-sdl2
+          fi
+
+          tar -czf "dist/$ASSET" -C pkg .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdl2-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: dist/${{ env.ASSET }}
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/${{ env.ASSET }}
+
+  # SDL2 (Windows): built under MSYS2/mingw64 (gcc + SDL2 + Go). Packaged as a
+  # zip bundling SDL2.dll so the exe runs standalone.
+  sdl2-windows:
+    name: SDL2 (windows/amd64)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-go
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-SDL2
+            zip
+
+      - name: Build and package
+        run: |
+          mkdir -p dist pkg
+          CGO_ENABLED=1 go build -trimpath \
+            -ldflags "-s -w -H windowsgui" -o pkg/ch8go-sdl2.exe ./cmd/sdl2
+          cp "$MINGW_PREFIX/bin/SDL2.dll" pkg/
+          cd pkg && zip -r "../dist/ch8go-sdl2-windows-amd64.zip" . && cd ..
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdl2-windows-amd64
+          path: dist/ch8go-sdl2-windows-amd64.zip
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ch8go-sdl2-windows-amd64.zip
