@@ -16,7 +16,16 @@ func (i Instruction) String() string {
 }
 
 func RegistersString(cpu *CPU) string {
-	return fmt.Sprintf("PC=%04X I=%04X V=%v", cpu.pc, cpu.i, cpu.v)
+	stack := make([]string, cpu.sp)
+	for i := range stack {
+		stack[i] = fmt.Sprintf("%04X", cpu.stack[i])
+	}
+
+	var b strings.Builder
+	fmt.Fprintf(&b, "PC=%04X I=%04X SP=%02X DT=%02X\n", cpu.pc, cpu.i, cpu.sp, cpu.dt)
+	fmt.Fprintf(&b, "V=%v\n", cpu.v)
+	fmt.Fprintf(&b, "Stack=[%s]", strings.Join(stack, " "))
+	return b.String()
 }
 
 func RenderASCII(d *Display) string {

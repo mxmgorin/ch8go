@@ -107,6 +107,88 @@ func (vm *VM) RunFrame(frameDelta time.Duration) FrameState {
 	return state
 }
 
+// Poll clears a pending VBlank wait and reports whether the display changed.
+// Exposed for headless hosts (e.g. the CLI debugger) that step outside RunFrame.
+func (vm *VM) Poll() bool {
+	return vm.Display.poll()
+}
+
+// StopReason explains why Run stopped.
+type StopReason int
+
+const (
+	StopMaxSteps StopReason = iota
+	StopBreakpoint
+	StopWatch
+)
+
+// Watch is a debugger watchpoint on a V register or a memory address.
+type Watch struct {
+	Reg  bool   // true: V register (Addr is the index 0-15); false: memory address
+	Addr uint16
+}
+
+func (w Watch) String() string {
+	if w.Reg {
+		return fmt.Sprintf("V%X", w.Addr)
+	}
+	return fmt.Sprintf("mem[%04X]", w.Addr)
+}
+
+func (w Watch) read(vm *VM) byte {
+	if w.Reg {
+		return vm.CPU.v[w.Addr]
+	}
+	return vm.Memory.Read(w.Addr)
+}
+
+// RunResult reports the outcome of Run.
+type RunResult struct {
+	Steps     int
+	Reason    StopReason
+	WatchDesc string // set when Reason == StopWatch
+	WatchOld  byte
+	WatchNew  byte
+}
+
+// Run steps until a breakpoint PC is reached, a watched value changes, or
+// maxSteps is exhausted. The instruction at a breakpoint is NOT executed.
+// Timers, the keypad latch, and the display advance once per simulated frame so
+// ROMs waiting on the delay timer, key input, or VBlank make progress.
+func (vm *VM) Run(bps map[uint16]bool, watches []Watch, maxSteps int) RunResult {
+	tr := vm.Tickrate() // CPU cycles per 60Hz timer tick
+	sinceTimer := 0
+
+	prev := make([]byte, len(watches))
+	for i, w := range watches {
+		prev[i] = w.read(vm)
+	}
+
+	for steps := 1; steps <= maxSteps; steps++ {
+		vm.Step()
+
+		if sinceTimer++; tr <= 0 || sinceTimer >= tr {
+			sinceTimer = 0
+			vm.CPU.tickTimer()
+			vm.Audio.TickTimer()
+			vm.Keypad.Latch()
+			vm.Display.poll()
+		}
+
+		for i, w := range watches {
+			if cur := w.read(vm); cur != prev[i] {
+				return RunResult{Steps: steps, Reason: StopWatch, WatchDesc: w.String(), WatchOld: prev[i], WatchNew: cur}
+			}
+		}
+
+		if bps[vm.CPU.pc] {
+			return RunResult{Steps: steps, Reason: StopBreakpoint}
+		}
+	}
+
+	return RunResult{Steps: maxSteps, Reason: StopMaxSteps}
+}
+
 func (vm *VM) PeekNext() Instruction {
 	pc := vm.CPU.pc
 	op := vm.Memory.ReadU16(pc)
