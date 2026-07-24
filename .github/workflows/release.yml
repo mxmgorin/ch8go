@@ -60,7 +60,6 @@ jobs:
         include:
           - { runner: ubuntu-latest, goos: linux, goarch: amd64, cgo: 1 }
           - { runner: windows-latest, goos: windows, goarch: amd64, cgo: 0 }
-          - { runner: macos-13, goos: darwin, goarch: amd64, cgo: 1 }
           - { runner: macos-latest, goos: darwin, goarch: arm64, cgo: 1 }
     steps:
       - uses: actions/checkout@v7
@@ -112,7 +111,6 @@ jobs:
       matrix:
         include:
           - { runner: ubuntu-latest, goos: linux, goarch: amd64 }
-          - { runner: macos-13, goos: darwin, goarch: amd64 }
           - { runner: macos-latest, goos: darwin, goarch: arm64 }
     steps:
       - uses: actions/checkout@v7
