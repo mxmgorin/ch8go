@@ -22,9 +22,9 @@ jobs:
         goos: [linux, windows, darwin]
         goarch: [amd64, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.25"
 
@@ -38,7 +38,7 @@ jobs:
           CGO_ENABLED=0 GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             go build -trimpath -ldflags "-s -w" -o "dist/$OUT" ./cmd/cli
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: cli-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/${{ env.ASSET }}
@@ -63,9 +63,9 @@ jobs:
           - { runner: macos-13, goos: darwin, goarch: amd64, cgo: 1 }
           - { runner: macos-latest, goos: darwin, goarch: arm64, cgo: 1 }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.25"
 
@@ -91,7 +91,7 @@ jobs:
           CGO_ENABLED=${{ matrix.cgo }} GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             go build -trimpath -ldflags "$LDFLAGS" -o "dist/$OUT" ./cmd/ebiten
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ebiten-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/${{ env.ASSET }}
@@ -115,9 +115,9 @@ jobs:
           - { runner: macos-13, goos: darwin, goarch: amd64 }
           - { runner: macos-latest, goos: darwin, goarch: arm64 }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.25"
 
@@ -150,7 +150,7 @@ jobs:
 
           tar -czf "dist/$ASSET" -C pkg .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdl2-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/${{ env.ASSET }}
@@ -170,7 +170,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -191,7 +191,7 @@ jobs:
           cp "$MINGW_PREFIX/bin/SDL2.dll" pkg/
           cd pkg && zip -r "../dist/ch8go-sdl2-windows-amd64.zip" . && cd ..
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: sdl2-windows-amd64
           path: dist/ch8go-sdl2-windows-amd64.zip
